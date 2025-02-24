@@ -214,25 +214,60 @@
 
                 // Cargar las capas de AGEB
                 Promise.all([
-                    fetch('Ageb_urb_CDMX.geojson').then(response => response.json()),
-                    fetch('Ageb_urb_Edo_Mex.geojson').then(response => response.json())
+                    fetch('Ageb_urb_CDMX.geojson').then(response => {
+                        if (!response.ok) throw new Error('Error al cargar Ageb_urb_CDMX.geojson');
+                        return response.json();
+                    }),
+                    fetch('Ageb_urb_Edo_Mex.geojson').then(response => {
+                        if (!response.ok) throw new Error('Error al cargar Ageb_urb_Edo_Mex.geojson');
+                        return response.json();
+                    })
                 ]).then(([agebCDMX, agebEdoMex]) => {
+                    console.log('Capas de AGEB cargadas correctamente.');
+
                     // Combinar las capas de AGEB
                     var combinedAGEB = turf.featureCollection([
                         ...agebCDMX.features,
                         ...agebEdoMex.features
                     ]);
 
+                    // Verificar geometrías
+                    if (combinedAGEB.features.length === 0) {
+                        console.log('No hay geometrías en combinedAGEB.');
+                        return;
+                    }
+
+                    if (!circle400 || !circle400.geometry) {
+                        console.log('El círculo no es válido:', circle400);
+                        return;
+                    }
+
                     // Recortar la capa de AGEB
                     var clippedAGEB = turf.intersect(combinedAGEB, circle400);
+                    if (!clippedAGEB || !clippedAGEB.features.length) {
+                        console.log('No se encontraron intersecciones válidas.');
+                        return;
+                    }
 
                     // Guardar la geometría resultante en un archivo GeoJSON
                     var geoJson = turf.featureCollection(clippedAGEB.features);
-                    console.log(geoJson); // Aquí puedes guardar el GeoJSON en un archivo si es necesario
+                    console.log(geoJson);
 
-                    // Calcular áreas
+                    // Crear un Blob y un enlace para descargar el archivo GeoJSON
+                    var blob = new Blob([JSON.stringify(geoJson)], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'clipped_ageb.geojson'; // Nombre del archivo a descargar
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url); // Liberar el objeto URL
+
+                    // Calcular áreas y almacenarlas
                     var areas = clippedAGEB.features.map(feature => turf.area(feature));
                     console.log("Áreas de los polígonos resultantes:", areas);
+                    alert("Áreas de los polígonos resultantes: " + areas.join(", ") + " metros cuadrados.");
 
                     // Agregar la capa recortada al mapa
                     L.geoJSON(clippedAGEB, {
