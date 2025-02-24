@@ -251,7 +251,11 @@
                     return false; // Filtrar geometrías no válidas
                 }
                 // Verificar si la geometría tiene coordenadas válidas
-                return feature.geometry.coordinates.length > 0; // Asegúrate de que las coordenadas no estén vacías
+                if (feature.geometry.coordinates.length === 0) {
+                    console.log('Geometría con coordenadas vacías:', feature.geometry);
+                    return false; // Asegúrate de que las coordenadas no estén vacías
+                }
+                return true; // Considerar geometrías válidas
             });
 
             // Si no hay geometrías válidas, salir
