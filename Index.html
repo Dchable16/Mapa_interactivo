@@ -26,7 +26,6 @@
             font-size: 13px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6"></script>
 </head>
 <body>
     <h1>Mapa Interactivo</h1>
@@ -62,14 +61,14 @@
             attribution: "Google"
         });
 
-        // Objetos para almacenar las capas GeoJSON
+        // Objeto para almacenar las capas GeoJSON
         var geoJsonLayersAgeb = {};
         var geoJsonLayersUsoSuelo = {};
-        var geoJsonLayersAlcaldias = {};
+        var geoJsonLayersAlcaldias = {}; // Nuevo objeto para las capas de alcaldías
 
         // Variables para el marcador y los radios
         var currentMarker = null;
-        var currentLabel = null;
+        var currentLabel = null; // Variable para almacenar el nombre del marcador
         var radius400m = null;
         var radius800m = null;
 
@@ -80,75 +79,111 @@
 
         // Función para agregar un marcador
         function addMarker() {
-            // ... (código sin cambios) ...
+            var lat = parseFloat(document.getElementById('lat').value);
+            var lon = parseFloat(document.getElementById('lon').value);
+            var markerName = document.getElementById('markerName').value;
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+                // Eliminar el marcador anterior si existe
+                removeMarker();
+
+                // Crear el nuevo marcador
+                currentMarker = L.marker([lat, lon], {
+                    icon: L.divIcon({
+                        className: 'yellow-marker',
+                        iconSize: [12, 12],
+                        iconAnchor: [10, 20],
+                    })
+                }).addTo(map);
+
+                // Crear el nombre del marcador
+                currentLabel = L.marker([lat, lon], {
+                    icon: L.divIcon({
+                        className: 'marker-label',
+                        html: markerName,
+                        iconSize: [100, 50],
+                        iconAnchor: [50, 15]
+                    })
+                }).addTo(map);
+            } else {
+                alert("Por favor ingrese coordenadas válidas.");
+            }
         }
 
         // Función para eliminar el marcador
         function removeMarker() {
-            // ... (código sin cambios) ...
-        }
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+                currentMarker = null;
 
-        // Función para agregar radios (sin cambios por ahora)
-        function addRadius(radius) {
-            // ... (código sin cambios) ...
-        }
-
-        // Función para calcular los puntos del polígono de recorte (sin cambios)
-        function calculateCutPolygon(center, radius) {
-            // ... (código sin cambios) ...
-        }
-
-        // Función para realizar el recorte y cálculo de áreas
-        function recortarYCalcularAreas(marker) {
-            var latLng = marker.getLatLng();
-
-            // 1. Determinar ubicación del marcador (usando Turf.js)
-            var punto = turf.point([latLng.lng, latLng.lat]);
-
-            // Asegúrate de que las capas de alcaldías estén cargadas antes de usarlas
-            if (geoJsonLayersAlcaldias['Capa Alcaldías CDMX'] && geoJsonLayersAlcaldias['Capa Municipios Edo. Mex.']) {
-                var dentroCDMX = turf.booleanPointInPolygon(punto, geoJsonLayersAlcaldias['Capa Alcaldías CDMX'].toGeoJSON());
-                var dentroEdoMex = turf.booleanPointInPolygon(punto, geoJsonLayersAlcaldias['Capa Municipios Edo. Mex.'].toGeoJSON());
-
-                // 2. Seleccionar capa GeoJSON
-                var capaSeleccionada = dentroCDMX ? geoJsonLayersAgeb['Capa CDMX'] : geoJsonLayersAgeb['Capa Edo Mex'];
-
-                // 3. Recortar capa GeoJSON (usando Turf.js)
-                var circulo400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-                var circulo800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-
-                var poligonosRecortados400 = turf.intersect(capaSeleccionada.toGeoJSON(), circulo400); // Intersección
-                var diferenciaRadios = turf.difference(circulo800, circulo400); // Diferencia de radios
-                var poligonosRecortadosDiferencia = turf.intersect(capaSeleccionada.toGeoJSON(), diferenciaRadios); // Intersección
-
-                // 4. Calcular áreas (usando Turf.js)
-                var areas400 = [];
-                if (poligonosRecortados400 && poligonosRecortados400.features) { // Verificar si hay resultados
-                    poligonosRecortados400.features.forEach(feature => {
-                        areas400.push(turf.area(feature));
-                    });
+                // Eliminar el nombre del marcador
+                if (currentLabel) {
+                    map.removeLayer(currentLabel);
+                    currentLabel = null;
                 }
 
-                var areasDiferencia = [];
-                if (poligonosRecortadosDiferencia && poligonosRecortadosDiferencia.features) { // Verificar si hay resultados
-                    poligonosRecortadosDiferencia.features.forEach(feature => {
-                        areasDiferencia.push(turf.area(feature));
-                    });
+                // Eliminar los radios si existen
+                if (radius400m) {
+                    radius400Layer.removeLayer(radius400m);
+                    radius400m = null;
                 }
-
-                console.log("Áreas dentro de 400m:", areas400);
-                console.log("Áreas en la diferencia de radios:", areasDiferencia);
-
-            } else {
-                console.log("Capas de alcaldías no cargadas. Intenta mover el marcador más tarde.");
+                if (radius800m) {
+                    radius800Layer.removeLayer(radius800m);
+                    radius800m = null;
+                }
+                if (radiusCutLayer) {
+                    radiusCutLayer.clearLayers(); // Limpiar la capa de recorte
+                }
             }
         }
 
-        // Llamar a la función al agregar o mover el marcador
-        if (currentMarker) { // Verificar si currentMarker está definido
-            currentMarker.on('move', function () {
-                recortarYCalcularAreas(this);
-            });
+        // Función para agregar radios
+        function addRadius(radius) {
+            if (currentMarker) {
+                var latLng = currentMarker.getLatLng();
+                var circle = L.circle(latLng, {
+                    color: radius === 400 ? 'blue' : 'red',
+                    fillOpacity: 0.2,
+                    radius: radius
+                });
+
+                // Agregar el círculo al grupo de capas correspondiente
+                if (radius === 400) {
+                    radius400Layer.addLayer(circle);
+                    radius400m = circle;
+
+                    // Crear el recorte del círculo de 800 usando el de 400
+                    if (radius800m) {
+                        var cutCircle = L.circle(latLng, {
+                            color: 'green',
+                            fillOpacity: 0.1,
+                            radius: 800
+                        }).addTo(radiusCutLayer);
+
+                        // Agregar lógica para recortar el círculo de 800
+                        var cutPolygon = L.polygon(calculateCutPolygon(latLng, 400)).addTo(radiusCutLayer);
+                    }
+                } else if (radius === 800) {
+                    radius800Layer.addLayer(circle);
+                    radius800m = circle;
+                }
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        }
+
+        // Función para calcular los puntos del polígono de recorte
+        function calculateCutPolygon(center, radius) {
+            var points = [];
+            for (var angle = 0; angle < 360; angle += 10) {
+                var rad = angle * (Math.PI / 180);
+                var point = [
+                    center.lat + (radius / 111320) * Math.cos(rad), // Aproximación de latitud
+                    center.lng + (radius / (111320 * Math.cos(center.lat * (Math.PI / 180)))) * Math.sin(rad) // Aproximación de longitud
+                ];
+                points.push(point);
+            }
+            return points;
         }
 
         // Cargar capas GeoJSON
@@ -170,6 +205,78 @@
                         }
                     });
 
-                    // Agregar la capa AL OBJETO y LUEGO al control
+                    // Agregar la capa al objeto correspondiente
                     if (type === 'Ageb') {
-                        geoJsonLayersAgeb[layerName] = geoJson
+                        geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                    } else if (type === 'UsoSuelo') {
+                        geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                    } else if (type === 'AlcaldiasMunicipios') {
+                        geoJsonLayersAlcaldias[layerName] = geoJsonLayer; // Agregar a alcaldías
+                    }
+
+                    // Actualizar los controladores de capas
+                    updateLayerControls();
+                })
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
+        }
+
+        // Controladores de capas
+        var baseMaps = {
+            "OpenStreetMap": osmLayer,
+            "Google Road": googleRoadLayer,
+            "Google Hybrid": googleHybridLayer
+        };
+
+        var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
+        var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
+        var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
+        var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
+
+        // Agregar los grupos de capas de radios a los controladores
+        layerControlBase.addOverlay(radius400Layer, "Radio 400m");
+        layerControlBase.addOverlay(radius800Layer, "Radio 800m");
+        layerControlBase.addOverlay(radiusCutLayer, "Recorte 800m - 400m");
+
+        // Función para actualizar los controladores de capas
+        function updateLayerControls() {
+            layerControlAgeb.remove();
+            layerControlUsoSuelo.remove();
+            layerControlAlcaldias.remove(); // Remover controlador de alcaldías
+
+            layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
+            layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
+            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar nuevamente
+        }
+
+        // Llama a la función para cargar tus archivos GeoJSON
+        loadGeoJSON('Ageb_urb_CDMX.geojson', 'Capa CDMX', 'Ageb');
+        loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Capa Edo Mex', 'Ageb');
+
+        loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Capa Centro Barrio', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_equipamento.geojson', 'Capa Equipamento', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Capa Habitacional Comercio', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Capa Planta Baja', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_entrada.geojson', 'Capa Entrada', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Capa Mixto', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Capa Oficinas', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Capa Plurifamiliar', 'UsoSuelo');
+
+        // Nuevas capas de alcaldías
+        loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Capa Alcaldías CDMX', 'AlcaldiasMunicipios');
+        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Capa Municipios Edo. Mex.', 'AlcaldiasMunicipios');
+        loadGeoJSON('Region_Vallejo.geojson', 'Capa Región Vallejo', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Capa Azcapotzalco', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Capa Benito Juárez', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Capa Cuauhtémoc', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Ecatepec.geojson', 'Capa Ecatepec', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Capa M. Hidalgo', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Capa Nezahualcoyotl', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Azcapotzalco.geojson', 'Capa Col. Azcapotzalco', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Benito_Juarez.geojson', 'Capa Col. Benito Juárez', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Capa Col. Cuauhtemoc', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Ecatepec.geojson', 'Capa Col. Ecatepec', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Capa Col. M. Hidalgo', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Capa Col. Nezahualcoyotl', 'AlcaldiasMunicipios');
+    </script>
+</body>
+</html>
