@@ -213,9 +213,15 @@
         function processAGEB() {
     if (currentMarker && selectedRadius) {
         var latLng = currentMarker.getLatLng();
-        // Usar el radio seleccionado para generar el círculo
-        var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
-        console.log(circle); // Verifica la geometría del círculo
+
+        // Asegúrate de que la capa de diferencia ya esté disponible
+        if (!differenceLayer || !differenceLayer.getLayers().length) {
+            console.log('La capa de diferencia no está disponible.');
+            return;
+        }
+
+        // Obtener la geometría de la capa de diferencia
+        var difference = differenceLayer.toGeoJSON(); // Convertir la capa de diferencia a GeoJSON
 
         // Cargar las capas de AGEB
         Promise.all([
@@ -238,40 +244,8 @@
 
             console.log(combinedAGEB); // Verifica las geometrías combinadas
 
-            // Verificar geometrías antes de la intersección
-            if (combinedAGEB.features.length === 0) {
-                console.log('No hay geometrías en combinedAGEB.');
-                return;
-            }
-
-            // Verificar que cada geometría sea válida
-            var validFeatures = combinedAGEB.features.filter(feature => {
-                if (!feature.geometry || (feature.geometry.type !== 'Polygon' && feature.geometry.type !== 'MultiPolygon')) {
-                    console.log('Geometría no válida:', feature.geometry);
-                    return false; // Filtrar geometrías no válidas
-                }
-                // Verificar si la geometría tiene coordenadas válidas
-                if (feature.geometry.coordinates.length === 0) {
-                    console.log('Geometría con coordenadas vacías:', feature.geometry);
-                    return false; // Asegúrate de que las coordenadas no estén vacías
-                }
-                return true; // Considerar geometrías válidas
-            });
-
-            // Si no hay geometrías válidas, salir
-            if (validFeatures.length === 0) {
-                console.log('No hay geometrías válidas para procesar.');
-                return;
-            }
-
-            // Crear un nuevo feature collection solo con geometrías válidas
-            var validAGEB = turf.featureCollection(validFeatures);
-
-            // Imprimir las geometrías válidas antes de la intersección
-            console.log('Geometrías válidas para la intersección:', validAGEB.features);
-
-            // Recortar la capa de AGEB
-            var clippedAGEB = turf.intersect(validAGEB, circle);
+            // Recortar la capa de AGEB usando la diferencia
+            var clippedAGEB = turf.intersect(combinedAGEB, difference);
             if (!clippedAGEB || !clippedAGEB.features.length) {
                 console.log('No se encontraron intersecciones válidas.');
                 return;
