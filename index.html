@@ -216,6 +216,7 @@
         var latLng = currentMarker.getLatLng();
         // Usar el radio seleccionado para generar el círculo
         var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
+        console.log(circle); // Verifica la geometría del círculo
 
         // Cargar las capas de AGEB
         Promise.all([
@@ -235,6 +236,8 @@
                 ...agebCDMX.features,
                 ...agebEdoMex.features
             ]);
+
+            console.log(combinedAGEB); // Verifica las geometrías combinadas
 
             // Verificar geometrías antes de la intersección
             if (combinedAGEB.features.length === 0) {
