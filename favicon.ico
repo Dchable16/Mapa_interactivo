@@ -1,3 +1,0 @@
-git add index.html *.geojson favicon.ico
-git commit -m "Corregida CSP, GeoJSON y añadido favicon.ico"
-git push origin main
