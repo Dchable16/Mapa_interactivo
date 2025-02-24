@@ -1,0 +1,3 @@
+git add index.html *.geojson favicon.png
+git commit -m "Corregida CSP (sintaxis), GeoJSON y favicon.png"
+git push origin main
