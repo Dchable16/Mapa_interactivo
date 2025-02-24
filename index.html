@@ -212,96 +212,89 @@
 
         // Función para procesar AGEB
         function processAGEB() {
-    if (currentMarker && selectedRadius) {
-        var latLng = currentMarker.getLatLng();
-        // Usar el radio seleccionado para generar el círculo
-        var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
-        console.log(circle); // Verifica la geometría del círculo
+            if (currentMarker && selectedRadius) {
+                var latLng = currentMarker.getLatLng();
+                // Usar el radio seleccionado para generar el círculo
+                var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
+                console.log(circle); // Verifica la geometría del círculo
 
-        function processAGEB() {
-    if (currentMarker && selectedRadius) {
-        var latLng = currentMarker.getLatLng();
-        // Usar el radio seleccionado para generar el círculo
-        var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
-        console.log(circle); // Verifica la geometría del círculo
+                // Cargar las capas de AGEB
+                Promise.all([
+                    fetch('Ageb_urb_CDMX.geojson').then(response => {
+                        if (!response.ok) throw new Error('Error al cargar Ageb_urb_CDMX.geojson');
+                        return response.json();
+                    }),
+                    fetch('Ageb_urb_Edo_Mex.geojson').then(response => {
+                        if (!response.ok) throw new Error('Error al cargar Ageb_urb_Edo_Mex.geojson');
+                        return response.json();
+                    })
+                ]).then(([agebCDMX, agebEdoMex]) => {
+                    console.log('Capas de AGEB cargadas correctamente.');
 
-        // Cargar las capas de AGEB
-        Promise.all([
-            fetch('Ageb_urb_CDMX.geojson').then(response => {
-                if (!response.ok) throw new Error('Error al cargar Ageb_urb_CDMX.geojson');
-                return response.json();
-            }),
-            fetch('Ageb_urb_Edo_Mex.geojson').then(response => {
-                if (!response.ok) throw new Error('Error al cargar Ageb_urb_Edo_Mex.geojson');
-                return response.json();
-            })
-        ]).then(([agebCDMX, agebEdoMex]) => {
-            console.log('Capas de AGEB cargadas correctamente.');
+                    // Combinar las capas de AGEB
+                    var combinedAGEB = turf.featureCollection([
+                        ...agebCDMX.features,
+                        ...agebEdoMex.features
+                    ]);
 
-            // Combinar las capas de AGEB
-            var combinedAGEB = turf.featureCollection([
-                ...agebCDMX.features,
-                ...agebEdoMex.features
-            ]);
+                    console.log(combinedAGEB); // Verifica las geometrías combinadas
 
-            console.log(combinedAGEB); // Verifica las geometrías combinadas
+                    // Verificar geometrías antes de la intersección
+                    if (combinedAGEB.features.length === 0) {
+                        console.log('No hay geometrías en combinedAGEB.');
+                        return;
+                    }
 
-            // Verificar geometrías antes de la intersección
-            if (combinedAGEB.features.length === 0) {
-                console.log('No hay geometrías en combinedAGEB.');
-                return;
-            }
+                    // Verificar que cada geometría sea válida
+                    for (var feature of combinedAGEB.features) {
+                        if (!feature.geometry || (feature.geometry.type !== 'Polygon' && feature.geometry.type !== 'MultiPolygon')) {
+                            console.log('Geometría no válida:', feature.geometry);
+                            return; // Salir si hay una geometría no válida
+                        }
+                    }
 
-            // Verificar que cada geometría sea válida
-            for (var feature of combinedAGEB.features) {
-                if (!feature.geometry || (feature.geometry.type !== 'Polygon' && feature.geometry.type !== 'MultiPolygon')) {
-                    console.log('Geometría no válida:', feature.geometry);
-                    return; // Salir si hay una geometría no válida
-                }
-            }
+                    // Recortar la capa de AGEB
+                    var clippedAGEB = turf.intersect(combinedAGEB, circle);
+                    if (!clippedAGEB || !clippedAGEB.features.length) {
+                        console.log('No se encontraron intersecciones válidas.');
+                        return;
+                    }
 
-            // Recortar la capa de AGEB
-            var clippedAGEB = turf.intersect(combinedAGEB, circle);
-            if (!clippedAGEB || !clippedAGEB.features.length) {
-                console.log('No se encontraron intersecciones válidas.');
-                return;
+                    // Guardar la geometría resultante en un archivo GeoJSON
+                    var geoJson = turf.featureCollection(clippedAGEB.features);
+                    console.log(geoJson);
+
+                    // Crear un Blob y un enlace para descargar el archivo GeoJSON
+                    var blob = new Blob([JSON.stringify(geoJson)], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'clipped_ageb.geojson'; // Nombre del archivo a descargar
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url); // Liberar el objeto URL
+
+                    // Calcular áreas y almacenarlas
+                    var areas = clippedAGEB.features.map(feature => turf.area(feature));
+                    console.log("Áreas de los polígonos resultantes:", areas);
+                    alert("Áreas de los polígonos resultantes: " + areas.join(", ") + " metros cuadrados.");
+
+                    // Agregar la capa recortada al mapa
+                    L.geoJSON(clippedAGEB, {
+                        style: {
+                            color: 'orange',
+                            weight: 2,
+                            fillOpacity: 0.5
+                        }
+                    }).addTo(map);
+                }).catch(err => {
+                    console.error('Error al cargar las capas de AGEB:', err);
+                });
+            } else {
+                alert("Asegúrese de que el marcador y el radio estén creados.");
             }
         }
-            // Guardar la geometría resultante en un archivo GeoJSON
-            var geoJson = turf.featureCollection(clippedAGEB.features);
-            console.log(geoJson);
-
-            // Crear un Blob y un enlace para descargar el archivo GeoJSON
-            var blob = new Blob([JSON.stringify(geoJson)], { type: 'application/json' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'clipped_ageb.geojson'; // Nombre del archivo a descargar
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url); // Liberar el objeto URL
-
-            // Calcular áreas y almacenarlas
-            var areas = clippedAGEB.features.map(feature => turf.area(feature));
-            console.log("Áreas de los polígonos resultantes:", areas);
-            alert("Áreas de los polígonos resultantes: " + areas.join(", ") + " metros cuadrados.");
-
-            // Agregar la capa recortada al mapa
-            L.geoJSON(clippedAGEB, {
-                style: {
-                    color: 'orange',
-                    weight: 2,
-                    fillOpacity: 0.5
-                }
-            }).addTo(map);
-        }).catch(err => {
-            console.error('Error al cargar las capas de AGEB:', err);
-        });
-    } else {
-        alert("Asegúrese de que el marcador y el radio estén creados.");
-    }
-}
 
         // Cargar capas GeoJSON
         function loadGeoJSON(url, layerName, type) {
