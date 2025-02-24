@@ -218,6 +218,13 @@
         var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
         console.log(circle); // Verifica la geometría del círculo
 
+        function processAGEB() {
+    if (currentMarker && selectedRadius) {
+        var latLng = currentMarker.getLatLng();
+        // Usar el radio seleccionado para generar el círculo
+        var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
+        console.log(circle); // Verifica la geometría del círculo
+
         // Cargar las capas de AGEB
         Promise.all([
             fetch('Ageb_urb_CDMX.geojson').then(response => {
