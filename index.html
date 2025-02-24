@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa Interactivo</title>
-   <link rel="icon" href="favicon.png">
+    <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -42,6 +43,8 @@
         <button onclick="removeMarker()">Eliminar Marcador</button>
         <button onclick="addRadius(400)">Agregar Radio 400m</button>
         <button onclick="addRadius(800)">Agregar Radio 800m</button>
+        <button onclick="calculateDifference()">Calcular Diferencia</button>
+        <button onclick="processAGEB()">Procesar AGEB</button>
     </div>
     <div id="map"></div>
 
@@ -67,6 +70,7 @@
         var geoJsonLayersAgeb = {};
         var geoJsonLayersUsoSuelo = {};
         var geoJsonLayersAlcaldias = {}; // Nuevo objeto para las capas de alcaldías
+        var differenceLayer = null; // Capa para la diferencia de círculos
 
         // Variables para el marcador y los radios
         var currentMarker = null;
@@ -74,10 +78,10 @@
         var radius400m = null;
         var radius800m = null;
 
-        // Crear grupos de capas para los radios
+        // Crear grupos de capas para los radios y la diferencia
         var radius400Layer = L.layerGroup().addTo(map);
         var radius800Layer = L.layerGroup().addTo(map);
-        var radiusCutLayer = L.layerGroup().addTo(map); // Capa para el recorte
+        var differenceLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de diferencia
 
         // Función para agregar un marcador
         function addMarker() {
@@ -97,6 +101,9 @@
                         iconAnchor: [10, 20],
                     })
                 }).addTo(map);
+
+                // Centrar el mapa en el nuevo marcador
+                map.setView([lat, lon], 12);
 
                 // Crear el nombre del marcador
                 currentLabel = L.marker([lat, lon], {
@@ -133,9 +140,17 @@
                     radius800Layer.removeLayer(radius800m);
                     radius800m = null;
                 }
-                if (radiusCutLayer) {
-                    radiusCutLayer.clearLayers(); // Limpiar la capa de recorte
+
+                // Eliminar la capa de diferencia si existe
+                if (differenceLayer) {
+                    differenceLayerGroup.removeLayer(differenceLayer);
+                    differenceLayer = null;
                 }
+
+                // Limpiar los cuadros de coordenadas
+                document.getElementById('lat').value = '';
+                document.getElementById('lon').value = '';
+                document.getElementById('markerName').value = '';
             }
         }
 
@@ -153,18 +168,6 @@
                 if (radius === 400) {
                     radius400Layer.addLayer(circle);
                     radius400m = circle;
-
-                    // Crear el recorte del círculo de 800 usando el de 400
-                    if (radius800m) {
-                        var cutCircle = L.circle(latLng, {
-                            color: 'green',
-                            fillOpacity: 0.1,
-                            radius: 800
-                        }).addTo(radiusCutLayer);
-
-                        // Agregar lógica para recortar el círculo de 800
-                        var cutPolygon = L.polygon(calculateCutPolygon(latLng, 400)).addTo(radiusCutLayer);
-                    }
                 } else if (radius === 800) {
                     radius800Layer.addLayer(circle);
                     radius800m = circle;
@@ -174,18 +177,77 @@
             }
         }
 
-        // Función para calcular los puntos del polígono de recorte
-        function calculateCutPolygon(center, radius) {
-            var points = [];
-            for (var angle = 0; angle < 360; angle += 10) {
-                var rad = angle * (Math.PI / 180);
-                var point = [
-                    center.lat + (radius / 111320) * Math.cos(rad), // Aproximación de latitud
-                    center.lng + (radius / (111320 * Math.cos(center.lat * (Math.PI / 180)))) * Math.sin(rad) // Aproximación de longitud
-                ];
-                points.push(point);
+        // Función para calcular la diferencia entre dos círculos
+        function calculateDifference() {
+            if (currentMarker && radius400m && radius800m) {
+                var latLng = currentMarker.getLatLng();
+                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+
+                // Calcular la diferencia
+                var difference = turf.difference(circle800, circle400);
+
+                // Convertir a GeoJSON
+                var geoJson = turf.featureCollection([difference]);
+
+                // Agregar la capa de diferencia al grupo de capas
+                if (differenceLayer) {
+                    differenceLayerGroup.removeLayer(differenceLayer);
+                }
+                differenceLayer = L.geoJSON(geoJson, {
+                    style: {
+                        color: 'green',
+                        weight: 2,
+                        fillOpacity: 0.5
+                    }
+                }).addTo(differenceLayerGroup);
+            } else {
+                alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
-            return points;
+        }
+
+        // Función para procesar AGEB
+        function processAGEB() {
+            if (currentMarker && radius400m) {
+                var latLng = currentMarker.getLatLng();
+                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+
+                // Cargar las capas de AGEB
+                Promise.all([
+                    fetch('Ageb_urb_CDMX.geojson').then(response => response.json()),
+                    fetch('Ageb_urb_Edo_Mex.geojson').then(response => response.json())
+                ]).then(([agebCDMX, agebEdoMex]) => {
+                    // Combinar las capas de AGEB
+                    var combinedAGEB = turf.featureCollection([
+                        ...agebCDMX.features,
+                        ...agebEdoMex.features
+                    ]);
+
+                    // Recortar la capa de AGEB
+                    var clippedAGEB = turf.intersect(combinedAGEB, circle400);
+
+                    // Guardar la geometría resultante en un archivo GeoJSON
+                    var geoJson = turf.featureCollection(clippedAGEB.features);
+                    console.log(geoJson); // Aquí puedes guardar el GeoJSON en un archivo si es necesario
+
+                    // Calcular áreas
+                    var areas = clippedAGEB.features.map(feature => turf.area(feature));
+                    console.log("Áreas de los polígonos resultantes:", areas);
+
+                    // Agregar la capa recortada al mapa
+                    L.geoJSON(clippedAGEB, {
+                        style: {
+                            color: 'orange',
+                            weight: 2,
+                            fillOpacity: 0.5
+                        }
+                    }).addTo(map);
+                }).catch(err => {
+                    console.error('Error al cargar las capas de AGEB:', err);
+                });
+            } else {
+                alert("Asegúrese de que el marcador y el radio de 400m estén creados.");
+            }
         }
 
         // Cargar capas GeoJSON
@@ -234,10 +296,12 @@
         var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
         var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
 
-        // Agregar los grupos de capas de radios a los controladores
-        layerControlBase.addOverlay(radius400Layer, "Radio 400m");
-        layerControlBase.addOverlay(radius800Layer, "Radio 800m");
-        layerControlBase.addOverlay(radiusCutLayer, "Recorte 800m - 400m");
+        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
+        var layerControlRadios = L.control.layers(null, {
+            "Radio 400m": radius400Layer,
+            "Radio 800m": radius800Layer,
+            "Diferencia entre Círculos": differenceLayerGroup
+        }, { collapsed: true }).addTo(map);
 
         // Función para actualizar los controladores de capas
         function updateLayerControls() {
