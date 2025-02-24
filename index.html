@@ -267,6 +267,9 @@
             // Crear un nuevo feature collection solo con geometrías válidas
             var validAGEB = turf.featureCollection(validFeatures);
 
+            // Imprimir las geometrías válidas antes de la intersección
+            console.log('Geometrías válidas para la intersección:', validAGEB.features);
+
             // Recortar la capa de AGEB
             var clippedAGEB = turf.intersect(validAGEB, circle);
             if (!clippedAGEB || !clippedAGEB.features.length) {
