@@ -250,7 +250,8 @@
                     console.log('Geometría no válida:', feature.geometry);
                     return false; // Filtrar geometrías no válidas
                 }
-                return turf.booleanValid(feature.geometry); // Verificar si la geometría es válida
+                // Verificar si la geometría tiene coordenadas válidas
+                return feature.geometry.coordinates.length > 0; // Asegúrate de que las coordenadas no estén vacías
             });
 
             // Si no hay geometrías válidas, salir
