@@ -249,7 +249,7 @@
             for (var feature of combinedAGEB.features) {
                 if (!feature.geometry || (feature.geometry.type !== 'Polygon' && feature.geometry.type !== 'MultiPolygon')) {
                     console.log('Geometría no válida:', feature.geometry);
-                    return;
+                    return; // Salir si hay una geometría no válida
                 }
             }
 
