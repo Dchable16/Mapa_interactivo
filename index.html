@@ -78,6 +78,9 @@
         var radius400m = null;
         var radius800m = null;
 
+        // Variable para almacenar el radio seleccionado
+        var selectedRadius = 400; // Valor por defecto
+
         // Crear grupos de capas para los radios y la diferencia
         var radius400Layer = L.layerGroup().addTo(map);
         var radius800Layer = L.layerGroup().addTo(map);
@@ -156,6 +159,7 @@
 
         // Función para agregar radios
         function addRadius(radius) {
+            selectedRadius = radius; // Actualizar el radio seleccionado
             if (currentMarker) {
                 var latLng = currentMarker.getLatLng();
                 var circle = L.circle(latLng, {
@@ -208,9 +212,10 @@
 
         // Función para procesar AGEB
         function processAGEB() {
-            if (currentMarker && radius400m) {
+            if (currentMarker && selectedRadius) {
                 var latLng = currentMarker.getLatLng();
-                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                // Usar el radio seleccionado para generar el círculo
+                var circle = turf.circle([latLng.lng, latLng.lat], selectedRadius, { units: 'meters' });
 
                 // Cargar las capas de AGEB
                 Promise.all([
@@ -231,19 +236,14 @@
                         ...agebEdoMex.features
                     ]);
 
-                    // Verificar geometrías
+                    // Verificar geometrías antes de la intersección
                     if (combinedAGEB.features.length === 0) {
                         console.log('No hay geometrías en combinedAGEB.');
                         return;
                     }
 
-                    if (!circle400 || !circle400.geometry) {
-                        console.log('El círculo no es válido:', circle400);
-                        return;
-                    }
-
                     // Recortar la capa de AGEB
-                    var clippedAGEB = turf.intersect(combinedAGEB, circle400);
+                    var clippedAGEB = turf.intersect(combinedAGEB, circle);
                     if (!clippedAGEB || !clippedAGEB.features.length) {
                         console.log('No se encontraron intersecciones válidas.');
                         return;
@@ -281,7 +281,7 @@
                     console.error('Error al cargar las capas de AGEB:', err);
                 });
             } else {
-                alert("Asegúrese de que el marcador y el radio de 400m estén creados.");
+                alert("Asegúrese de que el marcador y el radio estén creados.");
             }
         }
 
