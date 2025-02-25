@@ -150,6 +150,10 @@
                     differenceLayer = null;
                 }
 
+                // Eliminar las capas de extracción si existen
+                bufferLayerGroup.clearLayers(); // Eliminar todas las capas de buffer
+                differenceExtractionLayerGroup.clearLayers(); // Eliminar todas las capas de diferencia
+                
                 // Limpiar los cuadros de coordenadas
                 document.getElementById('lat').value = '';
                 document.getElementById('lon').value = '';
