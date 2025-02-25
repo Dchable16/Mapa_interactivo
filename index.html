@@ -223,6 +223,8 @@ function extractBufferData() {
                 var featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                     var intersection = turf.intersect(feature, buffer);
                     if (intersection) {
+                        // Añadir propiedades del polígono original
+                        intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
                         return intersection;
                     }
                     return null;
@@ -280,6 +282,9 @@ function extractDifferenceData() {
                         try {
                             var intersection = turf.intersect(feature, difference);
                             if (intersection) {
+                                 // Añadir propiedades del polígono original
+                                intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
+                                return intersection; // Retornar solo si hay intersecció
                                 return intersection; // Retornar solo si hay intersección
                             }
                         } catch (error) {
