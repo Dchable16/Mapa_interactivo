@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa Interactivo</title>
@@ -44,7 +44,8 @@
         <button onclick="addRadius(400)">Agregar Radio 400m</button>
         <button onclick="addRadius(800)">Agregar Radio 800m</button>
         <button onclick="calculateDifference()">Calcular Diferencia</button>
-        <button onclick="processAGEB()">Procesar AGEB</button>
+        <button onclick="extractBufferData()">Extraer Información Ageb - Buffer</button>
+        <button onclick="extractDifferenceData()">Extraer Información Ageb - Diferencia</button>
     </div>
     <div id="map"></div>
 
@@ -78,13 +79,12 @@
         var radius400m = null;
         var radius800m = null;
 
-        // Variable para almacenar el radio seleccionado
-        var selectedRadius = 400; // Valor por defecto
-
         // Crear grupos de capas para los radios y la diferencia
         var radius400Layer = L.layerGroup().addTo(map);
         var radius800Layer = L.layerGroup().addTo(map);
         var differenceLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de diferencia
+        var bufferLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de buffer
+        var differenceExtractionLayerGroup = L.layerGroup().addTo(map); // Grupo para la extracción de diferencia
 
         // Función para agregar un marcador
         function addMarker() {
@@ -159,7 +159,6 @@
 
         // Función para agregar radios
         function addRadius(radius) {
-            selectedRadius = radius; // Actualizar el radio seleccionado
             if (currentMarker) {
                 var latLng = currentMarker.getLatLng();
                 var circle = L.circle(latLng, {
@@ -210,83 +209,116 @@
             }
         }
 
-        function processAGEB() {
-    if (currentMarker && selectedRadius) {
-        var latLng = currentMarker.getLatLng();
+        // Función para extraer información de las capas Ageb - Buffer
+function extractBufferData() {
+    if (currentMarker) {
+        var lat = parseFloat(document.getElementById('lat').value);
+        var lon = parseFloat(document.getElementById('lon').value);
+        var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
 
-        // Asegúrate de que la capa de diferencia ya esté disponible
-        if (!differenceLayer || !differenceLayer.getLayers().length) {
-            console.log('La capa de diferencia no está disponible.');
-            return;
-        }
+        fetch(selectedLayer)
+            .then(response => response.json())
+            .then(data => {
+                var buffer = turf.circle([lon, lat], 400, { units: 'meters' });
+                var featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
+                    var intersection = turf.intersect(feature, buffer);
+                    if (intersection) {
+                        return intersection;
+                    }
+                    return null;
+                }).filter(feature => feature !== null));
 
-        // Obtener la geometría de la capa de diferencia
-        var difference = differenceLayer.toGeoJSON(); // Convertir la capa de diferencia a GeoJSON
+                // Calcular áreas de los polígonos resultantes
+                var areasBuffer = featuresWithinBuffer.features.map(feature => turf.area(feature));
+                featuresWithinBuffer.features.forEach((feature, index) => {
+                    feature.properties.area = areasBuffer[index]; // Añadir área como propiedad
+                });
 
-        // Cargar las capas de AGEB
-        Promise.all([
-            fetch('Ageb_urb_CDMX.geojson').then(response => {
-                if (!response.ok) throw new Error('Error al cargar Ageb_urb_CDMX.geojson');
-                return response.json();
-            }),
-            fetch('Ageb_urb_Edo_Mex.geojson').then(response => {
-                if (!response.ok) throw new Error('Error al cargar Ageb_urb_Edo_Mex.geojson');
-                return response.json();
+                var geoJsonResultBuffer = turf.featureCollection(featuresWithinBuffer.features);
+                var extractedBufferLayer = L.geoJSON(geoJsonResultBuffer, {
+                    style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
+                    onEachFeature: function (feature, layer) {
+                        layer.on('click', function () {
+                            var properties = feature.properties;
+                            var popupContent = "<b>Atributos:</b><br>";
+                            for (var key in properties) {
+                                popupContent += key + ": " + properties[key] + "<br>";
+                            }
+                            layer.bindPopup(popupContent).openPopup();
+                        });
+                    }
+                }).addTo(bufferLayerGroup);
             })
-        ]).then(([agebCDMX, agebEdoMex]) => {
-            console.log('Capas de AGEB cargadas correctamente.');
-
-            // Combinar las capas de AGEB
-            var combinedAGEB = turf.featureCollection([
-                ...agebCDMX.features,
-                ...agebEdoMex.features
-            ]);
-
-            console.log(combinedAGEB); // Verifica las geometrías combinadas
-
-            // Recortar la capa de AGEB usando la diferencia
-            var clippedAGEB = turf.intersect(combinedAGEB, difference);
-            if (!clippedAGEB || !clippedAGEB.features.length) {
-                console.log('No se encontraron intersecciones válidas.');
-                return;
-            }
-
-            // Guardar la geometría resultante en un archivo GeoJSON
-            var geoJson = turf.featureCollection(clippedAGEB.features);
-            console.log(geoJson);
-
-            // Crear un Blob y un enlace para descargar el archivo GeoJSON
-            var blob = new Blob([JSON.stringify(geoJson)], { type: 'application/json' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'clipped_ageb.geojson'; // Nombre del archivo a descargar
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url); // Liberar el objeto URL
-
-            // Calcular áreas y almacenarlas
-            var areas = clippedAGEB.features.map(feature => turf.area(feature));
-            console.log("Áreas de los polígonos resultantes:", areas);
-            alert("Áreas de los polígonos resultantes: " + areas.join(", ") + " metros cuadrados.");
-
-            // Agregar la capa recortada al mapa
-            L.geoJSON(clippedAGEB, {
-                style: {
-                    color: 'orange',
-                    weight: 2,
-                    fillOpacity: 0.5
-                }
-            }).addTo(map);
-        }).catch(err => {
-            console.error('Error al cargar las capas de AGEB:', err);
-        });
+            .catch(err => console.error('Error al cargar la capa base:', err));
     } else {
-        alert("Asegúrese de que el marcador y el radio estén creados.");
+        alert("Primero debe agregar un marcador.");
     }
 }
 
+// Función para extraer información de las capas Ageb - Diferencia
+function extractDifferenceData() {
+    if (currentMarker) {
+        var latLng = currentMarker.getLatLng();
+        var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+        var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+
+        // Calcular la diferencia (la "dona")
+        var difference = turf.difference(circle800, circle400);
+
+        if (difference) {
+            var lat = parseFloat(document.getElementById('lat').value);
+            var lon = parseFloat(document.getElementById('lon').value);
+            var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+
+            fetch(selectedLayer)
+                .then(response => response.json())
+                .then(data => {
+                    // Extraer características que intersectan con la diferencia
+                    var featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
+                        try {
+                            var intersection = turf.intersect(feature, difference);
+                            if (intersection) {
+                                return intersection; // Retornar solo si hay intersección
+                            }
+                        } catch (error) {
+                            console.error("Error de intersección:", error);
+                        }
+                        return null; // Retornar null si no hay intersección
+                    }).filter(feature => feature !== null)); // Filtrar los nulls
+
+                    if (featuresWithinDifference.features.length > 0) {
+                        // Calcular áreas de los polígonos resultantes
+                        var areasDifference = featuresWithinDifference.features.map(feature => turf.area(feature));
+                        featuresWithinDifference.features.forEach((feature, index) => {
+                            feature.properties.area = areasDifference[index]; // Añadir área como propiedad
+                        });
+
+                        var geoJsonResultDifference = turf.featureCollection(featuresWithinDifference.features);
+                        var extractedDifferenceLayer = L.geoJSON(geoJsonResultDifference, {
+                            style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
+                            onEachFeature: function (feature, layer) {
+                                layer.on('click', function () {
+                                    var properties = feature.properties;
+                                    var popupContent = "<b>Atributos:</b><br>";
+                                    for (var key in properties) {
+                                        popupContent += key + ": " + properties[key] + "<br>";
+                                    }
+                                    layer.bindPopup(popupContent).openPopup();
+                                });
+                            }
+                        }).addTo(differenceExtractionLayerGroup);
+                    } else {
+                        alert("No se encontraron polígonos que intersecten con la diferencia.");
+                    }
+                })
+                .catch(err => console.error('Error al cargar la capa base:', err));
+        } else {
+            alert("No se pudo calcular la diferencia entre los círculos.");
+        }
+    } else {
+        alert("Asegúrese de que el marcador esté creado.");
+    }
+}
         // Cargar capas GeoJSON
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
@@ -337,7 +369,9 @@
         var layerControlRadios = L.control.layers(null, {
             "Radio 400m": radius400Layer,
             "Radio 800m": radius800Layer,
-            "Diferencia entre Círculos": differenceLayerGroup
+            "Diferencia entre Círculos": differenceLayerGroup,
+            "Extracción Ageb - Buffer": bufferLayerGroup,
+            "Extracción Ageb - Diferencia": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
 
         // Función para actualizar los controladores de capas
