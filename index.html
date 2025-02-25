@@ -229,7 +229,9 @@ function extractBufferData() {
                 }).filter(feature => feature !== null));
 
                 // Calcular áreas de los polígonos resultantes
+                console.log("Características dentro del buffer:", featuresWithinBuffer.features);
                 var areasBuffer = featuresWithinBuffer.features.map(feature => Math.floor(turf.area(feature)));
+                console.log("Áreas calculadas del buffer:", areasBuffer);
                 featuresWithinBuffer.features.forEach((feature, index) => {
                     feature.properties.area = areasBuffer[index]; // Añadir área como propiedad
                 });
@@ -288,7 +290,9 @@ function extractDifferenceData() {
 
                     if (featuresWithinDifference.features.length > 0) {
                         // Calcular áreas de los polígonos resultantes
+                        console.log("Características dentro de la diferencia:", featuresWithinDifference.features);
                         var areasDifference = featuresWithinDifference.features.map(feature => Math.floor(turf.area(feature)));
+                        console.log("Áreas calculadas de la diferencia:", areasDifference);
                         featuresWithinDifference.features.forEach((feature, index) => {
                             feature.properties.area = areasDifference[index]; // Añadir área como propiedad
                         });
