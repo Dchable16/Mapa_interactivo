@@ -86,6 +86,13 @@
         var bufferLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de buffer
         var differenceExtractionLayerGroup = L.layerGroup().addTo(map); // Grupo para la extracción de diferencia
 
+        // variables para confirmar si ya se crearon los radios
+        var radius400Created = false;
+        var radius800Created = false;
+        var differenceCreated = false;
+        var bufferDataExtracted = false;
+        var differenceDataExtracted = false;
+
         // Función para agregar un marcador
         function addMarker() {
             var lat = parseFloat(document.getElementById('lat').value);
@@ -164,6 +171,10 @@
         // Función para agregar radios
         function addRadius(radius) {
             if (currentMarker) {
+                if ((radius === 400 && radius400Created) || (radius === 800 && radius800Created)) {
+                    alert("El radio ya ha sido creado.");
+                    return;
+                }
                 var latLng = currentMarker.getLatLng();
                 var circle = L.circle(latLng, {
                     color: radius === 400 ? 'blue' : 'red',
@@ -187,6 +198,10 @@
         // Función para calcular la diferencia entre dos círculos
         function calculateDifference() {
             if (currentMarker && radius400m && radius800m) {
+                if (differenceCreated) {
+                    alert("La diferencia ya ha sido calculada.");
+                    return;
+            }
                 var latLng = currentMarker.getLatLng();
                 var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
