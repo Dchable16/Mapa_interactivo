@@ -9,116 +9,109 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
         <style>
-        /* Estilos generales para el mapa y los marcadores */
-        html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: 100%; }
-        .yellow-marker {
-            background-color: #fff201;
-            border: 3px solid black;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-        }
-        .marker-label {
-            position: absolute;
-            top: -40px;
-            left: 25px;
-            color: black;
-            text-shadow: 0 0 2px yellow;
-            font-weight: bold;
-            font-size: 13px;
-        }
-        /* Estilos para el formulario */
-        .form-container {
-            background-color: rgb(248, 248, 255);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin: 10px; /* Ajuste de margen */
-            max-width: 1024px; /* Limitar el ancho máximo */
-            margin: 20px auto; /* Centrar el formulario */
-        }
-        .form-container label {
-            color: rgb(50, 205, 50);
-            font-weight: bold;
-        }
-        .form-container input {
-            margin-bottom: 10px;
-            padding: 5px;
-            border: 1px solid rgb(50, 205, 50);
-            border-radius: 5px;
-            width: calc(100% - 12px);
-        }
-        .form-container button {
-            background-color: rgb(230, 25, 25);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-        }
-        .form-container button:hover {
-            background-color: rgb(200, 25, 25);
-        }
-        .form-container {
-            background-color: rgb(248, 248, 255);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin: 10px auto;
-            max-width: 600px; /* Ancho máximo base */
-                    
-        /* Estilo para el contenedor de botones */
-        .button-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        /* Estilo para el logotipo */
-        .logo {
-            display: block;
-            margin: 0 auto 20px;
-            width: 120px; /* Ajuste de tamaño */
-        }
-        /* Estilo para centrar el título */
-        .centered-title {
-            text-align: center;
-            margin: 20px 0;
-        }
-        /* Estilo para las filas del formulario */
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .form-column {
-            display: flex;
-            flex-direction: column;
-        }
-    
-        /* Media queries para diseño responsivo */
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr; /* Apilar en una columna */
+            /* Estilos generales para el mapa y los marcadores */
+            html, body { height: 100%; margin: 0; }
+            #map { width: 100%; height: 100%; }
+            .yellow-marker {
+                background-color: #fff201;
+                border: 3px solid black;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: inline-block;
             }
+            .marker-label {
+                position: absolute;
+                top: -40px;
+                left: 25px;
+                color: black;
+                text-shadow: 0 0 2px yellow;
+                font-weight: bold;
+                font-size: 13px;
+            }
+            /* Estilos para el formulario */
+            .form-container {
+                background-color: rgb(248, 248, 255);
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                margin: 20px auto; /* Centrar el formulario */
+                max-width: 600px; /* Ancho máximo base */
+            }
+            .form-container label {
+                color: rgb(50, 205, 50);
+                font-weight: bold;
+            }
+            .form-container input {
+                margin-bottom: 10px;
+                padding: 5px;
+                border: 1px solid rgb(50, 205, 50);
+                border-radius: 5px;
+                width: calc(100% - 12px);
+            }
+            .form-container button {
+                background-color: rgb(230, 25, 25);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 10px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: bold;
+            }
+            .form-container button:hover {
+                background-color: rgb(200, 25, 25);
+            }
+            /* Estilo para el contenedor de botones */
             .button-container {
-                grid-template-columns: 1fr; /* Apilar botones */
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
             }
+            /* Estilo para el logotipo */
             .logo {
-                width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
+                display: block;
+                margin: 0 auto 20px;
+                width: 120px; /* Ajuste de tamaño */
             }
-            body {
-                padding: 6px; /* Añadir padding alrededor del contenido */
-                margin: 0; /* Asegurar que no haya márgenes predeterminados */
-                height: 100%; /* Asegurar que el body ocupe toda la altura */
+            /* Estilo para centrar el título */
+            .centered-title {
+                text-align: center;
+                margin: 20px 0;
             }
-            #map {
-                width: 100%; /* Reducir el ancho del mapa */
-                height: 100%;
+            /* Estilo para las filas del formulario */
+            .form-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
             }
+            .form-column {
+                display: flex;
+                flex-direction: column;
+            }
+        
+            /* Media queries para diseño responsivo */
+            @media (max-width: 768px) {
+                .form-row {
+                    grid-template-columns: 1fr; /* Apilar en una columna */
+                }
+                .button-container {
+                    grid-template-columns: 1fr; /* Apilar botones */
+                }
+                .logo {
+                    width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
+                }
+                body {
+                    padding: 6px; /* Añadir padding alrededor del contenido */
+                    margin: 0; /* Asegurar que no haya márgenes predeterminados */
+                    height: 100%; /* Asegurar que el body ocupe toda la altura */
+                }
+                #map {
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        
             /* Ajustes para pantallas más grandes (computadoras) */
             @media (min-width: 1024px) {
                 .form-container {
@@ -130,11 +123,10 @@
                     font-size: 16px; /* Aumentar el tamaño de la fuente */
                 }
                 .logo {
-                  width: 60px; /* Aumentar el tamaño del logo */
+                    width: 200px; /* Aumentar el tamaño del logo */
                 }
             }
-        }
-    </style>
+        </style>
 </head>
 <body>
     <div class="header-container">
