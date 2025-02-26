@@ -67,7 +67,40 @@
         var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
             attribution: "Google"
         });
+        // Función para cargar capas de Uso_suelo bajo demanda
+        function loadUsoSueloLayer(layerName) {
+            const urlMapping = {
+                "Centro Barrio": 'Uso_suelo_centro_barrio.geojson',
+                "Equipamento": 'Uso_suelo_equipamento.geojson',
+                "Habitacional Comercio": 'Uso_suelo_habitacional_comercio.geojson',
+                "Planta Baja": 'Uso_suelo_habitacional_comercio_planta_baja.geojson',
+                "Entrada": 'Uso_suelo_habitacional_entrada.geojson',
+                "Mixto": 'Uso_suelo_habitacional_mixto.geojson',
+                "Oficinas": 'Uso_suelo_habitacional_oficinas.geojson',
+                "Plurifamiliar": 'Uso_suelo_habitacional_plurifamiliar.geojson',
+            };
 
+            const url = urlMapping[layerName];
+            if (url) {
+                loadGeoJSON(url, layerName, 'UsoSuelo');
+            } else {
+                console.error("Capa no encontrada:", layerName);
+            }
+        }
+
+        // Modificar el controlador de capas para incluir opciones de carga bajo demanda
+        var layerControlUsoSuelo = L.control.layers(null, {}, { collapsed: true }).addTo(map);
+
+        // Agregar opciones de carga bajo demanda al controlador
+        Object.keys(urlMapping).forEach(layerName => {
+            layerControlUsoSuelo.addOverlay(L.layerGroup(), layerName, {
+                // Al seleccionar la capa, cargarla
+                onAdd: function() {
+                    loadUsoSueloLayer(layerName);
+                }
+            });
+        });           
+      
         // Objetos para almacenar las capas GeoJSON
         var geoJsonLayersAgeb = {};
         var geoJsonLayersUsoSuelo = {};
