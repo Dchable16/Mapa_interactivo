@@ -434,6 +434,7 @@
             }
         }
 
+        // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
                 .then(response => response.json())
@@ -464,45 +465,45 @@
                                 color = 'rgb(135, 206, 235)'; // Azul Cielo
                             } else if (url.includes('Ageb_urb_Edo_Mex.geojson')) {
                                 color = 'rgb(128, 128, 0)'; // Verde Oliva
-                        }
-                        break;
-                    default:
-                        color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
-                }
-
-                var geoJsonLayer = L.geoJSON(data, {
-                    style: {
-                        color: color,
-                        weight: 2,
-                        fillOpacity: 0.5
-                    },
-                    onEachFeature: function (feature, layer) {
-                        // Mostrar los atributos en un popup al hacer clic
-                        layer.on('click', function () {
-                            var properties = feature.properties;
-                            var popupContent = "<b>Atributos:</b><br>";
-                            for (var key in properties) {
-                            popupContent += key + ": " + properties[key] + "<br>";
                             }
-                            layer.bindPopup(popupContent).openPopup();
-                        });
+                            break;
+                        default:
+                            color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
                     }
-                });
 
-                // Agregar la capa al objeto correspondiente según el tipo
-                if (type === 'Ageb') {
-                    geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                } else if (type === 'UsoSuelo') {
-                    geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                } else if (type === 'AlcaldiasMunicipios') {
-                    geoJsonLayersAlcaldias[layerName] = geoJsonLayer; // Agregar a alcaldías
-                }
+                    var geoJsonLayer = L.geoJSON(data, {
+                        style: {
+                            color: color,
+                            weight: 2,
+                            fillOpacity: 0.5
+                        },
+                        onEachFeature: function (feature, layer) {
+                            // Mostrar los atributos en un popup al hacer clic
+                            layer.on('click', function () {
+                                var properties = feature.properties;
+                                var popupContent = "<b>Atributos:</b><br>";
+                                for (var key in properties) {
+                                    popupContent += key + ": " + properties[key] + "<br>";
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    });
 
-                // Actualizar los controladores de capas
-                updateLayerControls();
-            })
-            .catch(err => console.error('Error al cargar GeoJSON:', err));
-    }
+                    // Agregar la capa al objeto correspondiente según el tipo
+                    if (type === 'Ageb') {
+                        geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                    } else if (type === 'UsoSuelo') {
+                        geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                    } else if (type === 'AlcaldiasMunicipios') {
+                        geoJsonLayersAlcaldias[layerName] = geoJsonLayer; // Agregar a alcaldías
+                    }
+
+                    // Actualizar los controladores de capas
+                    updateLayerControls();
+                })
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
+        }
 
         // Controladores de capas
         var baseMaps = {
