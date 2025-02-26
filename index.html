@@ -366,27 +366,7 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    // Obtener el bbox actual del mapa
-                    var bounds = map.getBounds();
-                    var bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
-
-                    // Simplificar y recortar las geometrías
-                    var simplifiedFeatures = data.features.map(feature => {
-                        // Simplificar la geometría
-                        var simplifiedGeometry = turf.simplify(feature.geometry, { tolerance: 0.01, highQuality: false });
-                        // Recortar la geometría al bbox
-                        var clippedGeometry = turf.bboxClip(simplifiedGeometry, bbox);
-                        return {
-                            type: "Feature",
-                            properties: feature.properties,
-                            geometry: clippedGeometry
-                        };
-                    });
-
-                    var geoJsonLayer = L.geoJSON({
-                        type: "FeatureCollection",
-                        features: simplifiedFeatures
-                    }, {
+                    var geoJsonLayer = L.geoJSON(data, {
                         onEachFeature: function (feature, layer) {
                             // Mostrar los atributos en un popup al hacer clic
                             layer.on('click', function () {
@@ -447,54 +427,18 @@
             layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar nuevamente
         }
 
-        // Evento para actualizar las capas de Uso_suelo al mover o hacer zoom en el mapa
-        map.on('moveend', function() {
-            // Limpiar las capas de Uso_suelo actuales
-            Object.values(geoJsonLayersUsoSuelo).forEach(layer => {
-                map.removeLayer(layer);
-            });
-            geoJsonLayersUsoSuelo = {}; // Reiniciar el objeto de capas de Uso_suelo
-
-            // Cargar nuevamente las capas de Uso_suelo visibles
-            Object.keys(urlMapping).forEach(layerName => {
-                loadUsoSueloLayer(layerName);
-            });
-        });
-
-        // Función para cargar capas de Uso_suelo bajo demanda
-        function loadUsoSueloLayer(layerName) {
-            const urlMapping = {
-                "Centro Barrio": 'Uso_suelo_centro_barrio.geojson',
-                "Equipamento": 'Uso_suelo_equipamento.geojson',
-                "Habitacional Comercio": 'Uso_suelo_habitacional_comercio.geojson',
-                "Planta Baja": 'Uso_suelo_habitacional_comercio_planta_baja.geojson',
-                "Entrada": 'Uso_suelo_habitacional_entrada.geojson',
-                "Mixto": 'Uso_suelo_habitacional_mixto.geojson',
-                "Oficinas": 'Uso_suelo_habitacional_oficinas.geojson',
-                "Plurifamiliar": 'Uso_suelo_habitacional_plurifamiliar.geojson',
-            };
-
-            const url = urlMapping[layerName];
-            if (url) {
-                loadGeoJSON(url, layerName, 'UsoSuelo');
-            } else {
-                console.error("Capa no encontrada:", layerName);
-            }
-        }
-
         // Llama a la función para cargar tus archivos GeoJSON
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Capa CDMX', 'Ageb');
         loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Capa Edo Mex', 'Ageb');
 
-        // Carga inicial de capas de Uso_suelo (puedes quitar esto si usas carga bajo demanda)
-        loadUsoSueloLayer('Centro Barrio');
-        loadUsoSueloLayer('Equipamento');
-        loadUsoSueloLayer('Habitacional Comercio');
-        loadUsoSueloLayer('Planta Baja');
-        loadUsoSueloLayer('Entrada');
-        loadUsoSueloLayer('Mixto');
-        loadUsoSueloLayer('Oficinas');
-        loadUsoSueloLayer('Plurifamiliar');
+        loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Capa Centro Barrio', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_equipamento.geojson', 'Capa Equipamento', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Capa Habitacional Comercio', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Capa Planta Baja', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_entrada.geojson', 'Capa Entrada', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Capa Mixto', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Capa Oficinas', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Capa Plurifamiliar', 'UsoSuelo');
 
         // Nuevas capas de alcaldías
         loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Capa Alcaldías CDMX', 'AlcaldiasMunicipios');
@@ -515,4 +459,5 @@
     </script>
 </body>
 </html>
+
 
