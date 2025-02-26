@@ -441,6 +441,9 @@
                 .then(data => {
                     var color;
                     // Asignar el color según el tipo de capa
+                    
+                    console.log("Cargando capa de tipo:", type);
+                    
                     switch (type) {
                         case 'UsoSuelo':
                             color = 'rgb(128, 0, 128)'; // Violeta
