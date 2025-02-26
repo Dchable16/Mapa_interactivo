@@ -434,39 +434,75 @@
             }
         }
 
-        // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    var geoJsonLayer = L.geoJSON(data, {
-                        onEachFeature: function (feature, layer) {
-                            // Mostrar los atributos en un popup al hacer clic
-                            layer.on('click', function () {
-                                var properties = feature.properties;
-                                var popupContent = "<b>Atributos:</b><br>";
-                                for (var key in properties) {
-                                    popupContent += key + ": " + properties[key] + "<br>";
-                                }
-                                layer.bindPopup(popupContent).openPopup();
-                            });
+                    var color;
+                    // Asignar el color según el tipo de capa
+                    switch (type) {
+                        case 'UsoSuelo':
+                            color = 'rgb(128, 0, 128)'; // Violeta
+                            break;
+                        case 'Poligono':
+                            color = 'rgb(255, 127, 80)'; // Coral
+                            break;
+                        case 'Col':
+                            color = 'rgb(0, 150, 136)'; // Verde Esmeralda
+                            break;
+                        case 'Region_Vallejo':
+                            color = 'rgb(204, 85, 0)'; // Naranja Quemado
+                            break;
+                        case 'Municip_Estado_de_Mexico':
+                            color = 'rgb(255, 255, 0)'; // Amarillo Limón
+                            break;
+                        case 'Alcaldias_Ciudad_de_México':
+                            color = 'rgb(230, 230, 250)'; // Lavanda
+                            break;
+                        case 'Ageb':
+                            if (url.includes('Ageb_urb_CDMX.geojson')) {
+                                color = 'rgb(135, 206, 235)'; // Azul Cielo
+                            } else if (url.includes('Ageb_urb_Edo_Mex.geojson')) {
+                                color = 'rgb(128, 128, 0)'; // Verde Oliva
                         }
-                    });
+                        break;
+                    default:
+                        color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
+                }
 
-                    // Agregar la capa al objeto correspondiente según el tipo
-                    if (type === 'Ageb') {
-                        geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                    } else if (type === 'UsoSuelo') {
-                        geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                    } else if (type === 'AlcaldiasMunicipios') {
-                        geoJsonLayersAlcaldias[layerName] = geoJsonLayer; // Agregar a alcaldías
+                var geoJsonLayer = L.geoJSON(data, {
+                    style: {
+                        color: color,
+                        weight: 2,
+                        fillOpacity: 0.5
+                    },
+                    onEachFeature: function (feature, layer) {
+                        // Mostrar los atributos en un popup al hacer clic
+                        layer.on('click', function () {
+                            var properties = feature.properties;
+                            var popupContent = "<b>Atributos:</b><br>";
+                            for (var key in properties) {
+                            popupContent += key + ": " + properties[key] + "<br>";
+                            }
+                            layer.bindPopup(popupContent).openPopup();
+                        });
                     }
+                });
 
-                    // Actualizar los controladores de capas
-                    updateLayerControls();
-                })
-                .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
+                // Agregar la capa al objeto correspondiente según el tipo
+                if (type === 'Ageb') {
+                    geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                } else if (type === 'UsoSuelo') {
+                    geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                } else if (type === 'AlcaldiasMunicipios') {
+                    geoJsonLayersAlcaldias[layerName] = geoJsonLayer; // Agregar a alcaldías
+                }
+
+                // Actualizar los controladores de capas
+                updateLayerControls();
+            })
+            .catch(err => console.error('Error al cargar GeoJSON:', err));
+    }
 
         // Controladores de capas
         var baseMaps = {
