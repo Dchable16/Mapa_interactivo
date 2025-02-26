@@ -60,27 +60,42 @@
         }
         .form-container button:hover {
             background-color: rgb(200, 25, 25); /* Rojo más oscuro al pasar el mouse */
+
+        /* Estilo para el contenedor de botones */
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Dos columnas de igual ancho */
+            gap: 10px; /* Espacio entre los botones */
+        }
+        /* Estilo para el logotipo */
+        .logo {
+            display: block;
+            margin: 0 auto 20px; /* Centrar y dar margen inferior */
+            width: 150px; /* Ajustar el tamaño según sea necesario */
         }
     </style>
 </head>
 <body>
     <h1>Mapa Interactivo</h1>
-    <div class="form-container">
-        <label for="lat">Latitud:</label>
-        <input type="text" id="lat" value="19.4326">
-        <label for="lon">Longitud:</label>
-        <input type="text" id="lon" value="-99.1332">
-        <label for="markerName">Nombre del Marcador:</label>
-        <input type="text" id="markerName" value="Marcador Manual">
-        <button onclick="addMarker()">Agregar Marcador</button>
-        <button onclick="removeMarker()">Eliminar Marcador</button>
-        <button onclick="addRadius(400)">Agregar Radio 400m</button>
-        <button onclick="addRadius(800)">Agregar Radio 800m</button>
-        <button onclick="calculateDifference()">Calcular Diferencia</button>
-        <button onclick="extractBufferData()">Extraer Información Ageb - Buffer</button>
-        <button onclick="extractDifferenceData()">Extraer Información Ageb - Diferencia</button>
-    </div>
-    <div id="map"></div>
+        <div class="form-container">
+            <img src="ruta/al/logotipo.png" alt="Logotipo" class="logo"> <!-- Cambia la ruta a la ubicación de tu logotipo -->
+            <label for="lat">Latitud:</label>
+            <input type="text" id="lat" value="19.4326">
+            <label for="lon">Longitud:</label>
+            <input type="text" id="lon" value="-99.1332">
+            <label for="markerName">Nombre del Marcador:</label>
+            <input type="text" id="markerName" value="Marcador Manual">
+    
+            <div class="button-container">
+            <button onclick="addMarker()">Agregar Marcador</button>
+            <button onclick="removeMarker()">Eliminar Marcador</button>
+            <button onclick="addRadius(400)">Agregar Radio 400m</button>
+            <button onclick="addRadius(800)">Agregar Radio 800m</button>
+            <button onclick="calculateDifference()">Calcular Diferencia</button>
+            <button onclick="extractBufferData()">Extraer Información Ageb - Buffer</button>
+            <button onclick="extractDifferenceData()">Extraer Información Ageb - Diferencia</button>
+            </div>
+        </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
