@@ -78,19 +78,38 @@
             text-align: center;
             margin: 20px 0; /* Margen superior e inferior */
         }
+        /* Estilo para las filas del formulario */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Tres columnas de igual ancho */
+            gap: 10px; /* Espacio entre las columnas */
+        }
+        .form-column {
+            display: flex;
+            flex-direction: column; /* Colocar etiqueta y campo de entrada en columna */
+        }
     </style>
 </head>
 <body>
-    <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
-    <div class="form-container">
-        <!-- Agregar logotipo -->
+    <div class="header-container">
+        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
         <img src="https://github.com/Dchable16/Mapa_interactivo/blob/main/Captura-removebg-preview.png?raw=true" alt="Logotipo" class="logo"> <!-- Cambia la ruta a la ubicación de tu logotipo -->
-        <label for="lat">Latitud:</label>
-        <input type="text" id="lat" value="19.4326">
-        <label for="lon">Longitud:</label>
-        <input type="text" id="lon" value="-99.1332">
-        <label for="markerName">Nombre del Marcador:</label>
-        <input type="text" id="markerName" value="Marcador Manual">
+    </div>
+    <div class="form-container">
+        <div class="form-row">
+            <div class="form-column">
+                <label for="lat">Latitud:</label>
+                <input type="text" id="lat" value="19.4326">
+            </div>
+            <div class="form-column">
+                <label for="lon">Longitud:</label>
+                <input type="text" id="lon" value="-99.1332">
+            </div>
+            <div class="form-column">
+                <label for="markerName">Nombre del Marcador:</label>
+                <input type="text" id="markerName" value="Marcador Manual">
+            </div>
+        </div>
         
         <div class="button-container">
             <button onclick="addMarker()">Agregar Marcador</button>
