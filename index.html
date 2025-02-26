@@ -73,10 +73,15 @@
             margin: 0 auto 20px; /* Centrar y dar margen inferior */
             width: 150px; /* Ajustar el tamaño según sea necesario */
         }
+        /* Estilo para centrar el título */
+        .centered-title {
+            text-align: center;
+            margin: 20px 0; /* Margen superior e inferior */
+        }
     </style>
 </head>
 <body>
-    <h1style="text-align: center;">Mapa Interactivo </h1>
+    <h1 class="centered-title">Mapa interactivo 3B</h1> <!-- Título centrado -->
     <div class="form-container">
         <!-- Agregar logotipo -->
         <img src="ruta/al/logotipo.png" alt="Logotipo" class="logo"> <!-- Cambia la ruta a la ubicación de tu logotipo -->
@@ -90,11 +95,11 @@
         <div class="button-container">
             <button onclick="addMarker()">Agregar Marcador</button>
             <button onclick="removeMarker()">Eliminar Marcador</button>
-            <button onclick="addRadius(400)">Crear Radio 400m</button>
-            <button onclick="addRadius(800)">Crear Radio 800m</button>
-            <button onclick="calculateDifference()">Crear Diferencia entre radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb radio 800m</button>
+            <button onclick="addRadius(400)">Agregar Radio 400m</button>
+            <button onclick="addRadius(800)">Agregar Radio 800m</button>
+            <button onclick="calculateDifference()">Calcular Diferencia</button>
+            <button onclick="extractBufferData()">Extraer Información Ageb - Buffer</button>
+            <button onclick="extractDifferenceData()">Extraer Información Ageb - Diferencia</button>
         </div>
     </div>
     <div id="map"></div>
@@ -508,7 +513,3 @@
     </script>
 </body>
 </html>
-
-
-
-
