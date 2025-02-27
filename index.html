@@ -572,10 +572,12 @@
             layerControlAgeb.remove();
             layerControlUsoSuelo.remove();
             layerControlAlcaldias.remove(); // Remover controlador de alcaldías
-
+            layerControlPoligonos.remove();
+            
             layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
             layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
             layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar nuevamente
+            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map); // Agregar controlador de polígonos
         }
 
         // Llama a la función para cargar tus archivos GeoJSON
@@ -595,12 +597,12 @@
         loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Capa Alcaldías CDMX', 'AlcaldiasMunicipios');
         loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Capa Municipios Edo. Mex.', 'AlcaldiasMunicipios');
         loadGeoJSON('Region_Vallejo.geojson', 'Capa Región Vallejo', 'AlcaldiasMunicipios');
-        loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Capa Azcapotzalco', 'AlcaldiasMunicipios');
-        loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Capa Benito Juárez', 'AlcaldiasMunicipios');
-        loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Capa Cuauhtémoc', 'AlcaldiasMunicipios');
-        loadGeoJSON('Poligono_Ecatepec.geojson', 'Capa Ecatepec', 'AlcaldiasMunicipios');
-        loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Capa M. Hidalgo', 'AlcaldiasMunicipios');
-        loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Capa Nezahualcoyotl', 'AlcaldiasMunicipios');
+        loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Capa Azcapotzalco', 'Poligono');
+        loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Capa Benito Juárez', 'Poligono');
+        loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Capa Cuauhtémoc', 'Poligono');
+        loadGeoJSON('Poligono_Ecatepec.geojson', 'Capa Ecatepec', 'Poligono');
+        loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Capa M. Hidalgo', 'Poligono');
+        loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Capa Nezahualcoyotl', 'Poligono');
         loadGeoJSON('Col_Azcapotzalco.geojson', 'Capa Col. Azcapotzalco', 'AlcaldiasMunicipios');
         loadGeoJSON('Col_Benito_Juarez.geojson', 'Capa Col. Benito Juárez', 'AlcaldiasMunicipios');
         loadGeoJSON('Col_Cuauhtemoc.geojson', 'Capa Col. Cuauhtemoc', 'AlcaldiasMunicipios');
