@@ -8,6 +8,8 @@
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
         <style>
             /* Estilos generales para el mapa y los marcadores */
             html, body { height: 100%; margin: 0; }
@@ -165,6 +167,16 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         var map = L.map("map").setView([19.4326, -99.1332], 12);
+        // Control de búsqueda
+        var geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false
+        })
+        .on('markgeocode', function(e) {
+            var latlng = e.geocode.center;
+            map.setView(latlng, 12); // Centrar el mapa en la ubicación seleccionada
+            L.marker(latlng).addTo(map).bindPopup(e.geocode.name).openPopup(); // Agregar un marcador en la ubicación
+        })
+        .addTo(map);
 
         // Capas base del mapa
         var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
