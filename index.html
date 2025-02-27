@@ -8,168 +8,178 @@
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-        <style>
-            /* Estilos generales para el mapa y los marcadores */
-            html, body { height: 100%; margin: 0; }
+        <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com raw.githubusercontent.com;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa interactivo Tiendas 3B</title>
+    <link rel="icon" href="favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <style>
+        /* Estilos generales para el mapa y los marcadores */
+        html, body { height: 100%; margin: 0; }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+        .yellow-marker {
+            background-color: #fff201;
+            border: 3px solid black;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+        .marker-label {
+            position: absolute;
+            top: -40px;
+            left: 25px;
+            color: black;
+            text-shadow: 0 0 2px yellow;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        /* Estilos para el formulario */
+        .form-container {
+            background-color: rgb(248, 248, 255);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            max-width: 600px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .form-container label {
+            color: rgb(0, 187, 45);
+            font-weight: bold;
+        }
+        .form-container input {
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid rgb(0, 187, 45);
+            border-radius: 5px;
+            width: calc(100% - 12px);
+        }
+        .form-container button {
+            background-color: rgb(230, 25, 25);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        .form-container button:hover {
+            background-color: rgb(200, 25, 25);
+        }
+        /* Estilo para el contenedor de botones */
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        /* Estilo para el logotipo */
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            width: 120px;
+        }
+        /* Estilo para centrar el título */
+        .centered-title {
+            text-align: center;
+            margin: 20px 0;
+        }
+        /* Estilo para las filas del formulario */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+        /* Estilos para el header */
+        .header-container {
+            text-align: center;
+            padding: 20px;
+        }
+        /* Media queries para diseño responsivo */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .button-container {
+                grid-template-columns: 1fr;
+            }
+            .logo {
+                width: 100px;
+            }
             body {
-                display: flex;
-                flex-direction: column;
+                padding: 0;
             }
             #map {
-                flex-grow: 1;
                 width: 100%;
-                height: 100%;
             }
-            .yellow-marker {
-                background-color: #fff201;
-                border: 3px solid black;
-                border-radius: 50%;
-                width: 20px;
-                height: 20px;
-                display: inline-block;
-            }
-            .marker-label {
-                position: absolute;
-                top: -40px;
-                left: 25px;
-                color: black;
-                text-shadow: 0 0 2px yellow;
-                font-weight: bold;
-                font-size: 13px;
-            }
-            /* Estilos para el formulario */
+        }
+        /* Ajustes para pantallas más grandes (computadoras) */
+        @media (min-width: 1024px) {
             .form-container {
-                background-color: rgb(248, 248, 255);
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-                margin: 0 auto;
-                max-width: 600px;
-                position: sticky;
-                top: 0;
-                z-index: 1000;
+                max-width: 70%;
+                padding: 30px;
             }
-            .form-container label {
-                color: rgb(0, 187, 45);
-                font-weight: bold;
-            }
-            .form-container input {
-                margin-bottom: 10px;
+            .form-container input, .form-container button {
                 padding: 5px;
-                border: 1px solid rgb(0, 187, 45);
-                border-radius: 5px;
-                width: calc(100% - 12px);
+                font-size: 15px;
             }
-            .form-container button {
-                background-color: rgb(230, 25, 25);
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 10px;
-                cursor: pointer;
-                width: 100%;
-                font-weight: bold;
-            }
-            .form-container button:hover {
-                background-color: rgb(200, 25, 25);
-            }
-            /* Estilo para el contenedor de botones */
-            .button-container {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px;
-            }
-            /* Estilo para el logotipo */
             .logo {
-                display: block;
-                margin: 0 auto 20px;
-                width: 120px;
+                width: 200px;
             }
-            /* Estilo para centrar el título */
-            .centered-title {
-                text-align: center;
-                margin: 20px 0;
-            }
-            /* Estilo para las filas del formulario */
-            .form-row {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
-            }
-            .form-column {
-                display: flex;
-                flex-direction: column;
-            }
-            /* Estilos para el header */
-            .header-container {
-                text-align: center;
-                padding: 20px;
-            }
-            /* Media queries para diseño responsivo */
-            @media (max-width: 768px) {
-                .form-row {
-                    grid-template-columns: 1fr;
-                }
-                .button-container {
-                    grid-template-columns: 1fr;
-                }
-                .logo {
-                    width: 100px;
-                }
-                body {
-                    padding: 0;
-                }
-                #map {
-                    width: 100%;
-                }
-            }
-            /* Ajustes para pantallas más grandes (computadoras) */
-            @media (min-width: 1024px) {
-                .form-container {
-                    max-width: 70%;
-                    padding: 30px;
-                }
-                .form-container input, .form-container button {
-                    padding: 5px;
-                    font-size: 15px;
-                }
-                .logo {
-                    width: 200px;
-                }
-            }
-        </style>
+        }
+    </style>
 </head>
 <body>
     <div class="header-container">
-    <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
-    <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
-</div>
-<div class="form-container">
-            <div class="form-row">
-                <div class="form-column">
-                    <label for="lat">Latitud:</label>
-                    <input type="text" id="lat" value="19.4326">
-                </div>
-                <div class="form-column">
-                    <label for="lon">Longitud:</label>
-                    <input type="text" id="lon" value="-99.1332">
-                </div>
-                <div class="form-column">
-                    <label for="markerName">Nombre del Marcador:</label>
-                    <input type="text" id="markerName" value="Marcador Manual">
-                </div>
+        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
+        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+    </div>
+    <div class="form-container">
+        <div class="form-row">
+            <div class="form-column">
+                <label for="lat">Latitud:</label>
+                <input type="text" id="lat" value="19.4326">
             </div>
-            <div class="button-container">
-                <button onclick="addMarker()">Agregar Marcador</button>
-                <button onclick="removeMarker()">Eliminar Marcador</button>
-                <button onclick="addRadius(400)">Agregar Radio 400m</button>
-                <button onclick="addRadius(800)">Agregar Radio 800m</button>
-                <button onclick="calculateDifference()">Calcular Diferencia entre radios</button>
-                <button onclick="extractBufferData()">Extraer Información Ageb - radio 400m</button>
-                <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
+            <div class="form-column">
+                <label for="lon">Longitud:</label>
+                <input type="text" id="lon" value="-99.1332">
+            </div>
+            <div class="form-column">
+                <label for="markerName">Nombre del Marcador:</label>
+                <input type="text" id="markerName" value="Marcador Manual">
             </div>
         </div>
-        <div id="map"></div>
+        <div class="button-container">
+            <button onclick="addMarker()">Agregar Marcador</button>
+            <button onclick="removeMarker()">Eliminar Marcador</button>
+            <button onclick="addRadius(400)">Agregar Radio 400m</button>
+            <button onclick="addRadius(800)">Agregar Radio 800m</button>
+            <button onclick="calculateDifference()">Calcular Diferencia entre radios</button>
+            <button onclick="extractBufferData()">Extraer Información Ageb - radio 400m</button>
+            <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
+        </div>
+    </div>
+    <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
