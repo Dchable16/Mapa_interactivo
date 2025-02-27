@@ -557,6 +557,7 @@
         var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
         var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
         var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
+        var layerControlPoligonos = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
 
         // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
         var layerControlRadios = L.control.layers(null, {
@@ -573,11 +574,13 @@
             layerControlUsoSuelo.remove();
             layerControlAlcaldias.remove(); // Remover controlador de alcaldías
             layerControlPoligonos.remove();
+            layerControlColonias.remove();
             
             layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
             layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar nuevamente
+            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar Alcaldias
             layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map); // Agregar controlador de polígonos
+            layerControlPoligonos = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
         }
 
         // Llama a la función para cargar tus archivos GeoJSON
@@ -596,19 +599,19 @@
         // Nuevas capas de alcaldías
         loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Capa Alcaldías CDMX', 'AlcaldiasMunicipios');
         loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Capa Municipios Edo. Mex.', 'AlcaldiasMunicipios');
-        loadGeoJSON('Region_Vallejo.geojson', 'Capa Región Vallejo', 'AlcaldiasMunicipios');
+        loadGeoJSON('Region_Vallejo.geojson', 'Capa Región Vallejo', 'Poligono');
         loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Capa Azcapotzalco', 'Poligono');
         loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Capa Benito Juárez', 'Poligono');
         loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Capa Cuauhtémoc', 'Poligono');
         loadGeoJSON('Poligono_Ecatepec.geojson', 'Capa Ecatepec', 'Poligono');
         loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Capa M. Hidalgo', 'Poligono');
         loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Capa Nezahualcoyotl', 'Poligono');
-        loadGeoJSON('Col_Azcapotzalco.geojson', 'Capa Col. Azcapotzalco', 'AlcaldiasMunicipios');
-        loadGeoJSON('Col_Benito_Juarez.geojson', 'Capa Col. Benito Juárez', 'AlcaldiasMunicipios');
-        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Capa Col. Cuauhtemoc', 'AlcaldiasMunicipios');
-        loadGeoJSON('Col_Ecatepec.geojson', 'Capa Col. Ecatepec', 'AlcaldiasMunicipios');
-        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Capa Col. M. Hidalgo', 'AlcaldiasMunicipios');
-        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Capa Col. Nezahualcoyotl', 'AlcaldiasMunicipios');
+        loadGeoJSON('Col_Azcapotzalco.geojson', 'Capa Col. Azcapotzalco', 'Col');
+        loadGeoJSON('Col_Benito_Juarez.geojson', 'Capa Col. Benito Juárez', 'Col');
+        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Capa Col. Cuauhtemoc', 'Col');
+        loadGeoJSON('Col_Ecatepec.geojson', 'Capa Col. Ecatepec', 'Col');
+        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Capa Col. M. Hidalgo', 'Col');
+        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Capa Col. Nezahualcoyotl', 'Col');
     </script>
 </body>
 </html>
