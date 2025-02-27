@@ -11,7 +11,12 @@
     <style>
         /* Estilos generales para el mapa y los marcadores */
         html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: calc(100vh - 200px); margin: 0 auto; } /* Ajuste de altura y margen */
+        .map-container {
+            width: 100%;
+            overflow: auto; /* Permitir desplazamiento horizontal */
+            height: calc(100vh - 200px); /* Ajustar altura del contenedor */
+        }
+        #map { width: 100%; height: 100%; } /* Asegurar que el mapa ocupe el contenedor */
         .yellow-marker {
             background-color: #fff201;
             border: 3px solid black;
@@ -106,9 +111,6 @@
                 margin: 0; /* Asegurar que no haya márgenes predeterminados */
                 height: 100%; /* Asegurar que el body ocupe toda la altura */
             }
-            #map {
-                height: calc(100vh - 150px); /* Ajustar la altura para pantallas pequeñas */
-            }
         }
 
         /* Ajustes para pantallas más grandes (computadoras) */
@@ -158,7 +160,9 @@
             <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
         </div>
     </div>
-    <div id="map"></div>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
