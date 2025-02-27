@@ -10,11 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
         <style>
             /* Estilos generales para el mapa y los marcadores */
-            html, body { height: 100%; margin: 0; overflow: hidden; } /* Evitar el scroll en el body */
-            #map-container {
-                height: calc(100vh - 300px); /* Ajusta según el tamaño de tus otros elementos */
-                overflow: auto; /* Permitir desplazamiento */
-            }
+            html, body { height: 100%; margin: 0; }
             #map { width: 100%; height: 100%; }
             .yellow-marker {
                 background-color: #fff201;
@@ -163,9 +159,7 @@
             <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
         </div>
     </div>
-    <div id="map-container">
     <div id="map"></div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
