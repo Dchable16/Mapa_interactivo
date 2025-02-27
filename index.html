@@ -168,10 +168,10 @@
         window.onload = function() {
             // Inicializar el mapa centrado en las coordenadas especificadas
             var map = L.map("map").setView([19.4326, -99.1332], 12);
-    
+        
             // Inicializa el proveedor de geocoding (puedes usar OpenStreetMap, Google, etc.)
             const provider = new GeoSearch.OpenStreetMapProvider();
-    
+        
             // Inicializa el control de búsqueda
             const searchControl = new GeoSearch.GeoSearchControl({
                 provider: provider,
@@ -183,29 +183,38 @@
                 },
                 resultFormat: ({ result }) => result?.label,
             });
-    
+        
             // Agrega el control de búsqueda al mapa
             map.addControl(searchControl);
-    
+        
             // Escucha el evento 'geosearch/showlocation' para manejar los resultados
             map.on('geosearch/showlocation', (result) => {
                 const latlng = result.location;
                 map.setView(latlng, 12);
                 L.marker(latlng).addTo(map).bindPopup(result.location.label).openPopup();
             });
-
-        // Capas base del mapa
-        var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }).addTo(map);
-
-        var googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
-            attribution: "Google"
-        });
-
-        var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
-            attribution: "Google"
-        });
+        
+            // Capas base del mapa
+            var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            }).addTo(map);
+        
+            var googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+                attribution: "Google"
+            });
+        
+            var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
+                attribution: "Google"
+            });
+        
+            // Controladores de capas
+            var baseMaps = {
+                "OpenStreetMap": osmLayer,
+                "Google Road": googleRoadLayer,
+                "Google Hybrid": googleHybridLayer
+            };
+        
+            var layerControlBase = L.control.layers(baseMaps, null).addTo(map); // Línea 188
 
         // Objetos para almacenar las capas GeoJSON
         var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
