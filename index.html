@@ -283,7 +283,7 @@
             if (currentMarker) {
                 // Verificar si el radio ya ha sido creado
                 if ((radius === 400 && radius400Created) || (radius === 800 && radius800Created)) {
-                    alert("El radio ya ha sido creado.");
+                    alert("El radio de ya ha sido creado.");
                     return;
                 }
                 var latLng = currentMarker.getLatLng();
@@ -313,7 +313,7 @@
             if (currentMarker && radius400m && radius800m) {
                 // Verificar si la diferencia ya ha sido calculada
                 if (differenceCreated) {
-                    alert("La diferencia ya ha sido calculada.");
+                    alert("La diferencia entre radios ya ha sido calculada.");
                     return;
                 }
                 var latLng = currentMarker.getLatLng();
@@ -346,7 +346,7 @@
         // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
             if (bufferDataExtracted) {
-                alert("La extracción de datos de buffer ya ha sido realizada.");
+                alert("La extracción de datos del radio de 400m ya ha sido realizada.");
                 return;
             }
             if (currentMarker) {
@@ -401,7 +401,7 @@
         // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
             if (differenceDataExtracted) {
-                alert("La extracción de datos de diferencia ya ha sido realizada.");
+                alert("La extracción de datos del radio de 800m ya ha sido realizada.");
                 return;
             }
             if (currentMarker) {
