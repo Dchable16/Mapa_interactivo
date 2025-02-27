@@ -94,7 +94,35 @@
             display: flex;
             flex-direction: column;
         }
-
+        .map-container {
+            width: 100%;
+            overflow: hidden; /* Cambiar a hidden para evitar barras de desplazamiento */
+            height: calc(100vh - 200px); /* Ajustar altura del contenedor */
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%; /* Asegurar que el mapa ocupe el contenedor */
+        }
+        
+        /* Media queries para diseño responsivo */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* Añadir padding alrededor del contenido */
+                margin: 0; /* Asegurar que no haya márgenes predeterminados */
+                height: 100%; /* Asegurar que el body ocupe toda la altura */
+            }
+            #map {
+                height: calc(100vh - 150px); /* Ajustar la altura para pantallas pequeñas */
+            }
+        }
+        
+        @media (orientation: landscape) {
+            #map {
+                height: calc(100vh - 100px); /* Ajustar la altura para orientación horizontal */
+            }
+        }
+        
         /* Media queries para diseño responsivo */
         @media (max-width: 768px) {
             .form-row {
