@@ -536,7 +536,7 @@
                             });
         
                             // Personalizar el ícono si el feature tiene coordenadas
-                            if (feature.geometry && feature.geometry.type === "Point" && feature.properties.icono) {
+                            if (feature.geometry && feature.geometry.type === "MultiPoint" && feature.properties.icono) {
                                 const iconUrl = feature.properties.icono; // URL del icono desde el GeoJSON
                                 const customIcon = L.icon({
                                     iconUrl: iconUrl,
