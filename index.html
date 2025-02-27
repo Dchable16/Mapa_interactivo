@@ -169,7 +169,7 @@
         var map = L.map("map").setView([19.4326, -99.1332], 12);
        
         // Control de búsqueda
-        var geocoder = L.Control.geocoder({
+        var geocoder = L.Control.Geocoder.nominatim({
             defaultMarkGeocode: false
         })
         .on('markgeocode', function(e) {
