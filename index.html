@@ -11,7 +11,15 @@
         <style>
             /* Estilos generales para el mapa y los marcadores */
             html, body { height: 100%; margin: 0; }
-            #map { width: 100%; height: 100%; }
+            body {
+                display: flex;
+                flex-direction: column;
+            }
+            #map {
+                flex-grow: 1;
+                width: 100%;
+                height: 100%;
+            }
             .yellow-marker {
                 background-color: #fff201;
                 border: 3px solid black;
@@ -35,17 +43,20 @@
                 padding: 20px;
                 border-radius: 10px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-                margin: 20px auto; /* Centrar el formulario */
-                max-width: 600px; /* Ancho máximo base */
+                margin: 0 auto;
+                max-width: 600px;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
             }
             .form-container label {
-                color: rgb(0, 187, 45); /*Color de letra de los cuadros de texto*/
+                color: rgb(0, 187, 45);
                 font-weight: bold;
             }
             .form-container input {
                 margin-bottom: 10px;
                 padding: 5px;
-                border: 1px solid rgb(0, 187, 45); /*color de línea cuadro de texto */
+                border: 1px solid rgb(0, 187, 45);
                 border-radius: 5px;
                 width: calc(100% - 12px);
             }
@@ -72,7 +83,7 @@
             .logo {
                 display: block;
                 margin: 0 auto 20px;
-                width: 120px; /* Ajuste de tamaño */
+                width: 120px;
             }
             /* Estilo para centrar el título */
             .centered-title {
@@ -89,77 +100,76 @@
                 display: flex;
                 flex-direction: column;
             }
-        
+            /* Estilos para el header */
+            .header-container {
+                text-align: center;
+                padding: 20px;
+            }
             /* Media queries para diseño responsivo */
             @media (max-width: 768px) {
                 .form-row {
-                    grid-template-columns: 1fr; /* Apilar en una columna */
+                    grid-template-columns: 1fr;
                 }
                 .button-container {
-                    grid-template-columns: 1fr; /* Apilar botones */
+                    grid-template-columns: 1fr;
                 }
                 .logo {
-                    width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
+                    width: 100px;
                 }
                 body {
-                    padding: 6px; /* Añadir padding alrededor del contenido */
-                    margin: 0; /* Asegurar que no haya márgenes predeterminados */
-                    height: 100%; /* Asegurar que el body ocupe toda la altura */
+                    padding: 0;
                 }
                 #map {
                     width: 100%;
-                    height: 100%;
                 }
             }
-        
             /* Ajustes para pantallas más grandes (computadoras) */
             @media (min-width: 1024px) {
                 .form-container {
-                    max-width: 70%; /* Aumentar el ancho máximo en computadoras */
-                    padding: 30px; /* Aumentar el padding para más espacio */
+                    max-width: 70%;
+                    padding: 30px;
                 }
                 .form-container input, .form-container button {
-                    padding: 5px; /* Aumentar el padding de los inputs y botones */
-                    font-size: 15px; /* Aumentar el tamaño de la fuente */
+                    padding: 5px;
+                    font-size: 15px;
                 }
                 .logo {
-                    width: 200px; /* Aumentar el tamaño del logo */
+                    width: 200px;
                 }
             }
         </style>
 </head>
 <body>
     <div class="header-container">
-        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
-        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Cambia la ruta a la ubicación de tu logotipo -->
-    </div>
-    <div class="form-container">
-        <div class="form-row">
-            <div class="form-column">
-                <label for="lat">Latitud:</label>
-                <input type="text" id="lat" value="19.4326">
+    <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
+    <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+</div>
+<div class="form-container">
+            <div class="form-row">
+                <div class="form-column">
+                    <label for="lat">Latitud:</label>
+                    <input type="text" id="lat" value="19.4326">
+                </div>
+                <div class="form-column">
+                    <label for="lon">Longitud:</label>
+                    <input type="text" id="lon" value="-99.1332">
+                </div>
+                <div class="form-column">
+                    <label for="markerName">Nombre del Marcador:</label>
+                    <input type="text" id="markerName" value="Marcador Manual">
+                </div>
             </div>
-            <div class="form-column">
-                <label for="lon">Longitud:</label>
-                <input type="text" id="lon" value="-99.1332">
-            </div>
-            <div class="form-column">
-                <label for="markerName">Nombre del Marcador:</label>
-                <input type="text" id="markerName" value="Marcador Manual">
+            <div class="button-container">
+                <button onclick="addMarker()">Agregar Marcador</button>
+                <button onclick="removeMarker()">Eliminar Marcador</button>
+                <button onclick="addRadius(400)">Agregar Radio 400m</button>
+                <button onclick="addRadius(800)">Agregar Radio 800m</button>
+                <button onclick="calculateDifference()">Calcular Diferencia entre radios</button>
+                <button onclick="extractBufferData()">Extraer Información Ageb - radio 400m</button>
+                <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
             </div>
         </div>
-        
-        <div class="button-container">
-            <button onclick="addMarker()">Agregar Marcador</button>
-            <button onclick="removeMarker()">Eliminar Marcador</button>
-            <button onclick="addRadius(400)">Agregar Radio 400m</button>
-            <button onclick="addRadius(800)">Agregar Radio 800m</button>
-            <button onclick="calculateDifference()">Calcular Diferencia entre radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb - radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
-        </div>
-    </div>
-    <div id="map"></div>
+        <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
