@@ -512,6 +512,13 @@
             }
         }
 
+        // Variables para confirmar si ya se cargaron los geojson
+        var agebLoaded = false;
+        var usoSueloLoaded = false;
+        var alcaldiasLoaded = false;
+        var poligonosLoaded = false;
+        var coloniasLoaded = false;
+            
         // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
@@ -593,6 +600,9 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
+        
+        // Función para crear los controladores de capas después de que todas las capas estén cargadas
+        function createLayerControls() {    
         // Controladores de capas
         var baseMaps = {
             "OpenStreetMap": osmLayer,
@@ -631,6 +641,7 @@
             layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
         }
 
+         }    
         // Llama a la función para cargar tus archivos GeoJSON
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
         loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
