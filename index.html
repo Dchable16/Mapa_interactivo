@@ -154,9 +154,9 @@
             <button onclick="removeMarker()">Eliminar Marcador</button>
             <button onclick="addRadius(400)">Agregar Radio 400m</button>
             <button onclick="addRadius(800)">Agregar Radio 800m</button>
-            <button onclick="calculateDifference()">Calcular Diferencia entre radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb - radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
+            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
+            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
+            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
         </div>
     </div>
     <div id="map"></div>
@@ -575,9 +575,9 @@
         var layerControlRadios = L.control.layers(null, {
             "Radio 400m": radius400Layer,
             "Radio 800m": radius800Layer,
-            "Diferencia entre Círculos": differenceLayerGroup,
-            "Extracción Ageb - Buffer": bufferLayerGroup,
-            "Extracción Ageb - Diferencia": differenceExtractionLayerGroup
+            "Diferencia entre Radios": differenceLayerGroup,
+            "Extracción Ageb - Radio 400m": bufferLayerGroup,
+            "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
 
         // Función para actualizar los controladores de capas
