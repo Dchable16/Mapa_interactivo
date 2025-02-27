@@ -164,35 +164,34 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
-        
-        // Inicializar el mapa centrado en las coordenadas especificadas
-        var map = L.map("map").setView([19.4326, -99.1332], 12);
-       
-        // Inicializa el proveedor de geocoding (puedes usar OpenStreetMap, Google, etc.)
-        const provider = new GeoSearch.OpenStreetMapProvider();
-        
-        // Inicializa el control de búsqueda
-        const searchControl = new GeoSearch.GeoSearchControl({
-            provider: provider,
-            style: 'bar', // Puedes cambiar el estilo a 'bar' o 'button'
-            searchLabel: 'Introduce una dirección',
-            marker: { // Personaliza el marcador de resultados
-                icon: new L.Icon.Default(), // Usa el icono predeterminado de Leaflet
-                draggable: false,
-            },
-            resultFormat: ({ result }) => result?.label, // Formato de los resultados
-            // Puedes agregar más opciones según tus necesidades
-        });
-        
-        // Agrega el control de búsqueda al mapa
-        map.addControl(searchControl);
-        
-        // Escucha el evento 'geosearch/showlocation' para manejar los resultados
-        map.on('geosearch/showlocation', (result) => {
-            const latlng = result.location;
-            map.setView(latlng, 12); // Centra el mapa en la ubicación
-            L.marker(latlng).addTo(map).bindPopup(result.location.label).openPopup(); // Agrega un marcador
-        });
+        window.onload = function() {
+            // Inicializar el mapa centrado en las coordenadas especificadas
+            var map = L.map("map").setView([19.4326, -99.1332], 12);
+    
+            // Inicializa el proveedor de geocoding (puedes usar OpenStreetMap, Google, etc.)
+            const provider = new GeoSearch.OpenStreetMapProvider();
+    
+            // Inicializa el control de búsqueda
+            const searchControl = new GeoSearch.GeoSearchControl({
+                provider: provider,
+                style: 'bar',
+                searchLabel: 'Introduce una dirección',
+                marker: {
+                    icon: new L.Icon.Default(),
+                    draggable: false,
+                },
+                resultFormat: ({ result }) => result?.label,
+            });
+    
+            // Agrega el control de búsqueda al mapa
+            map.addControl(searchControl);
+    
+            // Escucha el evento 'geosearch/showlocation' para manejar los resultados
+            map.on('geosearch/showlocation', (result) => {
+                const latlng = result.location;
+                map.setView(latlng, 12);
+                L.marker(latlng).addTo(map).bindPopup(result.location.label).openPopup();
+            });
 
         // Capas base del mapa
         var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
