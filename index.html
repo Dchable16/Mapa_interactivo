@@ -8,154 +8,129 @@
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <style>
-        /* Estilos generales para el mapa y los marcadores */
-        html, body { height: 100%; margin: 0; }
-        .map-container {
-            width: 100%;
-            overflow: auto; /* Permitir desplazamiento horizontal */
-            height: calc(100vh - 200px); /* Ajustar altura del contenedor */
-        }
-        #map { width: 100%; height: 100%; } /* Asegurar que el mapa ocupe el contenedor */
-        .yellow-marker {
-            background-color: #fff201;
-            border: 3px solid black;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-        }
-        .marker-label {
-            position: absolute;
-            top: -40px;
-            left: 25px;
-            color: black;
-            text-shadow: 0 0 2px yellow;
-            font-weight: bold;
-            font-size: 13px;
-        }
-        /* Estilos para el formulario */
-        .form-container {
-            background-color: rgb(248, 248, 255);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin: 20px auto; /* Centrar el formulario */
-            max-width: 600px; /* Ancho máximo base */
-        }
-        .form-container label {
-            color: rgb(0, 187, 45); /*Color de letra de los cuadros de texto*/
-            font-weight: bold;
-        }
-        .form-container input {
-            margin-bottom: 10px;
-            padding: 5px;
-            border: 1px solid rgb(0, 187, 45); /*color de línea cuadro de texto */
-            border-radius: 5px;
-            width: calc(100% - 12px);
-        }
-        .form-container button {
-            background-color: rgb(230, 25, 25);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-        }
-        .form-container button:hover {
-            background-color: rgb(200, 25, 25);
-        }
-        /* Estilo para el contenedor de botones */
-        .button-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        /* Estilo para el logotipo */
-        .logo {
-            display: block;
-            margin: 0 auto 20px;
-            width: 120px; /* Ajuste de tamaño */
-        }
-        /* Estilo para centrar el título */
-        .centered-title {
-            text-align: center;
-            margin: 20px 0;
-        }
-        /* Estilo para las filas del formulario */
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .form-column {
-            display: flex;
-            flex-direction: column;
-        }
-        .map-container {
-            width: 100%;
-            overflow: hidden; /* Cambiar a hidden para evitar barras de desplazamiento */
-            height: calc(100vh - 200px); /* Ajustar altura del contenedor */
-        }
-        
-        #map {
-            width: 100%;
-            height: 100%; /* Asegurar que el mapa ocupe el contenedor */
-        }
-        
-        /* Media queries para diseño responsivo */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px; /* Añadir padding alrededor del contenido */
-                margin: 0; /* Asegurar que no haya márgenes predeterminados */
-                height: 100%; /* Asegurar que el body ocupe toda la altura */
+        <style>
+            /* Estilos generales para el mapa y los marcadores */
+            html, body { height: 100%; margin: 0; overflow: hidden; } /* Evitar el scroll en el body */
+            #map-container {
+                height: calc(100vh - 300px); /* Ajusta según el tamaño de tus otros elementos */
+                overflow: auto; /* Permitir desplazamiento */
             }
-            #map {
-                height: calc(100vh - 150px); /* Ajustar la altura para pantallas pequeñas */
+            #map { width: 100%; height: 100%; }
+            .yellow-marker {
+                background-color: #fff201;
+                border: 3px solid black;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: inline-block;
             }
-        }
-        
-        @media (orientation: landscape) {
-            #map {
-                height: calc(100vh - 100px); /* Ajustar la altura para orientación horizontal */
+            .marker-label {
+                position: absolute;
+                top: -40px;
+                left: 25px;
+                color: black;
+                text-shadow: 0 0 2px yellow;
+                font-weight: bold;
+                font-size: 13px;
             }
-        }
-        
-        /* Media queries para diseño responsivo */
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr; /* Apilar en una columna */
-            }
-            .button-container {
-                grid-template-columns: 1fr; /* Apilar botones */
-            }
-            .logo {
-                width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
-            }
-            body {
-                padding: 10px; /* Añadir padding alrededor del contenido */
-                margin: 0; /* Asegurar que no haya márgenes predeterminados */
-                height: 100%; /* Asegurar que el body ocupe toda la altura */
-            }
-        }
-
-        /* Ajustes para pantallas más grandes (computadoras) */
-        @media (min-width: 1024px) {
+            /* Estilos para el formulario */
             .form-container {
-                max-width: 70%; /* Aumentar el ancho máximo en computadoras */
-                padding: 30px; /* Aumentar el padding para más espacio */
+                background-color: rgb(248, 248, 255);
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                margin: 20px auto; /* Centrar el formulario */
+                max-width: 600px; /* Ancho máximo base */
             }
-            .form-container input, .form-container button {
-                padding: 5px; /* Aumentar el padding de los inputs y botones */
-                font-size: 15px; /* Aumentar el tamaño de la fuente */
+            .form-container label {
+                color: rgb(0, 187, 45); /*Color de letra de los cuadros de texto*/
+                font-weight: bold;
             }
+            .form-container input {
+                margin-bottom: 10px;
+                padding: 5px;
+                border: 1px solid rgb(0, 187, 45); /*color de línea cuadro de texto */
+                border-radius: 5px;
+                width: calc(100% - 12px);
+            }
+            .form-container button {
+                background-color: rgb(230, 25, 25);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 10px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: bold;
+            }
+            .form-container button:hover {
+                background-color: rgb(200, 25, 25);
+            }
+            /* Estilo para el contenedor de botones */
+            .button-container {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+            /* Estilo para el logotipo */
             .logo {
-                width: 200px; /* Aumentar el tamaño del logo */
+                display: block;
+                margin: 0 auto 20px;
+                width: 120px; /* Ajuste de tamaño */
             }
-        }
-    </style>
+            /* Estilo para centrar el título */
+            .centered-title {
+                text-align: center;
+                margin: 20px 0;
+            }
+            /* Estilo para las filas del formulario */
+            .form-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .form-column {
+                display: flex;
+                flex-direction: column;
+            }
+        
+            /* Media queries para diseño responsivo */
+            @media (max-width: 768px) {
+                .form-row {
+                    grid-template-columns: 1fr; /* Apilar en una columna */
+                }
+                .button-container {
+                    grid-template-columns: 1fr; /* Apilar botones */
+                }
+                .logo {
+                    width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
+                }
+                body {
+                    padding: 6px; /* Añadir padding alrededor del contenido */
+                    margin: 0; /* Asegurar que no haya márgenes predeterminados */
+                    height: 100%; /* Asegurar que el body ocupe toda la altura */
+                }
+                #map {
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        
+            /* Ajustes para pantallas más grandes (computadoras) */
+            @media (min-width: 1024px) {
+                .form-container {
+                    max-width: 70%; /* Aumentar el ancho máximo en computadoras */
+                    padding: 30px; /* Aumentar el padding para más espacio */
+                }
+                .form-container input, .form-container button {
+                    padding: 5px; /* Aumentar el padding de los inputs y botones */
+                    font-size: 15px; /* Aumentar el tamaño de la fuente */
+                }
+                .logo {
+                    width: 200px; /* Aumentar el tamaño del logo */
+                }
+            }
+        </style>
 </head>
 <body>
     <div class="header-container">
@@ -188,8 +163,8 @@
             <button onclick="extractDifferenceData()">Extraer Información Ageb - radio 800m</button>
         </div>
     </div>
-    <div class="map-container">
-        <div id="map"></div>
+    <div id="map-container">
+    <div id="map"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -217,6 +192,7 @@
         var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
         var differenceLayer = null; // Capa para la diferencia de círculos
         
+
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
         var currentLabel = null; // Etiqueta del marcador
