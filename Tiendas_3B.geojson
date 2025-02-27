@@ -212,4 +212,3 @@
 { "type": "Feature", "properties": { "Nombre": "Tiendas 3B Mar Mediterráneo", "Latitud": 19.4602452, "Longitud": -99.1883278, "Dirección": null, "Teléfono": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ -99.1883278, 19.4602452 ] ] } }
 ]
 }
-
