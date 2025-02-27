@@ -478,9 +478,15 @@
         // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    var color;
+                    let color;
+        
                     // Asignar el color según el tipo de capa
                     switch (type) {
                         case 'UsoSuelo':
@@ -489,7 +495,7 @@
                         case 'Poligono':
                             color = 'rgb(255, 127, 80)'; // Coral
                             break;
-                        case 'Col_':
+                        case 'Col':
                             color = 'rgb(0, 150, 136)'; // Verde Esmeralda
                             break;
                         case 'Region_Vallejo':
@@ -502,17 +508,14 @@
                             color = 'rgb(230, 230, 250)'; // Lavanda
                             break;
                         case 'Ageb':
-                            if (url.includes('Ageb_urb_CDMX.geojson')) {
-                                color = 'rgb(135, 206, 235)'; // Azul Cielo
-                            } else if (url.includes('Ageb_urb_Edo_Mex.geojson')) {
-                                color = 'rgb(128, 128, 0)'; // Verde Oliva
-                            }
+                            color = url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
                             break;
                         default:
                             color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
                     }
         
-                    var geoJsonLayer = L.geoJSON(data, {
+                    // Crear la capa GeoJSON
+                    const geoJsonLayer = L.geoJSON(data, {
                         style: {
                             color: color,
                             weight: 2,
@@ -520,10 +523,10 @@
                         },
                         onEachFeature: function (feature, layer) {
                             layer.on('click', function () {
-                                var properties = feature.properties;
-                                var popupContent = "<b>Atributos:</b><br>";
-                                for (var key in properties) {
-                                    popupContent += key + ": " + properties[key] + "<br>";
+                                const properties = feature.properties;
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in properties) {
+                                    popupContent += `${key}: ${properties[key]}<br>`;
                                 }
                                 layer.bindPopup(popupContent).openPopup();
                             });
@@ -531,14 +534,22 @@
                     });
         
                     // Agregar la capa al objeto correspondiente según el tipo
-                    if (type === 'Ageb') {
-                        geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                    } else if (type === 'UsoSuelo') {
-                        geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                    } else if (type === 'AlcaldiasMunicipios') {
-                        geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                    } else if (type === 'Poligono') {
-                        geoJsonLayersPoligonos[layerName] = geoJsonLayer; // Agregar a polígonos
+                    switch (type) {
+                        case 'Ageb':
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'AlcaldiasMunicipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
                     }
         
                     // Actualizar los controladores de capas
@@ -607,12 +618,12 @@
         loadGeoJSON('Poligono_Ecatepec.geojson', 'Capa Ecatepec', 'Poligono');
         loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Capa M. Hidalgo', 'Poligono');
         loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Capa Nezahualcoyotl', 'Poligono');
-        loadGeoJSON('Col_Azcapotzalco.geojson', 'Capa Col. Azcapotzalco', 'Col_');
-        loadGeoJSON('Col_Benito_Juarez.geojson', 'Capa Col. Benito Juárez', 'Col_');
-        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Capa Col. Cuauhtemoc', 'Col_');
-        loadGeoJSON('Col_Ecatepec.geojson', 'Capa Col. Ecatepec', 'Col_');
-        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Capa Col. M. Hidalgo', 'Col_');
-        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Capa Col. Nezahualcoyotl', 'Col_');
+        loadGeoJSON('Col_Azcapotzalco.geojson', 'Capa Col. Azcapotzalco', 'Col');
+        loadGeoJSON('Col_Benito_Juarez.geojson', 'Capa Col. Benito Juárez', 'Col');
+        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Capa Col. Cuauhtemoc', 'Col');
+        loadGeoJSON('Col_Ecatepec.geojson', 'Capa Col. Ecatepec', 'Col');
+        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Capa Col. M. Hidalgo', 'Col');
+        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Capa Col. Nezahualcoyotl', 'Col');
     </script>
 </body>
 </html>
