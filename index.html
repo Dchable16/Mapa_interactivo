@@ -534,20 +534,6 @@
                                 }
                                 layer.bindPopup(popupContent).openPopup();
                             });
-        
-                            // Personalizar el ícono si el feature tiene coordenadas
-                            if (feature.geometry && feature.geometry.type === "Point" && feature.properties.icono) {
-                                const iconUrl = feature.properties.icono; // URL del icono desde el GeoJSON
-                                const customIcon = L.icon({
-                                    iconUrl: iconUrl,
-                                    iconSize: [30, 30], // Tamaño del ícono
-                                    iconAnchor: [15, 30], // Punto de anclaje del ícono
-                                    popupAnchor: [0, -30] // Punto de anclaje del popup
-                                });
-        
-                                // Reemplazar el marcador por el nuevo ícono
-                                layer.setIcon(customIcon);
-                            }
                         }
                     });
         
@@ -568,9 +554,9 @@
                         case 'Col':
                             geoJsonLayersColonias[layerName] = geoJsonLayer;
                             break;
-                        case 'Competencias':
+                       case 'Competencias':
                             geoJsonLayersCompetencias[layerName] = geoJsonLayer;
-                            break;  
+                            break;     
                     }
         
                     // Actualizar los controladores de capas
@@ -655,7 +641,8 @@
         loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colobias Nezahualcoyotl', 'Col');
 
         // Llama a la función para cargar capas de Colonias
-        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias');         
+        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias');    
+        
     </script>
 </body>
 </html>
