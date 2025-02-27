@@ -185,7 +185,6 @@
         var geoJsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
         var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
         var geoJsonLayersColonias = {}; // Almacena las capas de Colonias
-        var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
         var differenceLayer = null; // Capa para la diferencia de círculos
         
 
@@ -508,9 +507,6 @@
                         case 'Alcaldias_Ciudad_de_México':
                             color = 'rgb(230, 230, 250)'; // Lavanda
                             break;
-                        case 'Competencias':
-                            color = 'rgb(204, 85, 0)'; // Naranja Quemado
-                            break;
                         case 'Ageb':
                             color = url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
                             break;
@@ -554,9 +550,6 @@
                         case 'Col':
                             geoJsonLayersColonias[layerName] = geoJsonLayer;
                             break;
-                       case 'Competencias':
-                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
-                            break;     
                     }
         
                     // Actualizar los controladores de capas
@@ -577,7 +570,6 @@
         var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
         var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
         var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-        var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
 
         // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
         var layerControlRadios = L.control.layers(null, {
@@ -595,21 +587,18 @@
             layerControlAlcaldias.remove(); // Remover controlador de alcaldías
             layerControlPoligonos.remove();
             layerControlColonias.remove();
-            layerControlCompetencias.remove();
             
             layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
             layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
             layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar Alcaldias
             layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map); // Agregar controlador de polígonos
             layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
-            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
         }
 
-        // Llama a la función para cargar capas de Ageb
+        // Llama a la función para cargar tus archivos GeoJSON
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
         loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
-        
-        // Llama a la función para cargar capas de Uso de Suelo
+
         loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Habitacional Comercio', 'UsoSuelo');
@@ -619,11 +608,9 @@
         loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Oficinas', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Uso de suelo Plurifamiliar', 'UsoSuelo');
 
-        // Llama a la función para cargar capas de alcaldías
+        // Nuevas capas de alcaldías
         loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
         loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
-        
-        // Llama a la función para cargar capas de Poligonos
         loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
         loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Poligono Azcapotzalco', 'Poligono');
         loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Poligono Benito Juárez', 'Poligono');
@@ -631,18 +618,12 @@
         loadGeoJSON('Poligono_Ecatepec.geojson', 'Poligono Ecatepec', 'Poligono');
         loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Poligono M. Hidalgo', 'Poligono');
         loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Poligono Nezahualcoyotl', 'Poligono');
-       
-        // Llama a la función para cargar capas de Colonias
         loadGeoJSON('Col_Azcapotzalco.geojson', 'Colonias Azcapotzalco', 'Col');
         loadGeoJSON('Col_Benito_Juarez.geojson', 'Colonias Benito Juárez', 'Col');
         loadGeoJSON('Col_Cuauhtemoc.geojson', 'Colonias Cuauhtemoc', 'Col');
         loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
         loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
         loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colobias Nezahualcoyotl', 'Col');
-
-        // Llama a la función para cargar capas de Colonias
-        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias');    
-        
     </script>
 </body>
 </html>
