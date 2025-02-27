@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval' https://unpkg.com; img-src 'self' data: https://raw.githubusercontent.com; font-src 'self' https://unpkg.com data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval' https://unpkg.com;">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.umd.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
         <style>
             /* Estilos generales para el mapa y los marcadores */
             html, body { height: 100%; margin: 0; }
@@ -165,56 +165,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
-        window.onload = function() {
-            // Inicializar el mapa centrado en las coordenadas especificadas
-            var map = L.map("map").setView([19.4326, -99.1332], 12);
-        
-            // Inicializa el proveedor de geocoding (puedes usar OpenStreetMap, Google, etc.)
-            const provider = new GeoSearch.OpenStreetMapProvider();
-        
-            // Inicializa el control de búsqueda
-            const searchControl = new GeoSearch.GeoSearchControl({
-                provider: provider,
-                style: 'bar',
-                searchLabel: 'Introduce una dirección',
-                marker: {
-                    icon: new L.Icon.Default(),
-                    draggable: false,
-                },
-                resultFormat: ({ result }) => result?.label,
-            });
-        
-            // Agrega el control de búsqueda al mapa
-            map.addControl(searchControl);
-        
-            // Escucha el evento 'geosearch/showlocation' para manejar los resultados
-            map.on('geosearch/showlocation', (result) => {
-                const latlng = result.location;
-                map.setView(latlng, 12);
-                L.marker(latlng).addTo(map).bindPopup(result.location.label).openPopup();
-            });
-        
-            // Capas base del mapa
-            var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-            }).addTo(map);
-        
-            var googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
-                attribution: "Google"
-            });
-        
-            var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
-                attribution: "Google"
-            });
-        
-            // Controladores de capas
-            var baseMaps = {
-                "OpenStreetMap": osmLayer,
-                "Google Road": googleRoadLayer,
-                "Google Hybrid": googleHybridLayer
-            };
-        
-            var layerControlBase = L.control.layers(baseMaps, null).addTo(map); // Línea 188
+        // Inicializar el mapa centrado en las coordenadas especificadas
+        var map = L.map("map").setView([19.4326, -99.1332], 12);
+        // Control de búsqueda
+        var geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false
+        })
+        .on('markgeocode', function(e) {
+            var latlng = e.geocode.center;
+            map.setView(latlng, 12); // Centrar el mapa en la ubicación seleccionada
+            L.marker(latlng).addTo(map).bindPopup(e.geocode.name).openPopup(); // Agregar un marcador en la ubicación
+        })
+        .addTo(map);
+
+        // Capas base del mapa
+        var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        }).addTo(map);
+
+        var googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+            attribution: "Google"
+        });
+
+        var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
+            attribution: "Google"
+        });
 
         // Objetos para almacenar las capas GeoJSON
         var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
@@ -512,13 +487,6 @@
             }
         }
 
-        // Variables para confirmar si ya se cargaron los geojson
-        var agebLoaded = false;
-        var usoSueloLoaded = false;
-        var alcaldiasLoaded = false;
-        var poligonosLoaded = false;
-        var coloniasLoaded = false;
-            
         // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
@@ -595,14 +563,12 @@
                             geoJsonLayersColonias[layerName] = geoJsonLayer;
                             break;
                     }
+        
                     // Actualizar los controladores de capas
                     updateLayerControls();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-        
-        // Función para crear los controladores de capas después de que todas las capas estén cargadas
-        function createLayerControls() {    
         // Controladores de capas
         var baseMaps = {
             "OpenStreetMap": osmLayer,
@@ -641,7 +607,6 @@
             layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
         }
 
-         }    
         // Llama a la función para cargar tus archivos GeoJSON
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
         loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
@@ -671,7 +636,6 @@
         loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
         loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
         loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colobias Nezahualcoyotl', 'Col');
-    }
     </script>
 </body>
 </html>
