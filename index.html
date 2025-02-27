@@ -183,7 +183,9 @@
         var geoJsonLayersAgeb = {};
         var geoJsonLayersUsoSuelo = {};
         var geoJsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
+        var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
         var differenceLayer = null; // Capa para la diferencia de círculos
+        
 
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
@@ -508,7 +510,7 @@
                         default:
                             color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
                     }
-
+        
                     var geoJsonLayer = L.geoJSON(data, {
                         style: {
                             color: color,
@@ -516,7 +518,6 @@
                             fillOpacity: 0.5
                         },
                         onEachFeature: function (feature, layer) {
-                            // Mostrar los atributos en un popup al hacer clic
                             layer.on('click', function () {
                                 var properties = feature.properties;
                                 var popupContent = "<b>Atributos:</b><br>";
@@ -527,22 +528,23 @@
                             });
                         }
                     });
-
+        
                     // Agregar la capa al objeto correspondiente según el tipo
                     if (type === 'Ageb') {
                         geoJsonLayersAgeb[layerName] = geoJsonLayer;
                     } else if (type === 'UsoSuelo') {
                         geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
                     } else if (type === 'AlcaldiasMunicipios') {
-                        geoJsonLayersAlcaldias[layerName] = geoJsonLayer; // Agregar a alcaldías
+                        geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                    } else if (type === 'Poligono') {
+                        geoJsonLayersPoligonos[layerName] = geoJsonLayer; // Agregar a polígonos
                     }
-
+        
                     // Actualizar los controladores de capas
                     updateLayerControls();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
         // Controladores de capas
         var baseMaps = {
             "OpenStreetMap": osmLayer,
@@ -554,6 +556,7 @@
         var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
         var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
         var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
+        var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
 
         // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
         var layerControlRadios = L.control.layers(null, {
