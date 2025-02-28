@@ -476,6 +476,14 @@
             }
         }
 
+        // Crear un icono personalizado usando el logotipo
+        var customIcon = L.icon({
+            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
+            iconSize: [30, 30], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
+        });
+
         // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
@@ -519,6 +527,9 @@
         
                     // Crear la capa GeoJSON
                     const geoJsonLayer = L.geoJSON(data, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
+                        },
                         style: {
                             color: color,
                             weight: 2,
