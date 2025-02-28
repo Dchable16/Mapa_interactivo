@@ -511,7 +511,7 @@
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Ecatepec.geojson', name: 'Colonias Ecatepec', type: 'Col' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Miguel_Hidalgo.geojson', name: 'Colonias M. Hidalgo', type: 'Col' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.geojson', name: 'Colonias Nezahualcoyotl', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.geojson', name: 'Tiendas 3B', type: 'Competencias' }
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.json', name: 'Tiendas 3B', type: 'Competencias' }
         ];
         function loadSelectedGeoJSON(layers) {
             layers.forEach(layer => {
@@ -689,7 +689,7 @@
         loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colonias Nezahualcoyotl', 'Col');
 
         // Llama a la función para cargar capas de Colonias
-        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
+        loadGeoJSON('Tiendas_3B.json', 'Tiendas 3B', 'Competencias'); 
     </script>
 </body>
 </html>
