@@ -130,8 +130,8 @@
 </head>
 <body>
     <div class="header-container">
-        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
-        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Cambia la ruta a la ubicación de tu logotipo -->
+        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
+        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
     </div>
     <div class="form-container">
         <div class="form-row">
@@ -183,55 +183,16 @@
 
         // Llama a la función para inicializar el mapa
         initializeMap();
-    </script
 
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-topojson"></script> <!-- Asegúrate de incluir esta línea -->
-    <script>
-        // Inicializar el mapa centrado en las coordenadas especificadas
-        var map = L.map("map").setView([19.4326, -99.1332], 12);
-        
-        // Capas base del mapa
-        var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }).addTo(map);
-
-        var googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
-            attribution: "Google"
-        });
-
-        var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
-            attribution: "Google"
-        });
-
-        // Objetos para almacenar las capas TopoJSON
-        var JsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
-        var JsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
-        var JsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
-        var JsonLayersPoligonos = {}; // Almacena las capas de polígonos
-        var JsonLayersColonias = {}; // Almacena las capas de Colonias
-        var JsonLayersCompetencias = {}; // Almacena las capas de Competencias
-        var differenceLayer = null; // Capa para la diferencia de círculos
-        
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
         var currentLabel = null; // Etiqueta del marcador
         var radius400m = null; // Círculo de 400 metros
         var radius800m = null; // Círculo de 800 metros
 
-        // Grupos de capas para los radios y la diferencia
+        // Grupos de capas para los radios
         var radius400Layer = L.layerGroup().addTo(map);
         var radius800Layer = L.layerGroup().addTo(map);
-        var differenceLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de diferencia
-        var bufferLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de buffer
-        var differenceExtractionLayerGroup = L.layerGroup().addTo(map); // Grupo para la extracción de diferencia
-
-        // Variables para confirmar si ya se crearon los radios y extracciones
-        var radius400Created = false;
-        var radius800Created = false;
-        var differenceCreated = false;
-        var bufferDataExtracted = false;
-        var differenceDataExtracted = false;
 
         // Función para agregar un marcador en el mapa
         function addMarker() {
@@ -289,16 +250,6 @@
                     radius800m = null;
                 }
 
-                // Eliminar la capa de diferencia si existe
-                if (differenceLayer) {
-                    differenceLayerGroup.removeLayer(differenceLayer);
-                    differenceLayer = null;
-                }
-
-                // Eliminar las capas de extracción si existen
-                bufferLayerGroup.clearLayers(); // Eliminar todas las capas de buffer
-                differenceExtractionLayerGroup.clearLayers(); // Eliminar todas las capas de diferencia
-                
                 // Limpiar los cuadros de coordenadas
                 document.getElementById('lat').value = '';
                 document.getElementById('lon').value = '';
@@ -309,11 +260,6 @@
         // Función para agregar radios de 400m o 800m alrededor del marcador
         function addRadius(radius) {
             if (currentMarker) {
-                // Verificar si el radio ya ha sido creado
-                if ((radius === 400 && radius400Created) || (radius === 800 && radius800Created)) {
-                    alert("El radio  ya ha sido creado.");
-                    return;
-                }
                 var latLng = currentMarker.getLatLng();
                 var circle = L.circle(latLng, {
                     color: radius === 400 ? 'blue' : 'red',
@@ -325,11 +271,9 @@
                 if (radius === 400) {
                     radius400Layer.addLayer(circle);
                     radius400m = circle;
-                    radius400Created = true; // Marcar como creado
                 } else if (radius === 800) {
                     radius800Layer.addLayer(circle);
                     radius800m = circle;
-                    radius800Created = true; // Marcar como creado
                 }
             } else {
                 alert("Primero debe agregar un marcador.");
@@ -338,342 +282,17 @@
 
         // Función para calcular la diferencia entre dos círculos
         function calculateDifference() {
-            if (currentMarker && radius400m && radius800m) {
-                // Verificar si la diferencia ya ha sido calculada
-                if (differenceCreated) {
-                    alert("La diferencia entre radios ya ha sido calculada.");
-                    return;
-                }
-                var latLng = currentMarker.getLatLng();
-                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-                var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-
-                // Calcular la diferencia
-                var difference = turf.difference(circle800, circle400);
-
-                // Convertir a GeoJSON
-                var geoJson = turf.featureCollection([difference]);
-
-                // Agregar la capa de diferencia al grupo de capas
-                if (differenceLayer) {
-                    differenceLayerGroup.removeLayer(differenceLayer);
-                }
-                differenceLayer = L.geoJSON(geoJson, {
-                    style: {
-                        color: 'green',
-                        weight: 2,
-                        fillOpacity: 0.5
-                    }
-                }).addTo(differenceLayerGroup);
-                differenceCreated = true; // Marcar como creado
-            } else {
-                alert("Asegúrese de que el marcador y ambos radios estén creados.");
-            }
+            // Implementa la lógica para calcular la diferencia entre los radios
         }
 
         // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
-            if (bufferDataExtracted) {
-                alert("La extracción de datos Ageb con el radio  de 400m ya ha sido realizada.");
-                return;
-            }
-            if (currentMarker) {
-                var lat = parseFloat(document.getElementById('lat').value);
-                var lon = parseFloat(document.getElementById('lon').value);
-                var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.json' : 'Ageb_urb_Edo_Mex.json';
-
-                fetch(selectedLayer)
-                    .then(response => response.json())
-                    .then(data => {
-                        var buffer = turf.circle([lon, lat], 400, { units: 'meters' });
-                        var featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
-                            var intersection = turf.intersect(feature, buffer);
-                            if (intersection) {
-                                // Añadir propiedades del polígono original
-                                intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
-                                return intersection;
-                            }
-                            return null;
-                        }).filter(feature => feature !== null));
-
-                        // Calcular áreas de los polígonos resultantes
-                        console.log("Características dentro del buffer:", featuresWithinBuffer.features);
-                        var areasBuffer = featuresWithinBuffer.features.map(feature => Math.floor(turf.area(feature)));
-                        console.log("Áreas calculadas del buffer:", areasBuffer);
-                        featuresWithinBuffer.features.forEach((feature, index) => {
-                            feature.properties.area = areasBuffer[index]; // Añadir área como propiedad
-                        });
-
-                        var geoJsonResultBuffer = turf.featureCollection(featuresWithinBuffer.features);
-                        var extractedBufferLayer = L.geoJSON(geoJsonResultBuffer, {
-                            style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('click', function () {
-                                    var properties = feature.properties;
-                                    var popupContent = "<b>Atributos:</b><br>";
-                                    for (var key in properties) {
-                                        popupContent += key + ": " + properties[key] + "<br>";
-                                    }
-                                    layer.bindPopup(popupContent).openPopup();
-                                });
-                            }
-                        }).addTo(bufferLayerGroup);
-                        bufferDataExtracted = true; // Marcar como creado
-                    })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
-            } else {
-                alert("Primero debe agregar un marcador.");
-            }
+            // Implementa la lógica para extraer datos del buffer
         }
 
         // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
-            if (differenceDataExtracted) {
-                alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
-                return;
-            }
-            if (currentMarker) {
-                var latLng = currentMarker.getLatLng();
-                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-                var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-
-                // Calcular la diferencia (la "dona")
-                var difference = turf.difference(circle800, circle400);
-
-                if (difference) {
-                    var lat = parseFloat(document.getElementById('lat').value);
-                    var lon = parseFloat(document.getElementById('lon').value);
-                    var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.json' : 'Ageb_urb_Edo_Mex.json';
-
-                    fetch(selectedLayer)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Extraer características que intersectan con la diferencia
-                            var featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
-                                try {
-                                    var intersection = turf.intersect(feature, difference);
-                                    if (intersection) {
-                                        // Añadir propiedades del polígono original
-                                        intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
-                                        return intersection; // Retornar solo si hay intersección
-                                    }
-                                } catch (error) {
-                                    console.error("Error de intersección:", error);
-                                }
-                                return null; // Retornar null si no hay intersección
-                            }).filter(feature => feature !== null)); // Filtrar los nulls
-
-                            if (featuresWithinDifference.features.length > 0) {
-                                // Calcular áreas de los polígonos resultantes
-                                console.log("Características dentro de la diferencia:", featuresWithinDifference.features);
-                                var areasDifference = featuresWithinDifference.features.map(feature => Math.floor(turf.area(feature)));
-                                console.log("Áreas calculadas de la diferencia:", areasDifference);
-                                featuresWithinDifference.features.forEach((feature, index) => {
-                                    feature.properties.area = areasDifference[index]; // Añadir área como propiedad
-                                });
-
-                                var geoJsonResultDifference = turf.featureCollection(featuresWithinDifference.features);
-                                var extractedDifferenceLayer = L.geoJSON(geoJsonResultDifference, {
-                                    style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
-                                    onEachFeature: function (feature, layer) {
-                                        layer.on('click', function () {
-                                            var properties = feature.properties;
-                                            var popupContent = "<b>Atributos:</b><br>";
-                                            for (var key in properties) {
-                                                popupContent += key + ": " + properties[key] + "<br>";
-                                            }
-                                            layer.bindPopup(popupContent).openPopup();
-                                        });
-                                    }
-                                }).addTo(differenceExtractionLayerGroup);
-                                differenceDataExtracted = true; // Marcar como creado
-                            } else {
-                                alert("No se encontraron polígonos que intersecten con la diferencia.");
-                            }
-                        })
-                        .catch(err => console.error('Error al cargar la capa base:', err));
-                } else {
-                    alert("No se pudo calcular la diferencia entre los círculos.");
-                }
-            } else {
-                alert("Asegúrese de que el marcador esté creado.");
-            }
-        }
-
-        // Crear un icono personalizado usando el logotipo
-        var customIcon = L.icon({
-            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
-            iconSize: [20, 20], // Tamaño del icono
-            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
-            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
-        });
-
-        // Definir todas las capas JSON que se pueden cargar
-        const layersToLoad = [
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_CDMX.json', name: 'Ageb CDMX', type: 'Ageb' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_Edo_Mex.json', name: 'Ageb Edo. Mex.', type: 'Ageb' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_centro_barrio.json', name: 'Uso de suelo Centro Barrio', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_equipamento.json', name: 'Uso de suelo Equipamento', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio.json', name: 'Uso de suelo Habitacional Comercio', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio_planta_baja.json', name: 'Uso de suelo Planta Baja', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_entrada.json', name: 'Uso de suelo Entrada', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_mixto.json', name: 'Uso de suelo Mixto', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_oficinas.json', name: 'Uso de suelo Oficinas', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_plurifamiliar.json', name: 'Uso de suelo Plurifamiliar', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Alcaldias_Ciudad_de_México.json', name: 'Alcaldías CDMX', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.json', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Region_Vallejo.json', name: 'Poligono Región Vallejo', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Azcapotzalco.json', name: 'Poligono Azcapotzalco', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Benito_Juarez.json', name: 'Poligono Benito Juárez', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Cuauhtemoc.json', name: 'Poligono Cuauhtémoc', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Ecatepec.json', name: 'Poligono Ecatepec', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Miguel_Hidalgo.json', name: 'Poligono M. Hidalgo', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Nezahualcoyotl.json', name: 'Poligono Nezahualcoyotl', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Azcapotzalco.json', name: 'Colonias Azcapotzalco', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Benito_Juarez.json', name: 'Colonias Benito Juárez', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Cuauhtemoc.json', name: 'Colonias Cuauhtemoc', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Ecatepec.json', name: 'Colonias Ecatepec', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Miguel_Hidalgo.json', name: 'Colonias M. Hidalgo', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.json', name: 'Colonias Nezahualcoyotl', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.json', name: 'Tiendas 3B', type: 'Competencias' }
-        ];
-
-        function loadSelectedTopoJSON(layers) {
-            layers.forEach(layer => {
-                loadTopoJSON(layer.url, layer.name, layer.type);
-            });
-        }
-
-        // Función para cargar todas las capas definidas
-        function loadAllTopoJSON() {
-            loadSelectedTopoJSON(layersToLoad);
-        }
-        
-        // Llama a la función para cargar todas las capas
-        loadAllTopoJSON();       
-
-        // Cargar capas TopoJSON desde archivos
-        function loadTopoJSON(url, layerName, type) {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error al cargar ${url}: ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Verificar que el objeto sea un TopoJSON válido
-                    if (!data || !data.type || data.type !== 'Topology') {
-                        throw new Error('El objeto no es un TopoJSON válido.');
-                    }
-                    let color;
-
-                    // Asignar el color según el tipo de capa
-                    switch (type) {
-                        case 'UsoSuelo':
-                            color = 'rgb(128, 0, 128)'; // Violeta
-                            break;
-                        case 'Poligono':
-                            color = 'rgb(255, 127, 80)'; // Coral
-                            break;
-                        case 'Col':
-                            color = 'rgb(0, 150, 136)'; // Verde Esmeralda
-                            break;
-                        case 'Region_Vallejo':
-                            color = 'rgb(204, 85, 0)'; // Naranja Quemado
-                            break;
-                        case 'Municip_Estado_de_Mexico':
-                            color = 'rgb(255, 255, 0)'; // Amarillo Limón
-                            break;
-                        case 'Alcaldias_Ciudad_de_México':
-                            color = 'rgb(230, 230, 250)'; // Lavanda
-                            break;
-                        case 'Competencias':
-                            color = 'rgb(204, 85, 0)'; // Naranja Quemado    
-                            break;
-                        case 'Ageb':
-                            color = url.includes('Ageb_urb_CDMX.json') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
-                            break;
-                        default:
-                            color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
-                    }
-
-                    // Crear la capa TopoJSON
-                    const topoJsonLayer = L.topoJson(data, {
-                        pointToLayer: function (feature, latlng) {
-                            return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
-                        },
-                        style: {
-                            color: color,
-                            weight: 2,
-                            fillOpacity: 0.5
-                        },
-                        onEachFeature: function (feature, layer) {
-                            layer.on('click', function () {
-                                const properties = feature.properties;
-                                let popupContent = "<b>Atributos:</b><br>";
-                                for (const key in properties) {
-                                    popupContent += `${key}: ${properties[key]}<br>`;
-                                }
-                                layer.bindPopup(popupContent).openPopup();
-                            });
-                        }
-                    });
-
-                    // Agregar la capa al objeto correspondiente según el tipo
-                    switch (type) {
-                        case 'Ageb':
-                            JsonLayersAgeb[layerName] = topoJsonLayer;
-                            break;
-                        case 'UsoSuelo':
-                            JsonLayersUsoSuelo[layerName] = topoJsonLayer;
-                            break;
-                        case 'AlcaldiasMunicipios':
-                            JsonLayersAlcaldias[layerName] = topoJsonLayer;
-                            break;
-                        case 'Poligono':
-                            JsonLayersPoligonos[layerName] = topoJsonLayer;
-                            break;
-                        case 'Col':
-                            JsonLayersColonias[layerName] = topoJsonLayer;
-                            break;
-                        case 'Competencias':
-                            JsonLayersCompetencias[layerName] = topoJsonLayer;
-                            break;    
-                    }
-
-                    // Actualizar los controladores de capas
-                    updateLayerControls();
-                })
-                .catch(err => console.error('Error al cargar TopoJSON:', err));
-        }
-
-        // Función para actualizar los controles de capas
-        function updateLayerControls() {
-            var overlays = {};
-
-            // Agregar las capas a los controles
-            for (const layerName in JsonLayersAgeb) {
-                overlays[layerName] = JsonLayersAgeb[layerName];
-            }
-            for (const layerName in JsonLayersUsoSuelo) {
-                overlays[layerName] = JsonLayersUsoSuelo[layerName];
-            }
-            for (const layerName in JsonLayersAlcaldias) {
-                overlays[layerName] = JsonLayersAlcaldias[layerName];
-            }
-            for (const layerName in JsonLayersPoligonos) {
-                overlays[layerName] = JsonLayersPoligonos[layerName];
-            }
-            for (const layerName in JsonLayersColonias) {
-                overlays[layerName] = JsonLayersColonias[layerName];
-            }
-            for (const layerName in JsonLayersCompetencias) {
-                overlays[layerName] = JsonLayersCompetencias[layerName];
-            }
-
-            // Crear el control de capas
-            L.control.layers(null, overlays).addTo(map);
+            // Implementa la lógica para extraer datos de la diferencia
         }
     </script>
 </body>
