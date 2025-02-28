@@ -1,132 +1,132 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval' https://unpkg.com; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-            <style>
-            /* Estilos generales para el mapa y los marcadores */
-            html, body { height: 100%; margin: 0; }
-            #map { width: 100%; height: 100%; }
-            .yellow-marker {
-                background-color: #fff201;
-                border: 3px solid black;
-                border-radius: 50%;
-                width: 20px;
-                height: 20px;
-                display: inline-block;
-            }
-            .marker-label {
-                position: absolute;
-                top: -40px;
-                left: 25px;
-                color: black;
-                text-shadow: 0 0 2px yellow;
-                font-weight: bold;
-                font-size: 13px;
-            }
-            /* Estilos para el formulario */
-            .form-container {
-                background-color: rgb(248, 248, 255);
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-                margin: 20px auto; /* Centrar el formulario */
-                max-width: 600px; /* Ancho máximo base */
-            }
-            .form-container label {
-                color: rgb(0, 187, 45); /*Color de letra de los cuadros de texto*/
-                font-weight: bold;
-            }
-            .form-container input {
-                margin-bottom: 10px;
-                padding: 5px;
-                border: 1px solid rgb(0, 187, 45); /*color de línea cuadro de texto */
-                border-radius: 5px;
-                width: calc(100% - 12px);
-            }
-            .form-container button {
-                background-color: rgb(230, 25, 25);
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 10px;
-                cursor: pointer;
-                width: 100%;
-                font-weight: bold;
-            }
-            .form-container button:hover {
-                background-color: rgb(200, 25, 25);
-            }
-            /* Estilo para el contenedor de botones */
-            .button-container {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px;
-            }
-            /* Estilo para el logotipo */
-            .logo {
-                display: block;
-                margin: 0 auto 20px;
-                width: 120px; /* Ajuste de tamaño */
-            }
-            /* Estilo para centrar el título */
-            .centered-title {
-                text-align: center;
-                margin: 20px 0;
-            }
-            /* Estilo para las filas del formulario */
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-topojson@0.2.0/dist/leaflet-topojson.min.js"></script>
+    <style>
+        /* Estilos generales para el mapa y los marcadores */
+        html, body { height: 100%; margin: 0; }
+        #map { width: 100%; height: 100%; }
+        .yellow-marker {
+            background-color: #fff201;
+            border: 3px solid black;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+        .marker-label {
+            position: absolute;
+            top: -40px;
+            left: 25px;
+            color: black;
+            text-shadow: 0 0 2px yellow;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        /* Estilos para el formulario */
+        .form-container {
+            background-color: rgb(248, 248, 255);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin: 20px auto; /* Centrar el formulario */
+            max-width: 600px; /* Ancho máximo base */
+        }
+        .form-container label {
+            color: rgb(0, 187, 45); /*Color de letra de los cuadros de texto*/
+            font-weight: bold;
+        }
+        .form-container input {
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid rgb(0, 187, 45); /*color de línea cuadro de texto */
+            border-radius: 5px;
+            width: calc(100% - 12px);
+        }
+        .form-container button {
+            background-color: rgb(230, 25, 25);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        .form-container button:hover {
+            background-color: rgb(200, 25, 25);
+        }
+        /* Estilo para el contenedor de botones */
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        /* Estilo para el logotipo */
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            width: 120px; /* Ajuste de tamaño */
+        }
+        /* Estilo para centrar el título */
+        .centered-title {
+            text-align: center;
+            margin: 20px 0;
+        }
+        /* Estilo para las filas del formulario */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+        /* Media queries para diseño responsivo */
+        @media (max-width: 768px) {
             .form-row {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
+                grid-template-columns: 1fr; /* Apilar en una columna */
             }
-            .form-column {
-                display: flex;
-                flex-direction: column;
+            .button-container {
+                grid-template-columns: 1fr; /* Apilar botones */
             }
-        
-            /* Media queries para diseño responsivo */
-            @media (max-width: 768px) {
-                .form-row {
-                    grid-template-columns: 1fr; /* Apilar en una columna */
-                }
-                .button-container {
-                    grid-template-columns: 1fr; /* Apilar botones */
-                }
-                .logo {
-                    width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
-                }
-                body {
-                    padding: 6px; /* Añadir padding alrededor del contenido */
-                    margin: 0; /* Asegurar que no haya márgenes predeterminados */
-                    height: 100%; /* Asegurar que el body ocupe toda la altura */
-                }
-                #map {
-                    width: 100%;
-                    height: 100%;
-                }
+            .logo {
+                width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
             }
-        
-            /* Ajustes para pantallas más grandes (computadoras) */
-            @media (min-width: 1024px) {
-                .form-container {
-                    max-width: 65%; /* Aumentar el ancho máximo en computadoras */
-                    padding: 30px; /* Aumentar el padding para más espacio */
-                }
-                .form-container input, .form-container button {
-                    padding: 5px; /* Aumentar el padding de los inputs y botones */
-                    font-size: 15px; /* Aumentar el tamaño de la fuente */
-                }
-                .logo {
-                    width: 200px; /* Aumentar el tamaño del logo */
-                }
+            body {
+                padding: 6px; /* Añadir padding alrededor del contenido */
+                margin: 0; /* Asegurar que no haya márgenes predeterminados */
+                height: 100%; /* Asegurar que el body ocupe toda la altura */
             }
-        </style>
+            #map {
+                width: 100%;
+                height: 100%;
+            }
+        }
+        /* Ajustes para pantallas más grandes (computadoras) */
+        @media (min-width: 1024px) {
+            .form-container {
+                max-width: 65%; /* Aumentar el ancho máximo en computadoras */
+                padding: 30px; /* Aumentar el padding para más espacio */
+            }
+            .form-container input, .form-container button {
+                padding: 5px; /* Aumentar el padding de los inputs y botones */
+                font-size: 15px; /* Aumentar el tamaño de la fuente */
+            }
+            .logo {
+                width: 200px; /* Aumentar el tamaño del logo */
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="header-container">
@@ -162,6 +162,7 @@
     <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-topojson"></script> <!-- Asegúrate de incluir esta línea -->
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         var map = L.map("map").setView([19.4326, -99.1332], 12);
@@ -179,16 +180,15 @@
             attribution: "Google"
         });
 
-        // Objetos para almacenar las capas GeoJSON
-        var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
-        var geoJsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
-        var geoJsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
-        var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
-        var geoJsonLayersColonias = {}; // Almacena las capas de Colonias
-        var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
+        // Objetos para almacenar las capas TopoJSON
+        var JsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
+        var JsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
+        var JsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
+        var JsonLayersPoligonos = {}; // Almacena las capas de polígonos
+        var JsonLayersColonias = {}; // Almacena las capas de Colonias
+        var JsonLayersCompetencias = {}; // Almacena las capas de Competencias
         var differenceLayer = null; // Capa para la diferencia de círculos
         
-
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
         var currentLabel = null; // Etiqueta del marcador
@@ -356,7 +356,7 @@
             if (currentMarker) {
                 var lat = parseFloat(document.getElementById('lat').value);
                 var lon = parseFloat(document.getElementById('lon').value);
-                var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.json' : 'Ageb_urb_Edo_Mex.json';
 
                 fetch(selectedLayer)
                     .then(response => response.json())
@@ -419,7 +419,7 @@
                 if (difference) {
                     var lat = parseFloat(document.getElementById('lat').value);
                     var lon = parseFloat(document.getElementById('lon').value);
-                    var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                    var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.json' : 'Ageb_urb_Edo_Mex.json';
 
                     fetch(selectedLayer)
                         .then(response => response.json())
@@ -484,50 +484,52 @@
             popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
 
-        // Definir todas las capas GeoJSON que se pueden cargar
+        // Definir todas las capas JSON que se pueden cargar
         const layersToLoad = [
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_CDMX.geojson', name: 'Ageb CDMX', type: 'Ageb' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_Edo_Mex.geojson', name: 'Ageb Edo. Mex.', type: 'Ageb' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_centro_barrio.geojson', name: 'Uso de suelo Centro Barrio', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_equipamento.geojson', name: 'Uso de suelo Equipamento', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio.geojson', name: 'Uso de suelo Habitacional Comercio', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio_planta_baja.geojson', name: 'Uso de suelo Planta Baja', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_entrada.geojson', name: 'Uso de suelo Entrada', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_mixto.geojson', name: 'Uso de suelo Mixto', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_oficinas.geojson', name: 'Uso de suelo Oficinas', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_plurifamiliar.geojson', name: 'Uso de suelo Plurifamiliar', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Alcaldias_Ciudad_de_México.geojson', name: 'Alcaldías CDMX', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.geojson', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Region_Vallejo.geojson', name: 'Poligono Región Vallejo', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Azcapotzalco.geojson', name: 'Poligono Azcapotzalco', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Benito_Juarez.geojson', name: 'Poligono Benito Juárez', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Cuauhtemoc.geojson', name: 'Poligono Cuauhtémoc', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Ecatepec.geojson', name: 'Poligono Ecatepec', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Miguel_Hidalgo.geojson', name: 'Poligono M. Hidalgo', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Nezahualcoyotl.geojson', name: 'Poligono Nezahualcoyotl', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Azcapotzalco.geojson', name: 'Colonias Azcapotzalco', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Benito_Juarez.geojson', name: 'Colonias Benito Juárez', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Cuauhtemoc.geojson', name: 'Colonias Cuauhtemoc', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Ecatepec.geojson', name: 'Colonias Ecatepec', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Miguel_Hidalgo.geojson', name: 'Colonias M. Hidalgo', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.geojson', name: 'Colonias Nezahualcoyotl', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.geojson', name: 'Tiendas 3B', type: 'Competencias' }
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_CDMX.json', name: 'Ageb CDMX', type: 'Ageb' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_Edo_Mex.json', name: 'Ageb Edo. Mex.', type: 'Ageb' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_centro_barrio.json', name: 'Uso de suelo Centro Barrio', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_equipamento.json', name: 'Uso de suelo Equipamento', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio.json', name: 'Uso de suelo Habitacional Comercio', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio_planta_baja.json', name: 'Uso de suelo Planta Baja', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_entrada.json', name: 'Uso de suelo Entrada', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_mixto.json', name: 'Uso de suelo Mixto', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_oficinas.json', name: 'Uso de suelo Oficinas', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_plurifamiliar.json', name: 'Uso de suelo Plurifamiliar', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Alcaldias_Ciudad_de_México.json', name: 'Alcaldías CDMX', type: 'AlcaldiasMunicipios' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.json', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Region_Vallejo.json', name: 'Poligono Región Vallejo', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Azcapotzalco.json', name: 'Poligono Azcapotzalco', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Benito_Juarez.json', name: 'Poligono Benito Juárez', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Cuauhtemoc.json', name: 'Poligono Cuauhtémoc', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Ecatepec.json', name: 'Poligono Ecatepec', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Miguel_Hidalgo.json', name: 'Poligono M. Hidalgo', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Nezahualcoyotl.json', name: 'Poligono Nezahualcoyotl', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Azcapotzalco.json', name: 'Colonias Azcapotzalco', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Benito_Juarez.json', name: 'Colonias Benito Juárez', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Cuauhtemoc.json', name: 'Colonias Cuauhtemoc', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Ecatepec.json', name: 'Colonias Ecatepec', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Miguel_Hidalgo.json', name: 'Colonias M. Hidalgo', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.json', name: 'Colonias Nezahualcoyotl', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.json', name: 'Tiendas 3B', type: 'Competencias' }
         ];
-        function loadSelectedGeoJSON(layers) {
+
+        function loadSelectedTopoJSON(layers) {
             layers.forEach(layer => {
-                loadGeoJSON(layer.url, layer.name, layer.type);
+                loadTopoJSON(layer.url, layer.name, layer.type);
             });
         }
+
         // Función para cargar todas las capas definidas
-        function loadAllGeoJSON() {
-            loadSelectedGeoJSON(layersToLoad);
+        function loadAllTopoJSON() {
+            loadSelectedTopoJSON(layersToLoad);
         }
         
         // Llama a la función para cargar todas las capas
-        loadAllGeoJSON();       
-        
-       // Cargar capas GeoJSON desde archivos
-        function loadGeoJSON(url, layerName, type) {
+        loadAllTopoJSON();       
+
+        // Cargar capas TopoJSON desde archivos
+        function loadTopoJSON(url, layerName, type) {
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
@@ -536,6 +538,10 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Verificar que el objeto sea un TopoJSON válido
+                    if (!data || !data.type || data.type !== 'Topology') {
+                        throw new Error('El objeto no es un TopoJSON válido.');
+                    }
                     let color;
         
                     // Asignar el color según el tipo de capa
@@ -562,17 +568,17 @@
                             color = 'rgb(204, 85, 0)'; // Naranja Quemado    
                             break;
                         case 'Ageb':
-                            color = url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
+                            color = url.includes('Ageb_urb_CDMX.json') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
                             break;
                         default:
                             color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
                     }
         
-                    // Crear la capa GeoJSON
-                    const geoJsonLayer = L.geoJSON(data, {
+                    // Crear la capa TopoJSON
+                    const topoJsonLayer = L.topoJson(data, {
                         pointToLayer: function (feature, latlng) {
                             return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
-                        },	
+                        },
                         style: {
                             color: color,
                             weight: 2,
@@ -593,103 +599,61 @@
                     // Agregar la capa al objeto correspondiente según el tipo
                     switch (type) {
                         case 'Ageb':
-                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            JsonLayersAgeb[layerName] = topoJsonLayer;
                             break;
                         case 'UsoSuelo':
-                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            JsonLayersUsoSuelo[layerName] = topoJsonLayer;
                             break;
                         case 'AlcaldiasMunicipios':
-                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            JsonLayersAlcaldias[layerName] = topoJsonLayer;
                             break;
                         case 'Poligono':
-                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            JsonLayersPoligonos[layerName] = topoJsonLayer;
                             break;
                         case 'Col':
-                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            JsonLayersColonias[layerName] = topoJsonLayer;
                             break;
                         case 'Competencias':
-                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            JsonLayersCompetencias[layerName] = topoJsonLayer;
                             break;    
                     }
         
                     // Actualizar los controladores de capas
                     updateLayerControls();
                 })
-                .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
-        
-        // Controladores de capas
-        var baseMaps = {
-            "OpenStreetMap": osmLayer,
-            "Google Road": googleRoadLayer,
-            "Google Hybrid": googleHybridLayer
-        };
-        
-        var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
-        var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-        var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-        var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
-        var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-        var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-        var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-        
-        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
-        var layerControlRadios = L.control.layers(null, {
-            "Radio 400m": radius400Layer,
-            "Radio 800m": radius800Layer,
-            "Diferencia entre Radios": differenceLayerGroup,
-            "Extracción Ageb - Radio 400m": bufferLayerGroup,
-            "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
-        }, { collapsed: true }).addTo(map);
-        // Función para actualizar los controladores de capas
+                .catch(err => {
+                    console.error('Error al cargar TopoJSON:', err);
+                    alert(`Error al cargar TopoJSON: ${err.message}`); // Alertar al usuario
+                });
+}
+
+        // Función para actualizar los controles de capas
         function updateLayerControls() {
-            if (layerControlAgeb) layerControlAgeb.remove();
-            if (layerControlUsoSuelo) layerControlUsoSuelo.remove();
-            if (layerControlAlcaldias) layerControlAlcaldias.remove();
-            if (layerControlPoligonos) layerControlPoligonos.remove();
-            if (layerControlColonias) layerControlColonias.remove();
-            if (layerControlCompetencias) layerControlCompetencias.remove();
-        
-            layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-            layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+            var overlays = {};
+
+            // Agregar las capas a los controles
+            for (const layerName in JsonLayersAgeb) {
+                overlays[layerName] = JsonLayersAgeb[layerName];
+            }
+            for (const layerName in JsonLayersUsoSuelo) {
+                overlays[layerName] = JsonLayersUsoSuelo[layerName];
+            }
+            for (const layerName in JsonLayersAlcaldias) {
+                overlays[layerName] = JsonLayersAlcaldias[layerName];
+            }
+            for (const layerName in JsonLayersPoligonos) {
+                overlays[layerName] = JsonLayersPoligonos[layerName];
+            }
+            for (const layerName in JsonLayersColonias) {
+                overlays[layerName] = JsonLayersColonias[layerName];
+            }
+            for (const layerName in JsonLayersCompetencias) {
+                overlays[layerName] = JsonLayersCompetencias[layerName];
+            }
+
+            // Crear el control de capas
+            L.control.layers(null, overlays).addTo(map);
         }
-
-        // Llama a la función para cargar tus archivos GeoJSON
-        loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
-        loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
-
-        loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Habitacional Comercio', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Uso de suelo Planta Baja', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_entrada.geojson', 'Uso de suelo Entrada', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Mixto', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Oficinas', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Uso de suelo Plurifamiliar', 'UsoSuelo');
-
-        // Nuevas capas de alcaldías
-        loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
-        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
-        loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
-        loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Poligono Azcapotzalco', 'Poligono');
-        loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Poligono Benito Juárez', 'Poligono');
-        loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Poligono Cuauhtémoc', 'Poligono');
-        loadGeoJSON('Poligono_Ecatepec.geojson', 'Poligono Ecatepec', 'Poligono');
-        loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Poligono M. Hidalgo', 'Poligono');
-        loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Poligono Nezahualcoyotl', 'Poligono');
-        loadGeoJSON('Col_Azcapotzalco.geojson', 'Colonias Azcapotzalco', 'Col');
-        loadGeoJSON('Col_Benito_Juarez.geojson', 'Colonias Benito Juárez', 'Col');
-        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Colonias Cuauhtemoc', 'Col');
-        loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
-        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
-        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colonias Nezahualcoyotl', 'Col');
-
-        // Llama a la función para cargar capas de Colonias
-        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
     </script>
 </body>
 </html>
