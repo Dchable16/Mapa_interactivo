@@ -89,7 +89,6 @@
             display: flex;
             flex-direction: column;
         }
-
         /* Media queries para diseño responsivo */
         @media (max-width: 768px) {
             .form-row {
@@ -111,7 +110,6 @@
                 height: 100%;
             }
         }
-
         /* Ajustes para pantallas más grandes (computadoras) */
         @media (min-width: 1024px) {
             .form-container {
@@ -182,6 +180,15 @@
             attribution: "Google"
         });
 
+        // Objetos para almacenar las capas GeoJSON
+        var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
+        var geoJsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
+        var geoJsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
+        var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
+        var geoJsonLayersColonias = {}; // Almacena las capas de Colonias
+        var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
+        var differenceLayer = null; // Capa para la diferencia de círculos
+        
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
         var currentLabel = null; // Etiqueta del marcador
@@ -194,6 +201,13 @@
         var differenceLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de diferencia
         var bufferLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de buffer
         var differenceExtractionLayerGroup = L.layerGroup().addTo(map); // Grupo para la extracción de diferencia
+
+        // Variables para confirmar si ya se crearon los radios y extracciones
+        var radius400Created = false;
+        var radius800Created = false;
+        var differenceCreated = false;
+        var bufferDataExtracted = false;
+        var differenceDataExtracted = false;
 
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
@@ -333,7 +347,7 @@
             if (currentMarker) {
                 // Verificar si el radio ya ha sido creado
                 if ((radius === 400 && radius400Created) || (radius === 800 && radius800Created)) {
-                    alert("El radio ya ha sido creado.");
+                    alert("El radio  ya ha sido creado.");
                     return;
                 }
                 var latLng = currentMarker.getLatLng();
@@ -396,7 +410,7 @@
         // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
             if (bufferDataExtracted) {
-                alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
+                alert("La extracción de datos Ageb con el radio  de 400m ya ha sido realizada.");
                 return;
             }
             if (currentMarker) {
@@ -404,45 +418,9 @@
                 var lon = parseFloat(document.getElementById('lon').value);
                 var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
 
-                fetch(selectedLayer)
-                    .then(response => response.json())
-                    .then(data => {
-                        var buffer = turf.circle([lon, lat], 400, { units: 'meters' });
-                        var featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
-                            var intersection = turf.intersect(feature, buffer);
-                            if (intersection) {
-                                // Añadir propiedades del polígono original
-                                intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
-                                return intersection;
-                            }
-                            return null;
-                        }).filter(feature => feature !== null));
+                loadGeoJSON(selectedLayer, 'Ageb Layer', 'Ageb'); // Cargar la capa bajo demanda
 
-                        // Calcular áreas de los polígonos resultantes
-                        console.log("Características dentro del buffer:", featuresWithinBuffer.features);
-                        var areasBuffer = featuresWithinBuffer.features.map(feature => Math.floor(turf.area(feature)));
-                        console.log("Áreas calculadas del buffer:", areasBuffer);
-                        featuresWithinBuffer.features.forEach((feature, index) => {
-                            feature.properties.area = areasBuffer[index]; // Añadir área como propiedad
-                        });
-
-                        var geoJsonResultBuffer = turf.featureCollection(featuresWithinBuffer.features);
-                        var extractedBufferLayer = L.geoJSON(geoJsonResultBuffer, {
-                            style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('click', function () {
-                                    var properties = feature.properties;
-                                    var popupContent = "<b>Atributos:</b><br>";
-                                    for (var key in properties) {
-                                        popupContent += key + ": " + properties[key] + "<br>";
-                                    }
-                                    layer.bindPopup(popupContent).openPopup();
-                                });
-                            }
-                        }).addTo(bufferLayerGroup);
-                        bufferDataExtracted = true; // Marcar como creado
-                    })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
+                // Aquí puedes agregar la lógica para manejar la extracción de datos
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -467,53 +445,9 @@
                     var lon = parseFloat(document.getElementById('lon').value);
                     var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
 
-                    fetch(selectedLayer)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Extraer características que intersectan con la diferencia
-                            var featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
-                                try {
-                                    var intersection = turf.intersect(feature, difference);
-                                    if (intersection) {
-                                        // Añadir propiedades del polígono original
-                                        intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
-                                        return intersection; // Retornar solo si hay intersección
-                                    }
-                                } catch (error) {
-                                    console.error("Error de intersección:", error);
-                                }
-                                return null; // Retornar null si no hay intersección
-                            }).filter(feature => feature !== null)); // Filtrar los nulls
+                    loadGeoJSON(selectedLayer, 'Ageb Layer', 'Ageb'); // Cargar la capa bajo demanda
 
-                            if (featuresWithinDifference.features.length > 0) {
-                                // Calcular áreas de los polígonos resultantes
-                                console.log("Características dentro de la diferencia:", featuresWithinDifference.features);
-                                var areasDifference = featuresWithinDifference.features.map(feature => Math.floor(turf.area(feature)));
-                                console.log("Áreas calculadas de la diferencia:", areasDifference);
-                                featuresWithinDifference.features.forEach((feature, index) => {
-                                    feature.properties.area = areasDifference[index]; // Añadir área como propiedad
-                                });
-
-                                var geoJsonResultDifference = turf.featureCollection(featuresWithinDifference.features);
-                                var extractedDifferenceLayer = L.geoJSON(geoJsonResultDifference, {
-                                    style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
-                                    onEachFeature: function (feature, layer) {
-                                        layer.on('click', function () {
-                                            var properties = feature.properties;
-                                            var popupContent = "<b>Atributos:</b><br>";
-                                            for (var key in properties) {
-                                                popupContent += key + ": " + properties[key] + "<br>";
-                                            }
-                                            layer.bindPopup(popupContent).openPopup();
-                                        });
-                                    }
-                                }).addTo(differenceExtractionLayerGroup);
-                                differenceDataExtracted = true; // Marcar como creado
-                            } else {
-                                alert("No se encontraron polígonos que intersecten con la diferencia.");
-                            }
-                        })
-                        .catch(err => console.error('Error al cargar la capa base:', err));
+                    // Aquí puedes agregar la lógica para manejar la extracción de datos
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
                 }
@@ -522,12 +456,70 @@
             }
         }
 
-        // Llama a la función para cargar tus archivos GeoJSON solo cuando sean activados en los controladores
-        var layerControlUsoSuelo = L.control.layers(null, {
-            "Uso de suelo Centro Barrio": function() { loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo'); },
-            "Uso de suelo Equipamento": function() { loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo'); },
-            // Agrega más capas según sea necesario
+        // Crear un icono personalizado usando el logotipo
+        var customIcon = L.icon({
+            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
+            iconSize: [20, 20], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
+        });
+
+        // Controladores de capas
+        var baseMaps = {
+            "OpenStreetMap": osmLayer,
+            "Google Road": googleRoadLayer,
+            "Google Hybrid": googleHybridLayer
+        };
+
+        var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
+        var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
+        var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
+        var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
+        var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
+        var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
+        var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+
+        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
+        var layerControlRadios = L.control.layers(null, {
+            "Radio 400m": radius400Layer,
+            "Radio 800m": radius800Layer,
+            "Diferencia entre Radios": differenceLayerGroup,
+            "Extracción Ageb - Radio 400m": bufferLayerGroup,
+            "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
+
+        // Llama a la función para cargar tus archivos GeoJSON
+        loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
+        loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
+
+        loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Habitacional Comercio', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Uso de suelo Planta Baja', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_entrada.geojson', 'Uso de suelo Entrada', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Mixto', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Oficinas', 'UsoSuelo');
+        loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Uso de suelo Plurifamiliar', 'UsoSuelo');
+
+        // Nuevas capas de alcaldías
+        loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
+        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
+        loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
+        loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Poligono Azcapotzalco', 'Poligono');
+        loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Poligono Benito Juárez', 'Poligono');
+        loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Poligono Cuauhtémoc', 'Poligono');
+        loadGeoJSON('Poligono_Ecatepec.geojson', 'Poligono Ecatepec', 'Poligono');
+        loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Poligono M. Hidalgo', 'Poligono');
+        loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Poligono Nezahualcoyotl', 'Poligono');
+        loadGeoJSON('Col_Azcapotzalco.geojson', 'Colonias Azcapotzalco', 'Col');
+        loadGeoJSON('Col_Benito_Juarez.geojson', 'Colonias Benito Juárez', 'Col');
+        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Colonias Cuauhtemoc', 'Col');
+        loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
+        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
+        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colobias Nezahualcoyotl', 'Col');
+
+        // Llama a la función para cargar capas de Colonias
+        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
     </script>
 </body>
 </html>
