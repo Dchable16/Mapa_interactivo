@@ -543,7 +543,7 @@
                         throw new Error('El objeto no es un TopoJSON válido.');
                     }
                     let color;
-
+        
                     // Asignar el color según el tipo de capa
                     switch (type) {
                         case 'UsoSuelo':
@@ -573,7 +573,7 @@
                         default:
                             color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
                     }
-
+        
                     // Crear la capa TopoJSON
                     const topoJsonLayer = L.topoJson(data, {
                         pointToLayer: function (feature, latlng) {
@@ -595,7 +595,7 @@
                             });
                         }
                     });
-
+        
                     // Agregar la capa al objeto correspondiente según el tipo
                     switch (type) {
                         case 'Ageb':
@@ -617,12 +617,15 @@
                             JsonLayersCompetencias[layerName] = topoJsonLayer;
                             break;    
                     }
-
+        
                     // Actualizar los controladores de capas
                     updateLayerControls();
                 })
-                .catch(err => console.error('Error al cargar TopoJSON:', err));
-        }
+                .catch(err => {
+                    console.error('Error al cargar TopoJSON:', err);
+                    alert(`Error al cargar TopoJSON: ${err.message}`); // Alertar al usuario
+                });
+}
 
         // Función para actualizar los controles de capas
         function updateLayerControls() {
