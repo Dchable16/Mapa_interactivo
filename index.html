@@ -570,7 +570,9 @@
         
                     // Crear la capa GeoJSON
                     const geoJsonLayer = L.geoJSON(data, {
-                        	
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
+                        },	
                         style: {
                             color: color,
                             weight: 2,
