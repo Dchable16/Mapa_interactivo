@@ -237,14 +237,34 @@
                         case 'Poligono':
                             color = 'rgb(255, 127, 80)'; // Coral
                             break;
-                        // Agrega otros casos según sea necesario
+                        case 'Col':
+                            color = 'rgb(0, 150, 136)'; // Verde Esmeralda
+                            break;
+                        case 'Region_Vallejo':
+                            color = 'rgb(204, 85, 0)'; // Naranja Quemado
+                            break;
+                        case 'Municip_Estado_de_Mexico':
+                            color = 'rgb(255, 255, 0)'; // Amarillo Limón
+                            break;
+                        case 'Alcaldias_Ciudad_de_México':
+                            color = 'rgb(230, 230, 250)'; // Lavanda
+                            break;
+                        case 'Competencias':
+                            color = 'rgb(204, 85, 0)'; // Naranja Quemado    
+                            break;
+                        case 'Ageb':
+                            color = url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
+                            break;
                         default:
                             color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
                     }
 
                     // Crear la capa GeoJSON
                     const geoJsonLayer = L.geoJSON(data, {
-                        style: {
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
+                        },
+                            style: {
                             color: color,
                             weight: 2,
                             fillOpacity: 0.5
@@ -420,7 +440,45 @@
 
                 loadGeoJSON(selectedLayer, 'Ageb Layer', 'Ageb'); // Cargar la capa bajo demanda
 
-                // Aquí puedes agregar la lógica para manejar la extracción de datos
+                fetch(selectedLayer)
+                    .then(response => response.json())
+                    .then(data => {
+                        var buffer = turf.circle([lon, lat], 400, { units: 'meters' });
+                        var featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
+                            var intersection = turf.intersect(feature, buffer);
+                            if (intersection) {
+                                // Añadir propiedades del polígono original
+                                intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
+                                return intersection;
+                            }
+                            return null;
+                        }).filter(feature => feature !== null));
+
+                        // Calcular áreas de los polígonos resultantes
+                        console.log("Características dentro del buffer:", featuresWithinBuffer.features);
+                        var areasBuffer = featuresWithinBuffer.features.map(feature => Math.floor(turf.area(feature)));
+                        console.log("Áreas calculadas del buffer:", areasBuffer);
+                        featuresWithinBuffer.features.forEach((feature, index) => {
+                            feature.properties.area = areasBuffer[index]; // Añadir área como propiedad
+                        });
+
+                        var geoJsonResultBuffer = turf.featureCollection(featuresWithinBuffer.features);
+                        var extractedBufferLayer = L.geoJSON(geoJsonResultBuffer, {
+                            style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
+                            onEachFeature: function (feature, layer) {
+                                layer.on('click', function () {
+                                    var properties = feature.properties;
+                                    var popupContent = "<b>Atributos:</b><br>";
+                                    for (var key in properties) {
+                                        popupContent += key + ": " + properties[key] + "<br>";
+                                    }
+                                    layer.bindPopup(popupContent).openPopup();
+                                });
+                            }
+                        }).addTo(bufferLayerGroup);
+                        bufferDataExtracted = true; // Marcar como creado
+                    })
+                    .catch(err => console.error('Error al cargar la capa base:', err));
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -447,7 +505,53 @@
 
                     loadGeoJSON(selectedLayer, 'Ageb Layer', 'Ageb'); // Cargar la capa bajo demanda
 
-                    // Aquí puedes agregar la lógica para manejar la extracción de datos
+                    fetch(selectedLayer)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Extraer características que intersectan con la diferencia
+                            var featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
+                                try {
+                                    var intersection = turf.intersect(feature, difference);
+                                    if (intersection) {
+                                        // Añadir propiedades del polígono original
+                                        intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
+                                        return intersection; // Retornar solo si hay intersección
+                                    }
+                                } catch (error) {
+                                    console.error("Error de intersección:", error);
+                                }
+                                return null; // Retornar null si no hay intersección
+                            }).filter(feature => feature !== null)); // Filtrar los nulls
+
+                            if (featuresWithinDifference.features.length > 0) {
+                                // Calcular áreas de los polígonos resultantes
+                                console.log("Características dentro de la diferencia:", featuresWithinDifference.features);
+                                var areasDifference = featuresWithinDifference.features.map(feature => Math.floor(turf.area(feature)));
+                                console.log("Áreas calculadas de la diferencia:", areasDifference);
+                                featuresWithinDifference.features.forEach((feature, index) => {
+                                    feature.properties.area = areasDifference[index]; // Añadir área como propiedad
+                                });
+
+                                var geoJsonResultDifference = turf.featureCollection(featuresWithinDifference.features);
+                                var extractedDifferenceLayer = L.geoJSON(geoJsonResultDifference, {
+                                    style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
+                                    onEachFeature: function (feature, layer) {
+                                        layer.on('click', function () {
+                                            var properties = feature.properties;
+                                            var popupContent = "<b>Atributos:</b><br>";
+                                            for (var key in properties) {
+                                                popupContent += key + ": " + properties[key] + "<br>";
+                                            }
+                                            layer.bindPopup(popupContent).openPopup();
+                                        });
+                                    }
+                                }).addTo(differenceExtractionLayerGroup);
+                                differenceDataExtracted = true; // Marcar como creado
+                            } else {
+                                alert("No se encontraron polígonos que intersecten con la diferencia.");
+                            }
+                        })
+                        .catch(err => console.error('Error al cargar la capa base:', err));
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
                 }
