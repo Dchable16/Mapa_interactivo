@@ -14,26 +14,6 @@
         /* Estilos generales para el mapa y los marcadores */
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
-        /* Otros estilos... */
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-
-    <script>
-        // Verificar si L.topoJson está disponible
-        console.log(typeof L.topoJson); // Esto debería imprimir "function"
-
-        // Inicializar el mapa
-        var map = L.map("map").setView([19.4326, -99.1332], 12);
-        // Capas base del mapa...
-    </script>
-</body>
-</html>
-    <style>
-        /* Estilos generales para el mapa y los marcadores */
-        html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: 100%; }
         .yellow-marker {
             background-color: #fff201;
             border: 3px solid black;
@@ -180,6 +160,7 @@
         </div>
     </div>
     <div id="map"></div>
+
     <script>
         // Variable global para el mapa
         var map;
@@ -202,7 +183,6 @@
 
         // Llama a la función para inicializar el mapa
         initializeMap();
-    
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
