@@ -513,7 +513,11 @@
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.geojson', name: 'Colonias Nezahualcoyotl', type: 'Col' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.geojson', name: 'Tiendas 3B', type: 'Competencias' }
         ];
-        
+        function loadSelectedGeoJSON(layers) {
+            layers.forEach(layer => {
+                loadGeoJSON(layer.url, layer.name, layer.type);
+            });
+        }
         // Función para cargar todas las capas definidas
         function loadAllGeoJSON() {
             loadSelectedGeoJSON(layersToLoad);
