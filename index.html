@@ -591,16 +591,14 @@
             // Actualizar los controladores de capas
             updateLayerControls();
         }
-            }     
-                .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
+        
         // Controladores de capas
         var baseMaps = {
             "OpenStreetMap": osmLayer,
             "Google Road": googleRoadLayer,
             "Google Hybrid": googleHybridLayer
         };
-
+        
         var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
         var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
         var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
@@ -608,8 +606,7 @@
         var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
         var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
         var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-
-
+        
         // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
         var layerControlRadios = L.control.layers(null, {
             "Radio 400m": radius400Layer,
@@ -618,7 +615,6 @@
             "Extracción Ageb - Radio 400m": bufferLayerGroup,
             "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
-
         // Función para actualizar los controladores de capas
         function updateLayerControls() {
             layerControlAgeb.remove();
