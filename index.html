@@ -659,19 +659,19 @@
         }, { collapsed: true }).addTo(map);
         // Función para actualizar los controladores de capas
         function updateLayerControls() {
-            layerControlAgeb.remove();
-            layerControlUsoSuelo.remove();
-            layerControlAlcaldias.remove(); // Remover controlador de alcaldías
-            layerControlPoligonos.remove();
-            layerControlColonias.remove();
-            layerControlCompetencias.remove();
-            
+            if (layerControlAgeb) layerControlAgeb.remove();
+            if (layerControlUsoSuelo) layerControlUsoSuelo.remove();
+            if (layerControlAlcaldias) layerControlAlcaldias.remove();
+            if (layerControlPoligonos) layerControlPoligonos.remove();
+            if (layerControlColonias) layerControlColonias.remove();
+            if (layerControlCompetencias) layerControlCompetencias.remove();
+        
             layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
             layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar Alcaldias
-            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map); // Agregar controlador de polígonos
-            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
-            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map); // Agregar controlador de Competencias
+            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
+            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
+            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
+            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
         }
 
         // Llama a la función para cargar tus archivos GeoJSON
