@@ -497,7 +497,7 @@
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_oficinas.geojson', name: 'Uso de suelo Oficinas', type: 'UsoSuelo' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_plurifamiliar.geojson', name: 'Uso de suelo Plurifamiliar', type: 'UsoSuelo' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Alcaldias_Ciudad_de_México.geojson', name: 'Alcaldías CDMX', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.geojson', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.json', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Region_Vallejo.geojson', name: 'Poligono Región Vallejo', type: 'Poligono' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Azcapotzalco.geojson', name: 'Poligono Azcapotzalco', type: 'Poligono' },
             { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Benito_Juarez.geojson', name: 'Poligono Benito Juárez', type: 'Poligono' },
@@ -673,7 +673,7 @@
 
         // Nuevas capas de alcaldías
         loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
-        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
+        loadGeoJSON('Municip_Estado_de_Mexico.json', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
         loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
         loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Poligono Azcapotzalco', 'Poligono');
         loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Poligono Benito Juárez', 'Poligono');
