@@ -611,8 +611,24 @@
                     break;
             }
 
-            // Actualizar los controladores de capas
-            updateLayerControls();
+            function updateLayerControls() {
+    // Eliminar controladores existentes
+    for (var key in layerControls) {
+        if (layerControls[key]) {
+            layerControls[key].remove();
+        }
+    }
+    layerControls = {}; // Limpiar el objeto de referencias
+
+    // Re-crear controladores con grupos de capas actualizados
+    for (var type in geoJsonLayers) {
+        // Crear un objeto con pares clave-valor para las capas superpuestas
+        var overlayMaps = {};
+        overlayMaps[type] = geoJsonLayers[type];
+
+        layerControls[type] = L.control.layers(null, overlayMaps, { collapsed: true }).addTo(map);
+    }
+}
         })
         .catch(err => console.error('Error al cargar GeoJSON:', err));
 }
