@@ -196,16 +196,6 @@
         var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
         var differenceLayer = null; // Capa para la diferencia de círculos
 
-        
-            // Crear los controladores de capas
-            var layerControlAgeb = createLayerControl(geoJsonLayersAgeb, 'Ageb');
-            var layerControlUsoSuelo = createLayerControl(geoJsonLayersUsoSuelo, 'UsoSuelo');
-            var layerControlAlcaldias = createLayerControl(geoJsonLayersAlcaldias, 'Alcaldias');
-            var layerControlPoligonos = createLayerControl(geoJsonLayersPoligonos, 'Poligonos');
-            var layerControlColonias = createLayerControl(geoJsonLayersColonias, 'Colonias');
-            var layerControlCompetencias = createLayerControl(geoJsonLayersCompetencias, 'Competencias');
-
-
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
         var currentLabel = null; // Etiqueta del marcador
