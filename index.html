@@ -158,6 +158,14 @@
 
         let currentMarker = null;
 
+        // Definición del icono personalizado
+        const customIcon = L.icon({
+            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
+            iconSize: [20, 20],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
         function addMarker() {
             const lat = parseFloat(document.getElementById('lat').value);
             const lon = parseFloat(document.getElementById('lon').value);
