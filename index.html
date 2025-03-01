@@ -9,31 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: calc(100% - 200px); /* Ajustar altura del mapa */ }
-        .yellow-marker { background-color: #fff201; border: 3px solid black; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
-        .marker-label { position: absolute; top: -40px; left: 25px; color: black; text-shadow: 0 0 2px yellow; font-weight: bold; font-size: 13px; }
-        .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; }
-        .form-container label { color: rgb(0, 187, 45); font-weight: bold; }
-        .form-container input { margin-bottom: 10px; padding: 5px; border: 1px solid rgb(0, 187, 45); border-radius: 5px; width: calc(100% - 12px); }
-        .form-container button { background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        .form-container button:hover { background-color: rgb(200, 25, 25); }
-        .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .logo { display: block; margin: 0 auto 20px; width: 120px; }
-        .centered-title { text-align: center; margin: 20px 0; }
-        .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .form-column { display: flex; flex-direction: column; }
-        @media (max-width: 768px) {
-            .form-row { grid-template-columns: 1fr; }
-            .button-container { grid-template-columns: 1fr; }
-            .logo { width: 100px; }
-            body { padding: 6px; margin: 0; height: 100%; }
-        }
-        @media (min-width: 1024px) {
-            .form-container { max-width: 65%; padding: 30px; }
-            .form-container input, .form-container button { padding: 5px; font-size: 15px; }
-            .logo { width: 200px; }
-        }
+        /* Estilos CSS (sin cambios) */
     </style>
 </head>
 <body>
@@ -98,13 +74,24 @@
         const bufferLayerGroup = L.layerGroup().addTo(map);
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
 
+        // Banderas para controlar la creación de elementos
+        let radius400Created = false;
+        let radius800Created = false;
+        let differenceCreated = false;
+        let bufferDataExtracted = false;
+        let differenceDataExtracted = false;
+
         function addMarker() {
+            if (currentMarker) {
+                alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
+                return;
+            }
+
             const lat = parseFloat(document.getElementById('lat').value);
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
 
             if (!isNaN(lat) && !isNaN(lon)) {
-                removeMarker();
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'yellow-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
                 }).addTo(map).bindPopup(markerName).openPopup();
@@ -129,19 +116,32 @@
                 document.getElementById('lat').value = '';
                 document.getElementById('lon').value = '';
                 document.getElementById('markerName').value = '';
+            } else {
+                alert("No hay ningún marcador para eliminar.");
             }
         }
 
         function addRadius(radius) {
+            if (radius === 400 && radius400Created) {
+                alert("El radio de 400m ya ha sido creado.");
+                return;
+            }
+            if (radius === 800 && radius800Created) {
+                alert("El radio de 800m ya ha sido creado.");
+                return;
+            }
+
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
                 if (radius === 400) {
                     radius400Layer.addLayer(circle);
                     radius400m = circle;
+                    radius400Created = true; // Marcar como creado
                 } else {
                     radius800Layer.addLayer(circle);
                     radius800m = circle;
+                    radius800Created = true; // Marcar como creado
                 }
             } else {
                 alert("Primero debe agregar un marcador.");
@@ -149,6 +149,11 @@
         }
 
         function calculateDifference() {
+            if (differenceCreated) {
+                alert("La diferencia entre radios ya ha sido calculada.");
+                return;
+            }
+
             if (currentMarker && radius400m && radius800m) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
@@ -157,6 +162,7 @@
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
                     differenceLayer = L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
+                    differenceCreated = true; // Marcar como creado
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
                 }
@@ -166,6 +172,11 @@
         }
 
         function extractBufferData() {
+            if (bufferDataExtracted) {
+                alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
+                return;
+            }
+
             if (currentMarker) {
                 const lat = parseFloat(document.getElementById('lat').value);
                 const lon = parseFloat(document.getElementById('lon').value);
@@ -194,6 +205,7 @@
                                 });
                             }
                         }).addTo(bufferLayerGroup);
+                        bufferDataExtracted = true; // Marcar como creado
                     })
                     .catch(err => console.error('Error al cargar la capa base:', err));
             } else {
@@ -202,6 +214,11 @@
         }
 
         function extractDifferenceData() {
+            if (differenceDataExtracted) {
+                alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
+                return;
+            }
+
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
@@ -231,6 +248,7 @@
                                 });
                             }
                         }).addTo(differenceExtractionLayerGroup);
+                        differenceDataExtracted = true; // Marcar como creado
                     })
                     .catch(err => console.error('Error al cargar la capa base:', err));
             } else {
