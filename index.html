@@ -187,13 +187,13 @@
     };
     allLayersControl.addTo(map);
 
-        // Objetos para almacenar las capas GeoJSON
-        var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
-        var geoJsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
-        var geoJsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
-        var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
-        var geoJsonLayersColonias = {}; // Almacena las capas de Colonias
-        var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
+        / Objetos para almacenar las capas GeoJSON
+        var geoJsonLayersAgeb = L.layerGroup(); // Almacena las capas de las capas Ageb
+        var geoJsonLayersUsoSuelo = L.layerGroup(); // Almacena las capas Uso de suelos
+        var geoJsonLayersAlcaldias = L.layerGroup(); // Almacena las capas de alcaldías
+        var geoJsonLayersPoligonos = L.layerGroup(); // Almacena las capas de polígonos
+        var geoJsonLayersColonias = L.layerGroup(); // Almacena las capas de Colonias
+        var geoJsonLayersCompetencias = L.layerGroup(); // Almacena las capas de Competencias
         var differenceLayer = null; // Capa para la diferencia de círculos
 
         // Variables para el marcador y los radios
@@ -600,22 +600,22 @@
                     // Agregar la capa al objeto correspondiente según el tipo
                     switch (type) {
                         case 'Ageb':
-                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            geoJsonLayersAgeb.addLayer(geoJsonLayer); // Agregar la capa al grupo
                             break;
                         case 'UsoSuelo':
-                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            geoJsonLayersUsoSuelo.addLayer(geoJsonLayer); // Agregar la capa al grupo
                             break;
                         case 'AlcaldiasMunicipios':
-                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            geoJsonLayersAlcaldias.addLayer(geoJsonLayer); // Agregar la capa al grupo
                             break;
                         case 'Poligono':
-                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            geoJsonLayersPoligonos.addLayer(geoJsonLayer); // Agregar la capa al grupo
                             break;
                         case 'Col':
-                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            geoJsonLayersColonias.addLayer(geoJsonLayer); // Agregar la capa al grupo
                             break;
                         case 'Competencias':
-                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            geoJsonLayersCompetencias.addLayer(geoJsonLayer); // Agregar la capa al grupo
                             break;    
                     }
         
