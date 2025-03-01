@@ -196,58 +196,6 @@
         var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
         var differenceLayer = null; // Capa para la diferencia de círculos
 
-        // Función para crear un controlador de capas con checkboxes
-            function createLayerControl(layers, title) {
-                var control = L.control.layers(null, {}, { collapsed: true }).addTo(map);
-                
-                // Crear un checkbox para activar/desactivar todas las capas
-                var div = L.DomUtil.create('div', 'layer-control');
-                div.innerHTML = `<input type="checkbox" id="toggleAll${title}"> Activar/desactivar todas las capas<br>`;
-                control.getContainer().appendChild(div);
-                
-                // Evento para manejar el cambio del checkbox de todas las capas
-                document.getElementById(`toggleAll${title}`).addEventListener('change', function() {
-                    var checked = this.checked;
-                    for (var layerName in layers) {
-                        if (checked) {
-                            map.addLayer(layers[layerName]);
-                            document.getElementById(layerName).checked = true; // Marcar individualmente
-                        } else {
-                            map.removeLayer(layers[layerName]);
-                            document.getElementById(layerName).checked = false; // Desmarcar individualmente
-                        }
-                    }
-                });
-        
-                // Agregar cada capa con su propio checkbox
-                for (var layerName in layers) {
-                    var layerCheckbox = L.DomUtil.create('input', 'layer-checkbox');
-                    layerCheckbox.type = 'checkbox';
-                    layerCheckbox.id = layerName;
-                    layerCheckbox.checked = map.hasLayer(layers[layerName]); // Estado inicial
-                    layerCheckbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            map.addLayer(layers[this.id]);
-                        } else {
-                            map.removeLayer(layers[this.id]);
-                        }
-                        // Sincronizar el checkbox de "activar/desactivar todas"
-                        var allChecked = true;
-                        for (var layer in layers) {
-                            if (!document.getElementById(layer).checked) {
-                                allChecked = false;
-                                break;
-                            }
-                        }
-                        document.getElementById(`toggleAll${title}`).checked = allChecked;
-                    });
-                    div.appendChild(layerCheckbox);
-                    div.innerHTML += `${layerName}<br>`;
-                    control.getContainer().appendChild(div);
-                }
-        
-                return control;
-            }
         
             // Crear los controladores de capas
             var layerControlAgeb = createLayerControl(geoJsonLayersAgeb, 'Ageb');
