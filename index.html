@@ -187,32 +187,6 @@
     };
     allLayersControl.addTo(map);
 
-    // Función para activar/desactivar todas las capas
-    function toggleAllLayers(checked) {
-        // Activar o desactivar todas las capas de Ageb
-        for (var layerName in geoJsonLayersAgeb) {
-            if (checked) {
-                map.addLayer(geoJsonLayersAgeb[layerName]);
-            } else {
-                map.removeLayer(geoJsonLayersAgeb[layerName]);
-            }
-        }
-        // Repite para otros grupos de capas
-        for (var layerName in geoJsonLayersUsoSuelo) {
-            if (checked) {
-                map.addLayer(geoJsonLayersUsoSuelo[layerName]);
-            } else {
-                map.removeLayer(geoJsonLayersUsoSuelo[layerName]);
-            }
-        }
-        // Agrega la lógica para los otros grupos de capas aquí...
-    }
-
-    // Evento para manejar el cambio del checkbox
-    document.getElementById('toggleAllLayers').addEventListener('change', function() {
-        toggleAllLayers(this.checked);
-         });
-        
         // Objetos para almacenar las capas GeoJSON
         var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
         var geoJsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
