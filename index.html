@@ -660,92 +660,13 @@
             }
         }
         
-        // Cargar capas GeoJSON desde archivos
-        function loadGeoJSON(url, layerName, type) {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error al cargar ${url}: ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // ... (código para asignar color y crear geoJsonLayer)
-        
-                    // Agregar la capa al grupo correspondiente según el tipo
-                    if (geoJsonLayers[type]) {
-                        geoJsonLayers[type].addLayer(geoJsonLayer);
-                    }
-        
+                
                     // Actualizar los controladores de capas
                     updateLayerControls();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
         
-        // Llama a la función para cargar todas las capas
-        loadAllGeoJSON();
-
-        loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Habitacional Comercio', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Uso de suelo Planta Baja', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_entrada.geojson', 'Uso de suelo Entrada', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Mixto', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Oficinas', 'UsoSuelo');
-        loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Uso de suelo Plurifamiliar', 'UsoSuelo');
-
-        // Nuevas capas de alcaldías
-        loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
-        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
-        loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
-        loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Poligono Azcapotzalco', 'Poligono');
-        loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Poligono Benito Juárez', 'Poligono');
-        loadGeoJSON('Poligono_Cuauhtemoc.geojson', 'Poligono Cuauhtémoc', 'Poligono');
-        loadGeoJSON('Poligono_Ecatepec.geojson', 'Poligono Ecatepec', 'Poligono');
-        loadGeoJSON('Poligono_Miguel_Hidalgo.geojson', 'Poligono M. Hidalgo', 'Poligono');
-        loadGeoJSON('Poligono_Nezahualcoyotl.geojson', 'Poligono Nezahualcoyotl', 'Poligono');
-        loadGeoJSON('Col_Azcapotzalco.geojson', 'Colonias Azcapotzalco', 'Col');
-        loadGeoJSON('Col_Benito_Juarez.geojson', 'Colonias Benito Juárez', 'Col');
-        loadGeoJSON('Col_Cuauhtemoc.geojson', 'Colonias Cuauhtemoc', 'Col');
-        loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
-        loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
-        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colonias Nezahualcoyotl', 'Col');
-
-        // Llama a la función para cargar capas de Colonias
-        loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
-        
-            function createLayerControlWithCheckbox(layerGroup, layerName) {
-                var checkbox = L.control({ position: 'topright' });
-                checkbox.onAdd = function () {
-                    var div = L.DomUtil.create('div', 'layer-control');
-                    div.innerHTML = `<input type="checkbox" id="${layerName}-toggle" checked> ${layerName}`;
-                    div.firstChild.onclick = function () {
-                        var isChecked = div.firstChild.checked;
-                        layerGroup.eachLayer(function (layer) {
-                            if (isChecked) {
-                                map.addLayer(layer);
-                            } else {
-                                map.removeLayer(layer);
-                            }
-                        });
-                    };
-                    return div;
-                };
-                checkbox.addTo(map);
-            }
-        
-            function addLayerControlWithCheckboxes() {
-                createLayerControlWithCheckbox(geoJsonLayersAgeb, "Ageb");
-                createLayerControlWithCheckbox(geoJsonLayersUsoSuelo, "Uso de Suelo");
-                createLayerControlWithCheckbox(geoJsonLayersAlcaldias, "Alcaldías");
-                createLayerControlWithCheckbox(geoJsonLayersPoligonos, "Polígonos");
-                createLayerControlWithCheckbox(geoJsonLayersColonias, "Colonias");
-                createLayerControlWithCheckbox(geoJsonLayersCompetencias, "Competencias");
-            }
-        
-            // Llama a la función para agregar los controles de capas
-            addLayerControlWithCheckboxes();
     </script>
 </body>
 </html>
