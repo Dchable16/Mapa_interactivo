@@ -625,49 +625,66 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
         
-        // Controladores de capas
+        // Controladores de capas (inicialización única)
         var baseMaps = {
             "OpenStreetMap": osmLayer,
             "Google Road": googleRoadLayer,
             "Google Hybrid": googleHybridLayer
         };
         
-        var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
-        var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-        var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-        var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-        var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-        var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-        var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+        var geoJsonLayers = { // Objeto para almacenar grupos de capas
+            "Ageb": geoJsonLayersAgeb,
+            "UsoSuelo": geoJsonLayersUsoSuelo,
+            "AlcaldiasMunicipios": geoJsonLayersAlcaldias,
+            "Poligono": geoJsonLayersPoligonos,
+            "Col": geoJsonLayersColonias,
+            "Competencias": geoJsonLayersCompetencias
+        };
         
-        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
-        var layerControlRadios = L.control.layers(null, {
-            "Radio 400m": radius400Layer,
-            "Radio 800m": radius800Layer,
-            "Diferencia entre Radios": differenceLayerGroup,
-            "Extracción Ageb - Radio 400m": bufferLayerGroup,
-            "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
-        }, { collapsed: true }).addTo(map);
+        var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
+        var layerControls = {}; // Para almacenar referencias a los controladores de capas
+        
         // Función para actualizar los controladores de capas
         function updateLayerControls() {
-            if (layerControlAgeb) layerControlAgeb.remove();
-            if (layerControlUsoSuelo) layerControlUsoSuelo.remove();
-            if (layerControlAlcaldias) layerControlAlcaldias.remove();
-            if (layerControlPoligonos) layerControlPoligonos.remove();
-            if (layerControlColonias) layerControlColonias.remove();
-            if (layerControlCompetencias) layerControlCompetencias.remove();
+            // Eliminar controladores existentes
+            for (var key in layerControls) {
+                if (layerControls[key]) {
+                    layerControls[key].remove();
+                }
+            }
+            layerControls = {}; // Limpiar el objeto de referencias
         
-            layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-            layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+            // Re-crear controladores con grupos de capas actualizados
+            for (var type in geoJsonLayers) {
+                layerControls[type] = L.control.layers(null, geoJsonLayers[type], { collapsed: true }).addTo(map);
+            }
         }
-
-        // Llama a la función para cargar tus archivos GeoJSON
-        loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
-        loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
+        
+        // Cargar capas GeoJSON desde archivos
+        function loadGeoJSON(url, layerName, type) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // ... (código para asignar color y crear geoJsonLayer)
+        
+                    // Agregar la capa al grupo correspondiente según el tipo
+                    if (geoJsonLayers[type]) {
+                        geoJsonLayers[type].addLayer(geoJsonLayer);
+                    }
+        
+                    // Actualizar los controladores de capas
+                    updateLayerControls();
+                })
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
+        }
+        
+        // Llama a la función para cargar todas las capas
+        loadAllGeoJSON();
 
         loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo');
