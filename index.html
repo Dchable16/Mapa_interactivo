@@ -697,6 +697,38 @@
 
         // Llama a la función para cargar capas de Colonias
         loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
+        
+            function createLayerControlWithCheckbox(layerGroup, layerName) {
+                var checkbox = L.control({ position: 'topright' });
+                checkbox.onAdd = function () {
+                    var div = L.DomUtil.create('div', 'layer-control');
+                    div.innerHTML = `<input type="checkbox" id="${layerName}-toggle" checked> ${layerName}`;
+                    div.firstChild.onclick = function () {
+                        var isChecked = div.firstChild.checked;
+                        layerGroup.eachLayer(function (layer) {
+                            if (isChecked) {
+                                map.addLayer(layer);
+                            } else {
+                                map.removeLayer(layer);
+                            }
+                        });
+                    };
+                    return div;
+                };
+                checkbox.addTo(map);
+            }
+        
+            function addLayerControlWithCheckboxes() {
+                createLayerControlWithCheckbox(geoJsonLayersAgeb, "Ageb");
+                createLayerControlWithCheckbox(geoJsonLayersUsoSuelo, "Uso de Suelo");
+                createLayerControlWithCheckbox(geoJsonLayersAlcaldias, "Alcaldías");
+                createLayerControlWithCheckbox(geoJsonLayersPoligonos, "Polígonos");
+                createLayerControlWithCheckbox(geoJsonLayersColonias, "Colonias");
+                createLayerControlWithCheckbox(geoJsonLayersCompetencias, "Competencias");
+            }
+        
+            // Llama a la función para agregar los controles de capas
+            addLayerControlWithCheckboxes();
     </script>
 </body>
 </html>
