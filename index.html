@@ -658,14 +658,12 @@
             for (var type in geoJsonLayers) {
                 layerControls[type] = L.control.layers(null, geoJsonLayers[type], { collapsed: true }).addTo(map);
             }
-        }
-        
-                
+        }                
                     // Actualizar los controladores de capas
                     updateLayerControls();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
+    }    
         
     </script>
 </body>
