@@ -22,13 +22,13 @@
         html, body { height: 100%; margin: 0; }
         
         /* Estilo del contenedor del mapa */
-        #map { width: 100%; height: calc(100% - 1px); /* Ajustar altura del mapa */ }
+        #map { width: 100%; height: 100%; /* Ajustar altura del mapa */ }
         
         /* Estilos para el marcador amarillo */
         .yellow-marker { background-color: #fff201; border: 3px solid black; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
         
         /* Estilo para la etiqueta del marcador */
-        .marker-label { position: absolute; top: -40px; left: 25px; color: black; text-shadow: 0 0 2px yellow; font-weight: bold; font-size: 13px; }
+        .marker-label { position: absolute; top: -40px; left: 25px; color: white; text-shadow: 0 0 3px black; font-weight: bold; font-size: 15px; }
         
         /* Estilos para el contenedor del formulario */
         .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; }
@@ -61,7 +61,7 @@
             .form-row { grid-template-columns: 1fr; }
             .button-container { grid-template-columns: 1fr; }
             .logo { width: 80px; }
-            body { padding: 8px; margin: 0; height: 100%; }
+            body { padding: 8px; margin: 0; height: 100%;  }
         }
         
         @media (min-width: 1024px) {
@@ -151,17 +151,28 @@
         function addMarker() {
             if (currentMarker) {
                 alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
-                return; // Evitar agregar un nuevo marcador si ya existe
+                return;
             }
-
+        
             const lat = parseFloat(document.getElementById('lat').value);
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
-
+        
             if (!isNaN(lat) && !isNaN(lon)) {
+                // Crear el nuevo marcador
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'yellow-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map).bindPopup(markerName).openPopup(); // Crear y añadir el marcador al mapa
+                }).addTo(map).bindPopup(markerName).openPopup(); // Mostrar el popup con el nombre del marcador
+        
+                // Crear la etiqueta del marcador
+                const markerLabel = L.divIcon({
+                    className: 'marker-label',
+                    html: markerName,
+                    iconSize: [100, 50],
+                    iconAnchor: [50, 15]
+                });
+                L.marker([lat, lon], { icon: markerLabel }).addTo(map); // Añadir la etiqueta al mapa
+        
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
             } else {
                 alert("Por favor ingrese coordenadas válidas.");
