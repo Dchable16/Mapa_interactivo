@@ -13,6 +13,8 @@
     
     <!-- Estilo de Leaflet para el mapa -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
     
     <!-- Script de Turf.js para operaciones geoespaciales -->
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
@@ -107,6 +109,7 @@
     <div id="map"></div> <!-- Contenedor para el mapa -->
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script> <!-- Script de clustering -->
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
@@ -140,6 +143,9 @@
         const bufferLayerGroup = L.layerGroup().addTo(map);
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
 
+        // Grupo de marcadores
+        const markersClusterGroup = L.markerClusterGroup().addTo(map); // Crear grupo de clústeres para marcadores
+
         // Banderas para controlar la creación de elementos
         let radius400Created = false;
         let radius800Created = false;
@@ -165,8 +171,11 @@
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map); // Eliminar la parte de bindPopup()
-        
+                });
+                
+                // Añadir el marcador al grupo de clústeres
+                markersClusterGroup.addLayer(currentMarker);
+
                 // Crear la etiqueta del marcador
                 currentMarkerLabel = L.divIcon({
                     className: 'marker-label',
@@ -184,7 +193,7 @@
         
         function removeMarker() {
             if (currentMarker) {
-                map.removeLayer(currentMarker); // Eliminar el marcador del mapa
+                markersClusterGroup.removeLayer(currentMarker); // Eliminar el marcador del grupo de clústeres
                 const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
                 currentMarker = null; // Limpiar la variable del marcador
         
@@ -450,7 +459,7 @@
         }
 
         // Establecer el rango de zoom para las capas de uso de suelo
-        const minZoomUsoSuelo = 17; // Nivel de zoom mínimo para activar las capas de uso de suelo
+        const minZoomUsoSuelo = 15; // Nivel de zoom mínimo para activar las capas de uso de suelo
 
         // Manejar el evento de cambio de zoom
         map.on('zoomend', function() {
