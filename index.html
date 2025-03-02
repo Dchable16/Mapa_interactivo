@@ -281,11 +281,17 @@
                 return; // Evitar extraer datos si ya se ha hecho
             }
             
+            // Reiniciar la bandera de extracción de datos
+            bufferDataExtracted = false; 
+        
             if (currentMarker) {
                 const lat = parseFloat(document.getElementById('lat').value);
                 const lon = parseFloat(document.getElementById('lon').value);
                 const selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
                 
+                // Limpiar la capa de buffer antes de añadir nuevas extracciones
+                bufferLayerGroup.clearLayers();
+        
                 fetch(selectedLayer)
                     .then(response => response.json())
                     .then(data => {
@@ -307,9 +313,6 @@
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
-                        
-                        // Limpiar la capa de buffer antes de añadir nuevas extracciones
-                        bufferLayerGroup.clearLayers();
                         
                         L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
@@ -338,12 +341,18 @@
                 return; // Evitar extraer datos si ya se ha hecho
             }
             
+            // Reiniciar la bandera de extracción de datos
+            differenceDataExtracted = false; 
+        
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
                 const difference = turf.difference(circle800, circle400);
                 const selectedLayer = (latLng.lat >= 19.0 && latLng.lat <= 20.0 && latLng.lng >= -100.0 && latLng.lng <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                
+                // Limpiar la capa de diferencia antes de añadir nuevas extracciones
+                differenceExtractionLayerGroup.clearLayers();
                 
                 fetch(selectedLayer)
                     .then(response => response.json())
@@ -366,9 +375,6 @@
                             return null; // Retornar nulo si no hay intersección
                         }).filter(feature => feature !== null)); // Filtrar características nulas
                         
-                        // Limpiar la capa de diferencia antes de añadir nuevas extracciones
-                        differenceExtractionLayerGroup.clearLayers();
-                        
                         L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -388,7 +394,6 @@
                 alert("Asegúrese de que el marcador esté creado.");
             }
         }
-
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
