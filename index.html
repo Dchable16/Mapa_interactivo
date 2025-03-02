@@ -1,80 +1,120 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Configuración de la política de seguridad de contenido -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
+    
+    <!-- Configuración de caracteres y vista -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Mapa interactivo Tiendas 3B</title>
-    <link rel="icon" href="favicon.png">
+    <link rel="icon" href="favicon.png"> <!-- Icono de la página -->
+    
+    <!-- Estilo de Leaflet para el mapa -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    
+    <!-- Script de Turf.js para operaciones geoespaciales -->
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
     <style>
+        /* Estilos generales para el documento */
         html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: calc(100% - 2px); /* Ajustar altura del mapa */ }
+        
+        /* Estilo del contenedor del mapa */
+        #map { width: 100%; height: 100%; /* Ajustar altura del mapa */ }
+        
+        /* Estilos para el marcador amarillo */
         .yellow-marker { background-color: #fff201; border: 3px solid black; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
-        .marker-label { position: absolute; top: -40px; left: 25px; color: black; text-shadow: 0 0 2px yellow; font-weight: bold; font-size: 13px; }
+        
+        /* Estilo para la etiqueta del marcador */
+        .marker-label { position: absolute; top: -40px; left: 25px; color: white; text-shadow: 0 0 3px black; font-weight: bold; font-size: 15px; }
+        
+        /* Estilos para el contenedor del formulario */
         .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; }
+        
+        /* Estilos para las etiquetas del formulario */
         .form-container label { color: rgb(0, 187, 45); font-weight: bold; }
+        
+        /* Estilos para los campos de entrada del formulario */
         .form-container input { margin-bottom: 10px; padding: 5px; border: 1px solid rgb(0, 187, 45); border-radius: 5px; width: calc(100% - 12px); }
+        
+        /* Estilos para los botones del formulario */
         .form-container button { background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        .form-container button:hover { background-color: rgb(200, 25, 25); }
+        .form-container button:hover { background-color: rgb(200, 25, 25); } /* Estilo al pasar el mouse */
+        
+        /* Estilo para el contenedor de botones */
         .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .logo { display: block; margin: 0 auto 20px; width: 90px; }
+        
+        /* Estilo para el logotipo */
+        .logo { display: block; margin: 0 auto 20px; width: 120px; }
+        
+        /* Estilo para centrar el título */
         .centered-title { text-align: center; margin: 20px 0; }
+        
+        /* Estilo para las filas del formulario */
         .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .form-column { display: flex; flex-direction: column; }
+        
+        /* Media queries para diseño responsivo */
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
             .button-container { grid-template-columns: 1fr; }
-            .logo { width: 70px; }
-            body { padding: 8px; margin: 0; height: 100%; }
+            .logo { width: 100px; }
+            body { padding: 6px; margin: 0; height: 100%; }
         }
+        
         @media (min-width: 1024px) {
             .form-container { max-width: 65%; padding: 30px; }
             .form-container input, .form-container button { padding: 5px; font-size: 15px; }
-            .logo { width: 120px; }
+            .logo { width: 200px; }
         }
     </style>
 </head>
 <body>
     <div class="header-container">
-        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
-        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
+        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Logotipo -->
     </div>
+    
     <div class="form-container">
         <div class="form-row">
             <div class="form-column">
                 <label for="lat">Latitud:</label>
-                <input type="text" id="lat" value="19.4326">
+                <input type="text" id="lat" value="19.4326"> <!-- Campo de entrada para latitud -->
             </div>
             <div class="form-column">
                 <label for="lon">Longitud:</label>
-                <input type="text" id="lon" value="-99.1332">
+                <input type="text" id="lon" value="-99.1332"> <!-- Campo de entrada para longitud -->
             </div>
             <div class="form-column">
                 <label for="markerName">Nombre del Marcador:</label>
-                <input type="text" id="markerName" value="Marcador Manual">
+                <input type="text" id="markerName" value="Marcador Manual"> <!-- Campo de entrada para el nombre del marcador -->
             </div>
         </div>
         
         <div class="button-container">
-            <button onclick="addMarker()">Agregar Marcador</button>
-            <button onclick="removeMarker()">Eliminar Marcador</button>
-            <button onclick="addRadius(400)">Agregar Radio 400m</button>
-            <button onclick="addRadius(800)">Agregar Radio 800m</button>
-            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
+            <button onclick="addMarker()">Agregar Marcador</button> <!-- Botón para agregar un marcador -->
+            <button onclick="removeMarker()">Eliminar Marcador</button> <!-- Botón para eliminar el marcador -->
+            <button onclick="addRadius(400)">Agregar Radio 400m</button> <!-- Botón para agregar un radio de 400m -->
+            <button onclick="addRadius(800)">Agregar Radio 800m</button> <!-- Botón para agregar un radio de 800m -->
+            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button> <!-- Botón para calcular la diferencia entre radios -->
+            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button> <!-- Botón para extraer información del buffer de 400m -->
+            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button> <!-- Botón para extraer información de la diferencia de 800m -->
         </div>
     </div>
-    <div id="map"></div>
+    
+    <div id="map"></div> <!-- Contenedor para el mapa -->
 
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
     <script>
+        // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
+        
+        // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }).addTo(map);
+        }).addTo(map); // Añadir capa de OpenStreetMap al mapa
 
         const googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { attribution: "Google" });
         const googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { attribution: "Google" });
@@ -87,11 +127,13 @@
         const geoJsonLayersColonias = {};
         const geoJsonLayersCompetencias = {};
         
+        // Variables para el marcador y los radios
         let currentMarker = null;
         let radius400m = null;
         let radius800m = null;
         let differenceLayer = null;
 
+        // Grupos de capas para los radios y la diferencia
         const radius400Layer = L.layerGroup().addTo(map);
         const radius800Layer = L.layerGroup().addTo(map);
         const differenceLayerGroup = L.layerGroup().addTo(map);
@@ -105,10 +147,11 @@
         let bufferDataExtracted = false;
         let differenceDataExtracted = false;
 
+        // Función para agregar un marcador en el mapa
         function addMarker() {
             if (currentMarker) {
                 alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
-                return;
+                return; // Evitar agregar un nuevo marcador si ya existe
             }
 
             const lat = parseFloat(document.getElementById('lat').value);
@@ -118,53 +161,55 @@
             if (!isNaN(lat) && !isNaN(lon)) {
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'yellow-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map).bindPopup(markerName).openPopup();
-                map.setView([lat, lon], 12);
+                }).addTo(map).bindPopup(markerName).openPopup(); // Crear y añadir el marcador al mapa
+                map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
             } else {
                 alert("Por favor ingrese coordenadas válidas.");
             }
         }
 
+        // Función para eliminar el marcador y sus capas asociadas
         function removeMarker() {
             if (currentMarker) {
-                map.removeLayer(currentMarker);
-                currentMarker = null;
-                radius400Layer.clearLayers();
+                map.removeLayer(currentMarker); // Eliminar el marcador del mapa
+                currentMarker = null; // Limpiar la variable del marcador
+                radius400Layer.clearLayers(); // Limpiar las capas de radios
                 radius800Layer.clearLayers();
                 if (differenceLayer) {
-                    differenceLayerGroup.removeLayer(differenceLayer);
-                    differenceLayer = null; // Limpiar la capa de diferencia
+                    differenceLayerGroup.removeLayer(differenceLayer); // Eliminar la capa de diferencia si existe
+                    differenceLayer = null; // Limpiar la variable de la capa de diferencia
                 }
-                bufferLayerGroup.clearLayers();
-                differenceExtractionLayerGroup.clearLayers();
-                document.getElementById('lat').value = '';
-                document.getElementById('lon').value = '';
-                document.getElementById('markerName').value = '';
+                bufferLayerGroup.clearLayers(); // Limpiar las capas de buffer
+                differenceExtractionLayerGroup.clearLayers(); // Limpiar las capas de extracción
+                document.getElementById('lat').value = ''; // Limpiar el campo de latitud
+                document.getElementById('lon').value = ''; // Limpiar el campo de longitud
+                document.getElementById('markerName').value = ''; // Limpiar el campo de nombre del marcador
             } else {
                 alert("No hay ningún marcador para eliminar.");
             }
         }
 
+        // Función para agregar radios de 400m o 800m alrededor del marcador
         function addRadius(radius) {
             if (radius === 400 && radius400Created) {
                 alert("El radio de 400m ya ha sido creado.");
-                return;
+                return; // Evitar agregar un nuevo radio si ya existe
             }
             if (radius === 800 && radius800Created) {
                 alert("El radio de 800m ya ha sido creado.");
-                return;
+                return; // Evitar agregar un nuevo radio si ya existe
             }
 
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
                 if (radius === 400) {
-                    radius400Layer.addLayer(circle);
-                    radius400m = circle;
+                    radius400Layer.addLayer(circle); // Añadir el círculo de 400m al grupo de capas
+                    radius400m = circle; // Guardar el círculo en la variable
                     radius400Created = true; // Marcar como creado
                 } else {
-                    radius800Layer.addLayer(circle);
-                    radius800m = circle;
+                    radius800Layer.addLayer(circle); // Añadir el círculo de 800m al grupo de capas
+                    radius800m = circle; // Guardar el círculo en la variable
                     radius800Created = true; // Marcar como creado
                 }
             } else {
@@ -172,17 +217,18 @@
             }
         }
 
+        // Función para calcular la diferencia entre dos círculos
         function calculateDifference() {
             if (differenceCreated) {
                 alert("La diferencia entre radios ya ha sido calculada.");
-                return;
+                return; // Evitar calcular la diferencia si ya se ha hecho
             }
 
             if (currentMarker && radius400m && radius800m) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-                const difference = turf.difference(circle800, circle400);
+                const difference = turf.difference(circle800, circle400); // Calcular la diferencia entre los círculos
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
                     differenceLayer = L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
@@ -195,10 +241,11 @@
             }
         }
 
+        // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
             if (bufferDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
-                return;
+                return; // Evitar extraer datos si ya se ha hecho
             }
 
             if (currentMarker) {
@@ -212,11 +259,11 @@
                         const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                intersection.properties.area = Math.floor(turf.area(intersection));
+                                intersection.properties.area = Math.floor(turf.area(intersection)); // Calcular área de la intersección
                                 return intersection;
                             }
                             return null;
-                        }).filter(feature => feature !== null));
+                        }).filter(feature => feature !== null)); // Filtrar características nulas
                         L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -225,7 +272,7 @@
                                     for (const key in feature.properties) {
                                         popupContent += `${key}: ${feature.properties[key]}<br>`;
                                     }
-                                    layer.bindPopup(popupContent).openPopup();
+                                    layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
                                 });
                             }
                         }).addTo(bufferLayerGroup);
@@ -237,10 +284,11 @@
             }
         }
 
+        // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
             if (differenceDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
-                return;
+                return; // Evitar extraer datos si ya se ha hecho
             }
 
             if (currentMarker) {
@@ -255,11 +303,11 @@
                         const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, difference);
                             if (intersection) {
-                                intersection.properties.area = Math.floor(turf.area(intersection));
+                                intersection.properties.area = Math.floor(turf.area(intersection)); // Calcular área de la intersección
                                 return intersection;
                             }
-                            return null;
-                        }).filter(feature => feature !== null));
+                            return null; // Retornar nulo si no hay intersección
+                        }).filter(feature => feature !== null)); // Filtrar características nulas
                         L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -268,7 +316,7 @@
                                     for (const key in feature.properties) {
                                         popupContent += `${key}: ${feature.properties[key]}<br>`;
                                     }
-                                    layer.bindPopup(popupContent).openPopup();
+                                    layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
                                 });
                             }
                         }).addTo(differenceExtractionLayerGroup);
@@ -280,13 +328,15 @@
             }
         }
 
+        // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
-            iconSize: [20, 20],
-            iconAnchor: [15, 30],
-            popupAnchor: [0, -30]
+            iconSize: [20, 20], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
 
+        // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
                 .then(response => {
@@ -305,7 +355,7 @@
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             layer.on('click', () => {
@@ -313,7 +363,7 @@
                                 for (const key in feature.properties) {
                                     popupContent += `${key}: ${feature.properties[key]}<br>`;
                                 }
-                                layer.bindPopup(popupContent).openPopup();
+                                layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
                             });
                         }
                     });
@@ -325,17 +375,19 @@
                         case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
                         case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
-                    updateLayerControls();
+                    updateLayerControls(); // Actualizar los controladores de capas
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
 
+        // Capas base del mapa
         const baseMaps = {
             "OpenStreetMap": osmLayer,
             "Google Road": googleRoadLayer,
             "Google Hybrid": googleHybridLayer
         };
 
+        // Controladores de capas
         const layerControlBase = L.control.layers(baseMaps, null).addTo(map);
         let layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
         let layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
@@ -344,6 +396,7 @@
         let layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
         let layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
 
+        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
         const layerControlRadios = L.control.layers(null, {
             "Radio 400m": radius400Layer,
             "Radio 800m": radius800Layer,
@@ -352,6 +405,7 @@
             "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
 
+        // Función para actualizar los controladores de capas
         function updateLayerControls() {
             layerControlAgeb.remove();
             layerControlUsoSuelo.remove();
@@ -367,6 +421,7 @@
             layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
         }
 
+        // Cargar capas GeoJSON desde archivos
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
         loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
         loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
