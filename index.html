@@ -289,7 +289,16 @@
                     return;
                 }
         
-                const selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                // Definir límites para seleccionar la capa adecuada
+                let selectedLayer;
+                if (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) {
+                    selectedLayer = 'Ageb_urb_CDMX.geojson'; // Capa para CDMX
+                } else if (lat >= 18.0 && lat < 19.0 && lon >= -100.0 && lon < -98.0) {
+                    selectedLayer = 'Ageb_urb_Edo_Mex.geojson'; // Capa para Estado de México
+                } else {
+                    alert("Las coordenadas están fuera del rango de cobertura de las capas.");
+                    return;
+                }
                 
                 // Limpiar la capa de buffer antes de añadir nuevas extracciones
                 bufferLayerGroup.clearLayers();
@@ -314,7 +323,9 @@
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
-                        
+        
+                        console.log(`Características dentro del buffer: ${featuresWithinBuffer.features.length}`);
+        
                         if (featuresWithinBuffer.features.length === 0) {
                             alert("No hay cobertura disponible en el área seleccionada.");
                             return;
