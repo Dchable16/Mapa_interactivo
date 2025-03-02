@@ -294,6 +294,9 @@
                 // Limpiar la capa de buffer antes de añadir nuevas extracciones
                 bufferLayerGroup.clearLayers();
         
+                console.log(`Coordenadas del marcador: Latitud: ${lat}, Longitud: ${lon}`);
+                console.log(`Capa seleccionada: ${selectedLayer}`);
+        
                 fetch(selectedLayer)
                     .then(response => {
                         if (!response.ok) {
@@ -306,7 +309,7 @@
                         const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                // Procesar intersección
+                                console.log("Intersección encontrada:", intersection);
                                 return intersection;
                             }
                             return null;
@@ -355,6 +358,9 @@
                 // Limpiar la capa de diferencia antes de añadir nuevas extracciones
                 differenceExtractionLayerGroup.clearLayers();
                 
+                console.log(`Coordenadas del marcador: Latitud: ${latLng.lat}, Longitud: ${latLng.lng}`);
+                console.log(`Capa seleccionada: ${selectedLayer}`);
+        
                 fetch(selectedLayer)
                     .then(response => {
                         if (!response.ok) {
@@ -366,7 +372,7 @@
                         const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, difference);
                             if (intersection) {
-                                // Procesar intersección
+                                console.log("Intersección encontrada:", intersection);
                                 return intersection;
                             }
                             return null; // Retornar nulo si no hay intersección
@@ -399,6 +405,7 @@
                 alert("Asegúrese de que el marcador esté creado.");
             }
         }
+        
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
