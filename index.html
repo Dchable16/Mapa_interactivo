@@ -394,13 +394,7 @@
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => {
-                            const marker = L.marker(latlng, { icon: customIcon });
-                            if (type === 'Competencias') { // O cualquier otro tipo que quieras clusterizar
-                                markersClusterGroup.addLayer(marker); // Añadir al cluster group
-                            }
-                            return marker;
-                        },
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             layer.on('click', () => {
@@ -465,7 +459,7 @@
         }
 
         // Establecer el rango de zoom para las capas de uso de suelo
-        const minZoomUsoSuelo = 16; // Nivel de zoom mínimo para activar las capas de uso de suelo
+        const minZoomUsoSuelo = 15; // Nivel de zoom mínimo para activar las capas de uso de suelo
 
         // Manejar el evento de cambio de zoom
         map.on('zoomend', function() {
