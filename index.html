@@ -367,20 +367,18 @@
                 })
                 .then(data => {
                     const colorMap = {
-                        'UsoSuelo': 'rgb(128, 0, 128)', // Color para uso de suelo
-                        'Poligono': 'rgb(255, 127, 80)', // Color para polígonos
-                        'Col': 'rgb(0, 150, 136)', // Color para colonias
-                        'Region_Vallejo': 'rgb(204, 85, 0)', // Color para región Vallejo
-                        'Municip_Estado_de_Mexico': 'rgb(255, 255, 0)', // Color para municipios
-                        'Alcaldias_Ciudad_de_México': 'rgb(230, 230, 250)', // Color para alcaldías
-                        'Ageb': 'rgb(135, 206, 235)', // Color para AGEB
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municip_Estado_de_Mexico': 'rgb(255, 255, 0)',
+                        'Alcaldias_Ciudad_de_México': 'rgb(230, 230, 250)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
-        
                     const geoJsonLayer = L.geoJSON(data, {
-                        style: (feature) => {
-                            const color = colorMap[type] || 'black'; // Asignar color por defecto si no se encuentra
-                            return { color: color, weight: 2, fillOpacity: 0.5 }; // Aplicar el estilo
-                        },
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
+                        style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
@@ -391,36 +389,19 @@
                             });
                         }
                     });
-        
-                    // Agregar la capa al objeto correspondiente según el tipo
                     switch (type) {
-                        case 'Ageb':
-                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                            break;
-                        case 'UsoSuelo':
-                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                            break;
-                        case 'Alcaldias_Ciudad_de_México':
-                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Municip_Estado_de_Mexico':
-                            geoJsonLayersMunicipios[layerName] = geoJsonLayer;
-                            break;
-                        case 'Poligono':
-                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
-                            break;
-                        case 'Col':
-                            geoJsonLayersColonias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Competencias':
-                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
-                            break;
+                        case 'Ageb': geoJsonLayersAgeb[layerName] = geoJsonLayer; break;
+                        case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
+                        case 'AlcaldiasMunicipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
+                        case 'Poligono': geoJsonLayersPoligonos[layerName] = geoJsonLayer; break;
+                        case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
+                        case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
                     updateLayerControls(); // Actualizar los controladores de capas
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-        
+
         // Capas base del mapa
         const baseMaps = {
             "OpenStreetMap": osmLayer,
@@ -473,8 +454,8 @@
         loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Mixto', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Oficinas', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Uso de suelo Plurifamiliar', 'UsoSuelo');
-        loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
-        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
+        loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'Alcaldias');
+        loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'Alcaldias');
         loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
         loadGeoJSON('Poligono_Azcapotzalco.geojson', 'Poligono Azcapotzalco', 'Poligono');
         loadGeoJSON('Poligono_Benito_Juarez.geojson', 'Poligono Benito Juárez', 'Poligono');
