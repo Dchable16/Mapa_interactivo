@@ -293,7 +293,16 @@
                         const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                // Procesar intersección
+                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
+                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
+                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
+                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1; // Calcular población total
+        
+                                intersection.properties.originalArea = originalArea;
+                                intersection.properties.extractedArea = extractedArea;
+                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
+                                intersection.properties.populationTotal = Math.floor(populationTotal); // Guardar población total en atributos
+        
                                 return intersection;
                             }
                             return null;
@@ -302,8 +311,8 @@
                         // Limpiar la capa de buffer antes de añadir nuevas extracciones
                         bufferLayerGroup.clearLayers();
         
-                        // Añadir la capa de extracciones al mapa
-                        L.geoJSON(featuresWithinBuffer, {
+                        // Crear el layer GeoJSON para las extracciones
+                        const geoJsonLayer = L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
                                 layer.on('click', function () {
@@ -314,7 +323,8 @@
                                     layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
                                 });
                             }
-                        }).addTo(bufferLayerGroup); // Asegúrate de que esto se ejecute correctamente
+                        }).addTo(bufferLayerGroup); // Añadir la capa de extracciones al grupo de capas de buffer
+        
                         bufferDataExtracted = true; // Marcar como creado
                     })
                     .catch(err => console.error('Error al cargar la capa base:', err));
@@ -343,7 +353,16 @@
                         const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, difference);
                             if (intersection) {
-                                // Procesar intersección
+                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
+                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
+                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
+                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1; // Calcular población total
+        
+                                intersection.properties.originalArea = originalArea;
+                                intersection.properties.extractedArea = extractedArea;
+                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
+                                intersection.properties.populationTotal = Math.floor(populationTotal); // Guardar población total en atributos
+        
                                 return intersection;
                             }
                             return null; // Retornar nulo si no hay intersección
@@ -352,8 +371,8 @@
                         // Limpiar la capa de diferencia antes de añadir nuevas extracciones
                         differenceExtractionLayerGroup.clearLayers();
         
-                        // Añadir la capa de extracciones al mapa
-                        L.geoJSON(featuresWithinDifference, {
+                        // Crear el layer GeoJSON para las extracciones
+                        const geoJsonLayer = L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
                                 layer.on('click', function () {
@@ -364,7 +383,8 @@
                                     layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
                                 });
                             }
-                        }).addTo(differenceExtractionLayerGroup); // Asegúrate de que esto se ejecute correctamente
+                        }).addTo(differenceExtractionLayerGroup); // Añadir la capa de extracciones al grupo de capas de diferencia
+        
                         differenceDataExtracted = true; // Marcar como creado
                     })
                     .catch(err => console.error('Error al cargar la capa base:', err));
