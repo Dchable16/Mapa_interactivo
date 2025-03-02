@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <!-- Configuración de la política de seguridad de contenido -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
     
     <!-- Configuración de caracteres y vista -->
     <meta charset="UTF-8">
@@ -13,8 +13,6 @@
     
     <!-- Estilo de Leaflet para el mapa -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
     
     <!-- Script de Turf.js para operaciones geoespaciales -->
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
@@ -109,7 +107,6 @@
     <div id="map"></div> <!-- Contenedor para el mapa -->
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
-    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script> <!-- Script de clustering -->
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
@@ -143,9 +140,6 @@
         const bufferLayerGroup = L.layerGroup().addTo(map);
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
 
-        // Grupo de marcadores
-        const markersClusterGroup = L.markerClusterGroup().addTo(map); // Crear grupo de clústeres para marcadores
-
         // Banderas para controlar la creación de elementos
         let radius400Created = false;
         let radius800Created = false;
@@ -171,11 +165,8 @@
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                });
-                
-                // Añadir el marcador al grupo de clústeres
-                markersClusterGroup.addLayer(currentMarker);
-
+                }).addTo(map); // Eliminar la parte de bindPopup()
+        
                 // Crear la etiqueta del marcador
                 currentMarkerLabel = L.divIcon({
                     className: 'marker-label',
@@ -193,7 +184,7 @@
         
         function removeMarker() {
             if (currentMarker) {
-                markersClusterGroup.removeLayer(currentMarker); // Eliminar el marcador del grupo de clústeres
+                map.removeLayer(currentMarker); // Eliminar el marcador del mapa
                 const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
                 currentMarker = null; // Limpiar la variable del marcador
         
@@ -369,9 +360,7 @@
             iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
             popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
-        // Objeto para almacenar los grupos de clústeres por capa
-        const clusterGroups = {};
-        
+
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             if (loadedLayers.has(layerName)) {
@@ -395,17 +384,8 @@
                         'Competencias': 'rgb(204, 85, 0)',
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
-                    // Crear un grupo de clústeres específico para esta capa
-                    clusterGroups[layerName] = L.markerClusterGroup();
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => {
-                            const marker = L.marker(latlng, { icon: customIcon });
-                            if (type === 'Competencias') {
-                                // Añadir el marcador al grupo de clústeres específico
-                                clusterGroups[layerName].addLayer(marker);
-                            }
-                            return marker;
-                        },
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             layer.on('click', () => {
@@ -431,20 +411,6 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-        // Manejar el evento de cambio de capa
-        map.on('overlayadd overlayremove', function (eventLayer) {
-            for (const layerName in clusterGroups) {
-                if (eventLayer.name === layerName) {
-                    if (eventLayer.type === 'overlayadd') {
-                        // Añadir el grupo de clústeres al mapa
-                        map.addLayer(clusterGroups[layerName]);
-                    } else {
-                        // Remover el grupo de clústeres del mapa
-                        map.removeLayer(clusterGroups[layerName]);
-                    }
-                }
-            }
-        });                        
 
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
@@ -484,7 +450,7 @@
         }
 
         // Establecer el rango de zoom para las capas de uso de suelo
-        const minZoomUsoSuelo = 17; // Nivel de zoom mínimo para activar las capas de uso de suelo
+        const minZoomUsoSuelo = 15; // Nivel de zoom mínimo para activar las capas de uso de suelo
 
         // Manejar el evento de cambio de zoom
         map.on('zoomend', function() {
