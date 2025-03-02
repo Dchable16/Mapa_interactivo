@@ -23,7 +23,6 @@
         .centered-title { text-align: center; margin: 20px 0; }
         .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .form-column { display: flex; flex-direction: column; }
-        .checkbox-container { margin: 10px 0; }
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
             .button-container { grid-template-columns: 1fr; }
@@ -67,19 +66,15 @@
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
         </div>
-
-        <div class="checkbox-container">
-            <label><input type="checkbox" onclick="toggleLayer('Ageb')"> Mostrar/Ocultar Ageb</label><br>
-            <label><input type="checkbox" onclick="toggleLayer('UsoSuelo')"> Mostrar/Ocultar Uso de Suelo</label><br>
-            <label><input type="checkbox" onclick="toggleLayer('Alcaldias')"> Mostrar/Ocultar Alcaldías</label><br>
-            <label><input type="checkbox" onclick="toggleLayer('Poligonos')"> Mostrar/Ocultar Polígonos</label><br>
-            <label><input type="checkbox" onclick="toggleLayer('Colonias')"> Mostrar/Ocultar Colonias</label><br>
-            <label><input type="checkbox" onclick="toggleLayer('Competencias')"> Mostrar/Ocultar Competencias</label><br>
-        </div>
     </div>
     <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        // Código JavaScript (sin cambios)
+    </script>
+</body>
+</html>
     <script>
         const map = L.map("map").setView([19.4326, -99.1332], 12);
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -375,17 +370,6 @@
             layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
             layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
             layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-        }
-
-        function toggleLayer(layerType) {
-            const layer = geoJsonLayersAgeb[layerType] || geoJsonLayersUsoSuelo[layerType] || geoJsonLayersAlcaldias[layerType] || geoJsonLayersPoligonos[layerType] || geoJsonLayersColonias[layerType] || geoJsonLayersCompetencias[layerType];
-            if (layer) {
-                if (map.hasLayer(layer)) {
-                    map.removeLayer(layer);
-                } else {
-                    map.addLayer(layer);
-                }
-            }
         }
 
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
