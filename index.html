@@ -276,44 +276,47 @@
 
         // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
-            if (bufferDataExtracted) {
-                alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
-                return; // Evitar extraer datos si ya se ha hecho
-            }
-            
             // Reiniciar la bandera de extracción de datos
             bufferDataExtracted = false; 
         
             if (currentMarker) {
                 const lat = parseFloat(document.getElementById('lat').value);
                 const lon = parseFloat(document.getElementById('lon').value);
+                
+                // Verificar coordenadas
+                if (isNaN(lat) || isNaN(lon)) {
+                    alert("Coordenadas no válidas.");
+                    return;
+                }
+        
                 const selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
                 
                 // Limpiar la capa de buffer antes de añadir nuevas extracciones
                 bufferLayerGroup.clearLayers();
         
                 fetch(selectedLayer)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error al cargar ${selectedLayer}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const buffer = turf.circle([lon, lat], 400, { units: 'meters' });
                         const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
-                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
-                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
-                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1; // Calcular población total
-                                
-                                intersection.properties.originalArea = originalArea;
-                                intersection.properties.extractedArea = extractedArea;
-                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
-                                intersection.properties.populationTotal = Math.floor(populationTotal); // Guardar población total en atributos
-                                
+                                // Procesar intersección
                                 return intersection;
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
                         
+                        if (featuresWithinBuffer.features.length === 0) {
+                            alert("No hay cobertura disponible en el área seleccionada.");
+                            return;
+                        }
+        
                         L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -328,7 +331,10 @@
                         }).addTo(bufferLayerGroup);
                         bufferDataExtracted = true; // Marcar como creado
                     })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
+                    .catch(err => {
+                        console.error('Error al cargar la capa base:', err);
+                        alert('No se pudo cargar la capa. Verifique la conexión y la disponibilidad de los datos.');
+                    });
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -336,11 +342,6 @@
         
         // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
-            if (differenceDataExtracted) {
-                alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
-                return; // Evitar extraer datos si ya se ha hecho
-            }
-            
             // Reiniciar la bandera de extracción de datos
             differenceDataExtracted = false; 
         
@@ -355,26 +356,27 @@
                 differenceExtractionLayerGroup.clearLayers();
                 
                 fetch(selectedLayer)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error al cargar ${selectedLayer}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, difference);
                             if (intersection) {
-                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
-                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
-                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
-                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1; // Calcular población total
-                                
-                                intersection.properties.originalArea = originalArea;
-                                intersection.properties.extractedArea = extractedArea;
-                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
-                                intersection.properties.populationTotal = Math.floor(populationTotal); // Guardar población total en atributos
-                                
+                                // Procesar intersección
                                 return intersection;
                             }
                             return null; // Retornar nulo si no hay intersección
                         }).filter(feature => feature !== null)); // Filtrar características nulas
                         
+                        if (featuresWithinDifference.features.length === 0) {
+                            alert("No hay cobertura disponible en el área seleccionada.");
+                            return;
+                        }
+        
                         L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -389,7 +391,10 @@
                         }).addTo(differenceExtractionLayerGroup);
                         differenceDataExtracted = true; // Marcar como creado
                     })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
+                    .catch(err => {
+                        console.error('Error al cargar la capa base:', err);
+                        alert('No se pudo cargar la capa. Verifique la conexión y la disponibilidad de los datos.');
+                    });
             } else {
                 alert("Asegúrese de que el marcador esté creado.");
             }
