@@ -148,6 +148,8 @@
         let differenceDataExtracted = false;
 
         // Función para agregar un marcador en el mapa
+        let currentMarkerLabel = null; // Variable para almacenar la etiqueta del marcador
+
         function addMarker() {
             if (currentMarker) {
                 alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
@@ -165,25 +167,35 @@
                 }).addTo(map).bindPopup(markerName).openPopup(); // Mostrar el popup con el nombre del marcador
         
                 // Crear la etiqueta del marcador
-                const markerLabel = L.divIcon({
+                currentMarkerLabel = L.divIcon({
                     className: 'marker-label',
                     html: markerName,
                     iconSize: [100, 50],
                     iconAnchor: [50, 15]
                 });
-                L.marker([lat, lon], { icon: markerLabel }).addTo(map); // Añadir la etiqueta al mapa
+                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
         
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
             } else {
                 alert("Por favor ingrese coordenadas válidas.");
             }
         }
-
-        // Función para eliminar el marcador y sus capas asociadas
+        
         function removeMarker() {
             if (currentMarker) {
                 map.removeLayer(currentMarker); // Eliminar el marcador del mapa
                 currentMarker = null; // Limpiar la variable del marcador
+        
+                // Eliminar la etiqueta del marcador si existe
+                if (currentMarkerLabel) {
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker && layer.getLatLng().equals(currentMarker.getLatLng())) {
+                            map.removeLayer(layer); // Eliminar la etiqueta del mapa
+                        }
+                    });
+                    currentMarkerLabel = null; // Limpiar la variable de la etiqueta
+                }
+        
                 radius400Layer.clearLayers(); // Limpiar las capas de radios
                 radius800Layer.clearLayers();
                 if (differenceLayer) {
