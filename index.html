@@ -289,12 +289,6 @@
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
-                        
-                        // Calcular el área de los polígonos originales y agregarlo a las propiedades
-                        data.features.forEach(feature => {
-                            feature.properties['Area poligono original'] = Math.floor(turf.area(feature));
-                        });
-
                         L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -339,12 +333,6 @@
                             }
                             return null; // Retornar nulo si no hay intersección
                         }).filter(feature => feature !== null)); // Filtrar características nulas
-                        
-                        // Calcular el área de los polígonos originales y agregarlo a las propiedades
-                        data.features.forEach(feature => {
-                            feature.properties['Area poligono original'] = Math.floor(turf.area(feature));
-                        });
-
                         L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -400,6 +388,11 @@
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
+                            // Calcular área y agregar a las propiedades
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature)); // Calcular área del polígono
+                                feature.properties['Área polígono'] = area; // Agregar área a las propiedades
+                            }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
