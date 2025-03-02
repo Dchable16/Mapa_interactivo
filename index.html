@@ -1,45 +1,137 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <style>
-        html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: calc(100% - 300px); /* Ajustar altura del mapa */ }
-        .yellow-marker { background-color: #fff201; border: 3px solid black; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
-        .marker-label { position: absolute; top: -40px; left: 25px; color: black; text-shadow: 0 0 2px yellow; font-weight: bold; font-size: 13px; }
-        .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; }
-        .form-container label { color: rgb(0, 187, 45); font-weight: bold; }
-        .form-container input { margin-bottom: 10px; padding: 5px; border: 1px solid rgb(0, 187, 45); border-radius: 5px; width: calc(100% - 12px); }
-        .form-container button { background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        .form-container button:hover { background-color: rgb(200, 25, 25); }
-        .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .logo { display: block; margin: 0 auto 20px; width: 120px; }
-        .centered-title { text-align: center; margin: 20px 0; }
-        .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .form-column { display: flex; flex-direction: column; }
-        @media (max-width: 768px) {
-            .form-row { grid-template-columns: 1fr; }
-            .button-container { grid-template-columns: 1fr; }
-            .logo { width: 100px; }
-            body { padding: 6px; margin: 0; height: 100%; }
-        }
-        @media (min-width: 1024px) {
-            .form-container { max-width: 65%; padding: 30px; }
-            .form-container input, .form-container button { padding: 5px; font-size: 15px; }
-            .logo { width: 200px; }
-        }
-    </style>
+            <style>
+            /* Estilos generales para el mapa y los marcadores */
+            html, body { height: 100%; margin: 0; }
+            #map { width: 100%; height: 100%; }
+            .yellow-marker {
+                background-color: #fff201;
+                border: 3px solid black;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: inline-block;
+            }
+            .marker-label {
+                position: absolute;
+                top: -40px;
+                left: 25px;
+                color: black;
+                text-shadow: 0 0 2px yellow;
+                font-weight: bold;
+                font-size: 13px;
+            }
+            /* Estilos para el formulario */
+            .form-container {
+                background-color: rgb(248, 248, 255);
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                margin: 20px auto; /* Centrar el formulario */
+                max-width: 600px; /* Ancho máximo base */
+            }
+            .form-container label {
+                color: rgb(0, 187, 45); /*Color de letra de los cuadros de texto*/
+                font-weight: bold;
+            }
+            .form-container input {
+                margin-bottom: 10px;
+                padding: 5px;
+                border: 1px solid rgb(0, 187, 45); /*color de línea cuadro de texto */
+                border-radius: 5px;
+                width: calc(100% - 12px);
+            }
+            .form-container button {
+                background-color: rgb(230, 25, 25);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 10px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: bold;
+            }
+            .form-container button:hover {
+                background-color: rgb(200, 25, 25);
+            }
+            /* Estilo para el contenedor de botones */
+            .button-container {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+            /* Estilo para el logotipo */
+            .logo {
+                display: block;
+                margin: 0 auto 20px;
+                width: 120px; /* Ajuste de tamaño */
+            }
+            /* Estilo para centrar el título */
+            .centered-title {
+                text-align: center;
+                margin: 20px 0;
+            }
+            /* Estilo para las filas del formulario */
+            .form-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .form-column {
+                display: flex;
+                flex-direction: column;
+            }
+        
+            /* Media queries para diseño responsivo */
+            @media (max-width: 768px) {
+                .form-row {
+                    grid-template-columns: 1fr; /* Apilar en una columna */
+                }
+                .button-container {
+                    grid-template-columns: 1fr; /* Apilar botones */
+                }
+                .logo {
+                    width: 100px; /* Ajuste de tamaño para pantallas pequeñas */
+                }
+                body {
+                    padding: 6px; /* Añadir padding alrededor del contenido */
+                    margin: 0; /* Asegurar que no haya márgenes predeterminados */
+                    height: 100%; /* Asegurar que el body ocupe toda la altura */
+                }
+                #map {
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        
+            /* Ajustes para pantallas más grandes (computadoras) */
+            @media (min-width: 1024px) {
+                .form-container {
+                    max-width: 65%; /* Aumentar el ancho máximo en computadoras */
+                    padding: 30px; /* Aumentar el padding para más espacio */
+                }
+                .form-container input, .form-container button {
+                    padding: 5px; /* Aumentar el padding de los inputs y botones */
+                    font-size: 15px; /* Aumentar el tamaño de la fuente */
+                }
+                .logo {
+                    width: 200px; /* Aumentar el tamaño del logo */
+                }
+            }
+        </style>
 </head>
 <body>
     <div class="header-container">
-        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
-        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
+        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Cambia la ruta a la ubicación de tu logotipo -->
     </div>
     <div class="form-container">
         <div class="form-row">
@@ -65,105 +157,159 @@
             <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
-            <button onclick="toggleAllLayers()">Activar/Desactivar Todas las Capas</button>
         </div>
     </div>
     <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
-        const map = L.map("map").setView([19.4326, -99.1332], 12);
-        const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        // Inicializar el mapa centrado en las coordenadas especificadas
+        var map = L.map("map").setView([19.4326, -99.1332], 12);
+        
+        // Capas base del mapa
+        var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
         }).addTo(map);
 
-        const googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { attribution: "Google" });
-        const googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { attribution: "Google" });
+        var googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+            attribution: "Google"
+        });
 
-        // Definición de capas GeoJSON
-        const geoJsonLayersAgeb = {};
-        const geoJsonLayersUsoSuelo = {};
-        const geoJsonLayersAlcaldias = {};
-        const geoJsonLayersPoligonos = {};
-        const geoJsonLayersColonias = {};
-        const geoJsonLayersCompetencias = {};
-        
-        let currentMarker = null;
-        let radius400m = null;
-        let radius800m = null;
-        let differenceLayer = null;
+        var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
+            attribution: "Google"
+        });
+         // Crear un checkbox para activar/desactivar todas las capas
+    var allLayersControl = L.control({ position: 'topright' });
+    allLayersControl.onAdd = function(map) {
+        var div = L.DomUtil.create('div', 'layer-control');
+        div.innerHTML = '<input type="checkbox" id="toggleAllLayers"> Activar/desactivar todas las capas';
+        return div;
+    };
+    allLayersControl.addTo(map);
 
-        const radius400Layer = L.layerGroup().addTo(map);
-        const radius800Layer = L.layerGroup().addTo(map);
-        const differenceLayerGroup = L.layerGroup().addTo(map);
-        const bufferLayerGroup = L.layerGroup().addTo(map);
-        const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
+        // Objetos para almacenar las capas GeoJSON
+        var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
+        var geoJsonLayersUsoSuelo = {}; // Almacena las capas Uso de suelos
+        var geoJsonLayersAlcaldias = {}; // Almacena las capas de alcaldías
+        var geoJsonLayersPoligonos = {}; // Almacena las capas de polígonos
+        var geoJsonLayersColonias = {}; // Almacena las capas de Colonias
+        var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
+        var differenceLayer = null; // Capa para la diferencia de círculos
 
-        // Banderas para controlar la creación de elementos
-        let radius400Created = false;
-        let radius800Created = false;
-        let differenceCreated = false;
-        let bufferDataExtracted = false;
-        let differenceDataExtracted = false;
+        // Variables para el marcador y los radios
+        var currentMarker = null; // Marcador actual en el mapa
+        var currentLabel = null; // Etiqueta del marcador
+        var radius400m = null; // Círculo de 400 metros
+        var radius800m = null; // Círculo de 800 metros
 
+        // Grupos de capas para los radios y la diferencia
+        var radius400Layer = L.layerGroup().addTo(map);
+        var radius800Layer = L.layerGroup().addTo(map);
+        var differenceLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de diferencia
+        var bufferLayerGroup = L.layerGroup().addTo(map); // Grupo para la capa de buffer
+        var differenceExtractionLayerGroup = L.layerGroup().addTo(map); // Grupo para la extracción de diferencia
+
+        // Variables para confirmar si ya se crearon los radios y extracciones
+        var radius400Created = false;
+        var radius800Created = false;
+        var differenceCreated = false;
+        var bufferDataExtracted = false;
+        var differenceDataExtracted = false;
+
+        // Función para agregar un marcador en el mapa
         function addMarker() {
-            if (currentMarker) {
-                alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
-                return;
-            }
-
-            const lat = parseFloat(document.getElementById('lat').value);
-            const lon = parseFloat(document.getElementById('lon').value);
-            const markerName = document.getElementById('markerName').value;
+            var lat = parseFloat(document.getElementById('lat').value);
+            var lon = parseFloat(document.getElementById('lon').value);
+            var markerName = document.getElementById('markerName').value;
 
             if (!isNaN(lat) && !isNaN(lon)) {
+                // Eliminar el marcador anterior si existe
+                removeMarker();
+
+                // Crear el nuevo marcador y centrar el mapa en él
                 currentMarker = L.marker([lat, lon], {
-                    icon: L.divIcon({ className: 'yellow-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map).bindPopup(markerName).openPopup();
+                    icon: L.divIcon({
+                        className: 'yellow-marker',
+                        iconSize: [12, 12],
+                        iconAnchor: [10, 20],
+                    })
+                }).addTo(map);
                 map.setView([lat, lon], 12);
+
+                // Crear la etiqueta del marcador
+                currentLabel = L.marker([lat, lon], {
+                    icon: L.divIcon({
+                        className: 'marker-label',
+                        html: markerName,
+                        iconSize: [100, 50],
+                        iconAnchor: [50, 15]
+                    })
+                }).addTo(map);
             } else {
                 alert("Por favor ingrese coordenadas válidas.");
             }
         }
 
+        // Función para eliminar el marcador y sus capas asociadas
         function removeMarker() {
             if (currentMarker) {
                 map.removeLayer(currentMarker);
                 currentMarker = null;
-                radius400Layer.clearLayers();
-                radius800Layer.clearLayers();
+
+                // Eliminar la etiqueta del marcador
+                if (currentLabel) {
+                    map.removeLayer(currentLabel);
+                    currentLabel = null;
+                }
+
+                // Eliminar los radios si existen
+                if (radius400m) {
+                    radius400Layer.removeLayer(radius400m);
+                    radius400m = null;
+                }
+                if (radius800m) {
+                    radius800Layer.removeLayer(radius800m);
+                    radius800m = null;
+                }
+
+                // Eliminar la capa de diferencia si existe
                 if (differenceLayer) {
                     differenceLayerGroup.removeLayer(differenceLayer);
-                    differenceLayer = null; // Limpiar la capa de diferencia
+                    differenceLayer = null;
                 }
-                bufferLayerGroup.clearLayers();
-                differenceExtractionLayerGroup.clearLayers();
+
+                // Eliminar las capas de extracción si existen
+                bufferLayerGroup.clearLayers(); // Eliminar todas las capas de buffer
+                differenceExtractionLayerGroup.clearLayers(); // Eliminar todas las capas de diferencia
+                
+                // Limpiar los cuadros de coordenadas
                 document.getElementById('lat').value = '';
                 document.getElementById('lon').value = '';
                 document.getElementById('markerName').value = '';
-            } else {
-                alert("No hay ningún marcador para eliminar.");
             }
         }
 
+        // Función para agregar radios de 400m o 800m alrededor del marcador
         function addRadius(radius) {
-            if (radius === 400 && radius400Created) {
-                alert("El radio de 400m ya ha sido creado.");
-                return;
-            }
-            if (radius === 800 && radius800Created) {
-                alert("El radio de 800m ya ha sido creado.");
-                return;
-            }
-
             if (currentMarker) {
-                const latLng = currentMarker.getLatLng();
-                const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
+                // Verificar si el radio ya ha sido creado
+                if ((radius === 400 && radius400Created) || (radius === 800 && radius800Created)) {
+                    alert("El radio  ya ha sido creado.");
+                    return;
+                }
+                var latLng = currentMarker.getLatLng();
+                var circle = L.circle(latLng, {
+                    color: radius === 400 ? 'blue' : 'red',
+                    fillOpacity: 0.2,
+                    radius: radius
+                });
+
+                // Agregar el círculo al grupo de capas correspondiente
                 if (radius === 400) {
                     radius400Layer.addLayer(circle);
                     radius400m = circle;
                     radius400Created = true; // Marcar como creado
-                } else {
+                } else if (radius === 800) {
                     radius800Layer.addLayer(circle);
                     radius800m = circle;
                     radius800Created = true; // Marcar como creado
@@ -173,58 +319,83 @@
             }
         }
 
+        // Función para calcular la diferencia entre dos círculos
         function calculateDifference() {
-            if (differenceCreated) {
-                alert("La diferencia entre radios ya ha sido calculada.");
-                return;
-            }
-
             if (currentMarker && radius400m && radius800m) {
-                const latLng = currentMarker.getLatLng();
-                const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-                const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-                const difference = turf.difference(circle800, circle400);
-                if (difference) {
-                    const geoJson = turf.featureCollection([difference]);
-                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
-                    differenceCreated = true; // Marcar como creado
-                } else {
-                    alert("No se pudo calcular la diferencia entre los círculos.");
+                // Verificar si la diferencia ya ha sido calculada
+                if (differenceCreated) {
+                    alert("La diferencia entre radios ya ha sido calculada.");
+                    return;
                 }
+                var latLng = currentMarker.getLatLng();
+                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+
+                // Calcular la diferencia
+                var difference = turf.difference(circle800, circle400);
+
+                // Convertir a GeoJSON
+                var geoJson = turf.featureCollection([difference]);
+
+                // Agregar la capa de diferencia al grupo de capas
+                if (differenceLayer) {
+                    differenceLayerGroup.removeLayer(differenceLayer);
+                }
+                differenceLayer = L.geoJSON(geoJson, {
+                    style: {
+                        color: 'green',
+                        weight: 2,
+                        fillOpacity: 0.5
+                    }
+                }).addTo(differenceLayerGroup);
+                differenceCreated = true; // Marcar como creado
             } else {
                 alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
         }
 
+        // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
             if (bufferDataExtracted) {
-                alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
+                alert("La extracción de datos Ageb con el radio  de 400m ya ha sido realizada.");
                 return;
             }
-
             if (currentMarker) {
-                const lat = parseFloat(document.getElementById('lat').value);
-                const lon = parseFloat(document.getElementById('lon').value);
-                const selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                var lat = parseFloat(document.getElementById('lat').value);
+                var lon = parseFloat(document.getElementById('lon').value);
+                var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+
                 fetch(selectedLayer)
                     .then(response => response.json())
                     .then(data => {
-                        const buffer = turf.circle([lon, lat], 400, { units: 'meters' });
-                        const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
-                            const intersection = turf.intersect(feature, buffer);
+                        var buffer = turf.circle([lon, lat], 400, { units: 'meters' });
+                        var featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
+                            var intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                intersection.properties.area = Math.floor(turf.area(intersection));
+                                // Añadir propiedades del polígono original
+                                intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
                                 return intersection;
                             }
                             return null;
                         }).filter(feature => feature !== null));
-                        L.geoJSON(featuresWithinBuffer, {
+
+                        // Calcular áreas de los polígonos resultantes
+                        console.log("Características dentro del buffer:", featuresWithinBuffer.features);
+                        var areasBuffer = featuresWithinBuffer.features.map(feature => Math.floor(turf.area(feature)));
+                        console.log("Áreas calculadas del buffer:", areasBuffer);
+                        featuresWithinBuffer.features.forEach((feature, index) => {
+                            feature.properties.area = areasBuffer[index]; // Añadir área como propiedad
+                        });
+
+                        var geoJsonResultBuffer = turf.featureCollection(featuresWithinBuffer.features);
+                        var extractedBufferLayer = L.geoJSON(geoJsonResultBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
                                 layer.on('click', function () {
-                                    let popupContent = "<b>Atributos:</b><br>";
-                                    for (const key in feature.properties) {
-                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    var properties = feature.properties;
+                                    var popupContent = "<b>Atributos:</b><br>";
+                                    for (var key in properties) {
+                                        popupContent += key + ": " + properties[key] + "<br>";
                                     }
                                     layer.bindPopup(popupContent).openPopup();
                                 });
@@ -238,128 +409,254 @@
             }
         }
 
+        // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
             if (differenceDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
                 return;
             }
-
             if (currentMarker) {
-                const latLng = currentMarker.getLatLng();
-                const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-                const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-                const difference = turf.difference(circle800, circle400);
-                const selectedLayer = (latLng.lat >= 19.0 && latLng.lat <= 20.0 && latLng.lng >= -100.0 && latLng.lng <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
-                fetch(selectedLayer)
-                    .then(response => response.json())
-                    .then(data => {
-                        const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
-                            const intersection = turf.intersect(feature, difference);
-                            if (intersection) {
-                                intersection.properties.area = Math.floor(turf.area(intersection));
-                                return intersection;
-                            }
-                            return null;
-                        }).filter(feature => feature !== null));
-                        L.geoJSON(featuresWithinDifference, {
-                            style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('click', function () {
-                                    let popupContent = "<b>Atributos:</b><br>";
-                                    for (const key in feature.properties) {
-                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                var latLng = currentMarker.getLatLng();
+                var circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                var circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+
+                // Calcular la diferencia (la "dona")
+                var difference = turf.difference(circle800, circle400);
+
+                if (difference) {
+                    var lat = parseFloat(document.getElementById('lat').value);
+                    var lon = parseFloat(document.getElementById('lon').value);
+                    var selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+
+                    fetch(selectedLayer)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Extraer características que intersectan con la diferencia
+                            var featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
+                                try {
+                                    var intersection = turf.intersect(feature, difference);
+                                    if (intersection) {
+                                        // Añadir propiedades del polígono original
+                                        intersection.properties = { ...feature.properties, area: Math.floor(turf.area(intersection)) };
+                                        return intersection; // Retornar solo si hay intersección
                                     }
-                                    layer.bindPopup(popupContent).openPopup();
+                                } catch (error) {
+                                    console.error("Error de intersección:", error);
+                                }
+                                return null; // Retornar null si no hay intersección
+                            }).filter(feature => feature !== null)); // Filtrar los nulls
+
+                            if (featuresWithinDifference.features.length > 0) {
+                                // Calcular áreas de los polígonos resultantes
+                                console.log("Características dentro de la diferencia:", featuresWithinDifference.features);
+                                var areasDifference = featuresWithinDifference.features.map(feature => Math.floor(turf.area(feature)));
+                                console.log("Áreas calculadas de la diferencia:", areasDifference);
+                                featuresWithinDifference.features.forEach((feature, index) => {
+                                    feature.properties.area = areasDifference[index]; // Añadir área como propiedad
                                 });
+
+                                var geoJsonResultDifference = turf.featureCollection(featuresWithinDifference.features);
+                                var extractedDifferenceLayer = L.geoJSON(geoJsonResultDifference, {
+                                    style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
+                                    onEachFeature: function (feature, layer) {
+                                        layer.on('click', function () {
+                                            var properties = feature.properties;
+                                            var popupContent = "<b>Atributos:</b><br>";
+                                            for (var key in properties) {
+                                                popupContent += key + ": " + properties[key] + "<br>";
+                                            }
+                                            layer.bindPopup(popupContent).openPopup();
+                                        });
+                                    }
+                                }).addTo(differenceExtractionLayerGroup);
+                                differenceDataExtracted = true; // Marcar como creado
+                            } else {
+                                alert("No se encontraron polígonos que intersecten con la diferencia.");
                             }
-                        }).addTo(differenceExtractionLayerGroup);
-                        differenceDataExtracted = true; // Marcar como creado
-                    })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
+                        })
+                        .catch(err => console.error('Error al cargar la capa base:', err));
+                } else {
+                    alert("No se pudo calcular la diferencia entre los círculos.");
+                }
             } else {
                 alert("Asegúrese de que el marcador esté creado.");
             }
         }
 
-        const customIcon = L.icon({
+        // Crear un icono personalizado usando el logotipo
+        var customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
-            iconSize: [20, 20],
-            iconAnchor: [15, 30],
-            popupAnchor: [0, -30]
+            iconSize: [20, 20], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
 
+        // Definir todas las capas GeoJSON que se pueden cargar
+        const layersToLoad = [
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_CDMX.geojson', name: 'Ageb CDMX', type: 'Ageb' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_Edo_Mex.geojson', name: 'Ageb Edo. Mex.', type: 'Ageb' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_centro_barrio.geojson', name: 'Uso de suelo Centro Barrio', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_equipamento.geojson', name: 'Uso de suelo Equipamento', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio.geojson', name: 'Uso de suelo Habitacional Comercio', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio_planta_baja.geojson', name: 'Uso de suelo Planta Baja', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_entrada.geojson', name: 'Uso de suelo Entrada', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_mixto.geojson', name: 'Uso de suelo Mixto', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_oficinas.geojson', name: 'Uso de suelo Oficinas', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_plurifamiliar.geojson', name: 'Uso de suelo Plurifamiliar', type: 'UsoSuelo' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Alcaldias_Ciudad_de_México.geojson', name: 'Alcaldías CDMX', type: 'AlcaldiasMunicipios' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.geojson', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Region_Vallejo.geojson', name: 'Poligono Región Vallejo', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Azcapotzalco.geojson', name: 'Poligono Azcapotzalco', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Benito_Juarez.geojson', name: 'Poligono Benito Juárez', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Cuauhtemoc.geojson', name: 'Poligono Cuauhtémoc', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Ecatepec.geojson', name: 'Poligono Ecatepec', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Miguel_Hidalgo.geojson', name: 'Poligono M. Hidalgo', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Nezahualcoyotl.geojson', name: 'Poligono Nezahualcoyotl', type: 'Poligono' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Azcapotzalco.geojson', name: 'Colonias Azcapotzalco', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Benito_Juarez.geojson', name: 'Colonias Benito Juárez', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Cuauhtemoc.geojson', name: 'Colonias Cuauhtemoc', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Ecatepec.geojson', name: 'Colonias Ecatepec', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Miguel_Hidalgo.geojson', name: 'Colonias M. Hidalgo', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.geojson', name: 'Colonias Nezahualcoyotl', type: 'Col' },
+            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.geojson', name: 'Tiendas 3B', type: 'Competencias' }
+        ];
+        function loadSelectedGeoJSON(layers) {
+            layers.forEach(layer => {
+                loadGeoJSON(layer.url, layer.name, layer.type);
+            });
+        }
+        // Función para cargar todas las capas definidas
+        function loadAllGeoJSON() {
+            loadSelectedGeoJSON(layersToLoad);
+        }
+        
+        // Llama a la función para cargar todas las capas
+        loadAllGeoJSON();       
+        
+       // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
                 .then(response => {
-                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    if (!response.ok) {
+                        throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    }
                     return response.json();
                 })
                 .then(data => {
-                    const colorMap = {
-                        'UsoSuelo': 'rgb(128, 0, 128)',
-                        'Poligono': 'rgb(255, 127, 80)',
-                        'Col': 'rgb(0, 150, 136)',
-                        'Region_Vallejo': 'rgb(204, 85, 0)',
-                        'Municip_Estado_de_Mexico': 'rgb(255, 255, 0)',
-                        'Alcaldias_Ciudad_de_México': 'rgb(230, 230, 250)',
-                        'Competencias': 'rgb(204, 85, 0)',
-                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
-                    };
+                    let color;
+        
+                    // Asignar el color según el tipo de capa
+                    switch (type) {
+                        case 'UsoSuelo':
+                            color = 'rgb(128, 0, 128)'; // Violeta
+                            break;
+                        case 'Poligono':
+                            color = 'rgb(255, 127, 80)'; // Coral
+                            break;
+                        case 'Col':
+                            color = 'rgb(0, 150, 136)'; // Verde Esmeralda
+                            break;
+                        case 'Region_Vallejo':
+                            color = 'rgb(204, 85, 0)'; // Naranja Quemado
+                            break;
+                        case 'Municip_Estado_de_Mexico':
+                            color = 'rgb(255, 255, 0)'; // Amarillo Limón
+                            break;
+                        case 'Alcaldias_Ciudad_de_México':
+                            color = 'rgb(230, 230, 250)'; // Lavanda
+                            break;
+                        case 'Competencias':
+                            color = 'rgb(204, 85, 0)'; // Naranja Quemado    
+                            break;
+                        case 'Ageb':
+                            color = url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)'; // Azul Cielo o Verde Oliva
+                            break;
+                        default:
+                            color = 'rgba(0, 0, 0, 0.5)'; // Color por defecto
+                    }
+        
+                    // Crear la capa GeoJSON
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
-                        style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
-                        onEachFeature: (feature, layer) => {
-                            layer.on('click', () => {
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
+                        },	
+                        style: {
+                            color: color,
+                            weight: 2,
+                            fillOpacity: 0.5
+                        },
+                        onEachFeature: function (feature, layer) {
+                            layer.on('click', function () {
+                                const properties = feature.properties;
                                 let popupContent = "<b>Atributos:</b><br>";
-                                for (const key in feature.properties) {
-                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                for (const key in properties) {
+                                    popupContent += `${key}: ${properties[key]}<br>`;
                                 }
                                 layer.bindPopup(popupContent).openPopup();
                             });
                         }
                     });
+        
+                    // Agregar la capa al objeto correspondiente según el tipo
                     switch (type) {
-                        case 'Ageb': geoJsonLayersAgeb[layerName] = geoJsonLayer; break;
-                        case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
-                        case 'AlcaldiasMunicipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
-                        case 'Poligono': geoJsonLayersPoligonos[layerName] = geoJsonLayer; break;
-                        case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
-                        case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
+                        case 'Ageb':
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'AlcaldiasMunicipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Competencias':
+                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            break;    
                     }
+        
+                    // Actualizar los controladores de capas
                     updateLayerControls();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
-        const baseMaps = {
+        
+        // Controladores de capas
+        var baseMaps = {
             "OpenStreetMap": osmLayer,
             "Google Road": googleRoadLayer,
             "Google Hybrid": googleHybridLayer
         };
-
-        const layerControlBase = L.control.layers(baseMaps, null).addTo(map);
-        let layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-        let layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-        let layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-        let layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-        let layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-        let layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-
-        const layerControlRadios = L.control.layers(null, {
+        
+        var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
+        var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
+        var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
+        var layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Controlador para alcaldías
+        var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
+        var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
+        var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+        
+        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
+        var layerControlRadios = L.control.layers(null, {
             "Radio 400m": radius400Layer,
             "Radio 800m": radius800Layer,
             "Diferencia entre Radios": differenceLayerGroup,
             "Extracción Ageb - Radio 400m": bufferLayerGroup,
             "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
-
+        // Función para actualizar los controladores de capas
         function updateLayerControls() {
-            layerControlAgeb.remove();
-            layerControlUsoSuelo.remove();
-            layerControlAlcaldias.remove();
-            layerControlPoligonos.remove();
-            layerControlColonias.remove();
-            layerControlCompetencias.remove();
+            if (layerControlAgeb) layerControlAgeb.remove();
+            if (layerControlUsoSuelo) layerControlUsoSuelo.remove();
+            if (layerControlAlcaldias) layerControlAlcaldias.remove();
+            if (layerControlPoligonos) layerControlPoligonos.remove();
+            if (layerControlColonias) layerControlColonias.remove();
+            if (layerControlCompetencias) layerControlCompetencias.remove();
+        
             layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
             layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
             layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
@@ -368,26 +665,10 @@
             layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
         }
 
-        function toggleAllLayers() {
-            const layers = [
-                ...Object.values(geoJsonLayersAgeb),
-                ...Object.values(geoJsonLayersUsoSuelo),
-                ...Object.values(geoJsonLayersAlcaldias),
-                ...Object.values(geoJsonLayersPoligonos),
-                ...Object.values(geoJsonLayersColonias),
-                ...Object.values(geoJsonLayersCompetencias)
-            ];
-            layers.forEach(layer => {
-                if (map.hasLayer(layer)) {
-                    map.removeLayer(layer);
-                } else {
-                    map.addLayer(layer);
-                }
-            });
-        }
-
+        // Llama a la función para cargar tus archivos GeoJSON
         loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb');
         loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb');
+
         loadGeoJSON('Uso_suelo_centro_barrio.geojson', 'Uso de suelo Centro Barrio', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_equipamento.geojson', 'Uso de suelo Equipamento', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Habitacional Comercio', 'UsoSuelo');
@@ -396,6 +677,8 @@
         loadGeoJSON('Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Mixto', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Oficinas', 'UsoSuelo');
         loadGeoJSON('Uso_suelo_habitacional_plurifamiliar.geojson', 'Uso de suelo Plurifamiliar', 'UsoSuelo');
+
+        // Nuevas capas de alcaldías
         loadGeoJSON('Alcaldias_Ciudad_de_México.geojson', 'Alcaldías CDMX', 'AlcaldiasMunicipios');
         loadGeoJSON('Municip_Estado_de_Mexico.geojson', 'Municipios Edo. Mex.', 'AlcaldiasMunicipios');
         loadGeoJSON('Region_Vallejo.geojson', 'Poligono Región Vallejo', 'Poligono');
@@ -410,8 +693,42 @@
         loadGeoJSON('Col_Cuauhtemoc.geojson', 'Colonias Cuauhtemoc', 'Col');
         loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
         loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
-        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colobias Nezahualcoyotl', 'Col');
+        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colonias Nezahualcoyotl', 'Col');
+
+        // Llama a la función para cargar capas de Colonias
         loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
+        
+            function createLayerControlWithCheckbox(layerGroup, layerName) {
+                var checkbox = L.control({ position: 'topright' });
+                checkbox.onAdd = function () {
+                    var div = L.DomUtil.create('div', 'layer-control');
+                    div.innerHTML = `<input type="checkbox" id="${layerName}-toggle" checked> ${layerName}`;
+                    div.firstChild.onclick = function () {
+                        var isChecked = div.firstChild.checked;
+                        layerGroup.eachLayer(function (layer) {
+                            if (isChecked) {
+                                map.addLayer(layer);
+                            } else {
+                                map.removeLayer(layer);
+                            }
+                        });
+                    };
+                    return div;
+                };
+                checkbox.addTo(map);
+            }
+        
+            function addLayerControlWithCheckboxes() {
+                createLayerControlWithCheckbox(geoJsonLayersAgeb, "Ageb");
+                createLayerControlWithCheckbox(geoJsonLayersUsoSuelo, "Uso de Suelo");
+                createLayerControlWithCheckbox(geoJsonLayersAlcaldias, "Alcaldías");
+                createLayerControlWithCheckbox(geoJsonLayersPoligonos, "Polígonos");
+                createLayerControlWithCheckbox(geoJsonLayersColonias, "Colonias");
+                createLayerControlWithCheckbox(geoJsonLayersCompetencias, "Competencias");
+            }
+        
+            // Llama a la función para agregar los controles de capas
+            addLayerControlWithCheckboxes();
     </script>
 </body>
 </html>
