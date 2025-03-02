@@ -147,7 +147,7 @@
         let bufferDataExtracted = false;
         let differenceDataExtracted = false;
 
-        // Conjunto para rastrear capas cargadas
+        // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
 
         // Función para agregar un marcador en el mapa
@@ -364,7 +364,7 @@
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             if (loadedLayers.has(layerName)) {
-                console.log(`La capa ${layerName} ya fue cargada.`);
+                console.log(`La capa ${layerName} ya ha sido cargada.`);
                 return; // No cargar si ya fue cargada
             }
 
