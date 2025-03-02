@@ -285,8 +285,14 @@
                         const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                intersection.properties.originalArea = Math.floor(turf.area(feature)); // Área original del polígono
-                                intersection.properties.extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
+                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
+                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
+                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
+                                
+                                intersection.properties.originalArea = originalArea;
+                                intersection.properties.extractedArea = extractedArea;
+                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
+                                
                                 return intersection;
                             }
                             return null;
@@ -332,8 +338,14 @@
                         const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, difference);
                             if (intersection) {
-                                intersection.properties.originalArea = Math.floor(turf.area(feature)); // Área original del polígono
-                                intersection.properties.extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
+                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
+                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
+                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
+                                
+                                intersection.properties.originalArea = originalArea;
+                                intersection.properties.extractedArea = extractedArea;
+                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
+                                
                                 return intersection;
                             }
                             return null; // Retornar nulo si no hay intersección
