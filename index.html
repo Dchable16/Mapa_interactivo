@@ -161,9 +161,25 @@
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
         
-            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Agregar log para verificar coordenadas
+            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Log para verificar coordenadas
         
-            if (!isNaN(lat) && !isNaN(lon)) {
+            // Validar coordenadas
+            if (isNaN(lat) || isNaN(lon)) {
+                alert("Por favor ingrese coordenadas válidas.");
+                return;
+            }
+        
+            if (lat < -90 || lat > 90) {
+                alert("La latitud debe estar entre -90 y 90 grados.");
+                return;
+            }
+        
+            if (lon < -180 || lon > 180) {
+                alert("La longitud debe estar entre -180 y 180 grados.");
+                return;
+            }
+        
+            try {
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
@@ -179,8 +195,9 @@
                 L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
         
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
-            } else {
-                alert("Por favor ingrese coordenadas válidas.");
+            } catch (error) {
+                console.error("Error al agregar el marcador:", error);
+                alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
             }
         }
         
