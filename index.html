@@ -288,10 +288,14 @@
                                 const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
                                 const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
                                 const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
+                                const populationOriginal = feature.properties.POB1; // Población original del polígono
+                                const populationExtraction = (populationOriginal * (extractedArea / originalArea)); // Población en el área de extracción
+                                const populationPercentage = (populationExtraction / populationOriginal) * 100; // Calcular porcentaje de población en el área de extracción
                                 
                                 intersection.properties.originalArea = originalArea;
                                 intersection.properties.extractedArea = extractedArea;
                                 intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
+                                intersection.properties.populationPercentage = populationPercentage; // Guardar porcentaje de población en atributos
                                 
                                 return intersection;
                             }
@@ -341,10 +345,14 @@
                                 const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
                                 const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
                                 const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
+                                const populationOriginal = feature.properties.POB1; // Población original del polígono
+                                const populationExtraction = (populationOriginal * (extractedArea / originalArea)); // Población en el área de extracción
+                                const populationPercentage = (populationExtraction / populationOriginal) * 100; // Calcular porcentaje de población en el área de extracción
                                 
                                 intersection.properties.originalArea = originalArea;
                                 intersection.properties.extractedArea = extractedArea;
                                 intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
+                                intersection.properties.populationPercentage = populationPercentage; // Guardar porcentaje de población en atributos
                                 
                                 return intersection;
                             }
