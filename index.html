@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
@@ -178,14 +178,6 @@
         var googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
             attribution: "Google"
         });
-         // Crear un checkbox para activar/desactivar todas las capas
-    var allLayersControl = L.control({ position: 'topright' });
-    allLayersControl.onAdd = function(map) {
-        var div = L.DomUtil.create('div', 'layer-control');
-        div.innerHTML = '<input type="checkbox" id="toggleAllLayers"> Activar/desactivar todas las capas';
-        return div;
-    };
-    allLayersControl.addTo(map);
 
         // Objetos para almacenar las capas GeoJSON
         var geoJsonLayersAgeb = {}; // Almacena las capas de las capas Ageb
@@ -195,6 +187,7 @@
         var geoJsonLayersColonias = {}; // Almacena las capas de Colonias
         var geoJsonLayersCompetencias = {}; // Almacena las capas de Competencias
         var differenceLayer = null; // Capa para la diferencia de círculos
+        
 
         // Variables para el marcador y los radios
         var currentMarker = null; // Marcador actual en el mapa
@@ -491,49 +484,7 @@
             popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
 
-        // Definir todas las capas GeoJSON que se pueden cargar
-        const layersToLoad = [
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_CDMX.geojson', name: 'Ageb CDMX', type: 'Ageb' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Ageb_urb_Edo_Mex.geojson', name: 'Ageb Edo. Mex.', type: 'Ageb' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_centro_barrio.geojson', name: 'Uso de suelo Centro Barrio', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_equipamento.geojson', name: 'Uso de suelo Equipamento', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio.geojson', name: 'Uso de suelo Habitacional Comercio', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_comercio_planta_baja.geojson', name: 'Uso de suelo Planta Baja', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_entrada.geojson', name: 'Uso de suelo Entrada', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_mixto.geojson', name: 'Uso de suelo Mixto', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_oficinas.geojson', name: 'Uso de suelo Oficinas', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Uso_suelo_habitacional_plurifamiliar.geojson', name: 'Uso de suelo Plurifamiliar', type: 'UsoSuelo' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Alcaldias_Ciudad_de_México.geojson', name: 'Alcaldías CDMX', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Municip_Estado_de_Mexico.geojson', name: 'Municipios Edo. Mex.', type: 'AlcaldiasMunicipios' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Region_Vallejo.geojson', name: 'Poligono Región Vallejo', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Azcapotzalco.geojson', name: 'Poligono Azcapotzalco', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Benito_Juarez.geojson', name: 'Poligono Benito Juárez', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Cuauhtemoc.geojson', name: 'Poligono Cuauhtémoc', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Ecatepec.geojson', name: 'Poligono Ecatepec', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Miguel_Hidalgo.geojson', name: 'Poligono M. Hidalgo', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Poligono_Nezahualcoyotl.geojson', name: 'Poligono Nezahualcoyotl', type: 'Poligono' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Azcapotzalco.geojson', name: 'Colonias Azcapotzalco', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Benito_Juarez.geojson', name: 'Colonias Benito Juárez', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Cuauhtemoc.geojson', name: 'Colonias Cuauhtemoc', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Ecatepec.geojson', name: 'Colonias Ecatepec', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Miguel_Hidalgo.geojson', name: 'Colonias M. Hidalgo', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Col_Nezahualcoyotl.geojson', name: 'Colonias Nezahualcoyotl', type: 'Col' },
-            { url: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Tiendas_3B.geojson', name: 'Tiendas 3B', type: 'Competencias' }
-        ];
-        function loadSelectedGeoJSON(layers) {
-            layers.forEach(layer => {
-                loadGeoJSON(layer.url, layer.name, layer.type);
-            });
-        }
-        // Función para cargar todas las capas definidas
-        function loadAllGeoJSON() {
-            loadSelectedGeoJSON(layersToLoad);
-        }
-        
-        // Llama a la función para cargar todas las capas
-        loadAllGeoJSON();       
-        
-       // Cargar capas GeoJSON desde archivos
+        // Cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             fetch(url)
                 .then(response => {
@@ -579,7 +530,7 @@
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function (feature, latlng) {
                             return L.marker(latlng, { icon: customIcon }); // Usar el icono personalizado
-                        },	
+                        },
                         style: {
                             color: color,
                             weight: 2,
@@ -624,14 +575,13 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-        
         // Controladores de capas
         var baseMaps = {
             "OpenStreetMap": osmLayer,
             "Google Road": googleRoadLayer,
             "Google Hybrid": googleHybridLayer
         };
-        
+
         var layerControlBase = L.control.layers(baseMaps, null).addTo(map);
         var layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
         var layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
@@ -639,7 +589,8 @@
         var layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
         var layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
         var layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-        
+
+
         // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
         var layerControlRadios = L.control.layers(null, {
             "Radio 400m": radius400Layer,
@@ -648,21 +599,22 @@
             "Extracción Ageb - Radio 400m": bufferLayerGroup,
             "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
         }, { collapsed: true }).addTo(map);
+
         // Función para actualizar los controladores de capas
         function updateLayerControls() {
-            if (layerControlAgeb) layerControlAgeb.remove();
-            if (layerControlUsoSuelo) layerControlUsoSuelo.remove();
-            if (layerControlAlcaldias) layerControlAlcaldias.remove();
-            if (layerControlPoligonos) layerControlPoligonos.remove();
-            if (layerControlColonias) layerControlColonias.remove();
-            if (layerControlCompetencias) layerControlCompetencias.remove();
-        
+            layerControlAgeb.remove();
+            layerControlUsoSuelo.remove();
+            layerControlAlcaldias.remove(); // Remover controlador de alcaldías
+            layerControlPoligonos.remove();
+            layerControlColonias.remove();
+            layerControlCompetencias.remove();
+            
             layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
             layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map); // Agregar Alcaldias
+            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map); // Agregar controlador de polígonos
+            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map); // Agregar controlador de Colonias
+            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map); // Agregar controlador de Competencias
         }
 
         // Llama a la función para cargar tus archivos GeoJSON
@@ -693,42 +645,10 @@
         loadGeoJSON('Col_Cuauhtemoc.geojson', 'Colonias Cuauhtemoc', 'Col');
         loadGeoJSON('Col_Ecatepec.geojson', 'Colonias Ecatepec', 'Col');
         loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
-        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colonias Nezahualcoyotl', 'Col');
+        loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colobias Nezahualcoyotl', 'Col');
 
         // Llama a la función para cargar capas de Colonias
         loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
-        
-            function createLayerControlWithCheckbox(layerGroup, layerName) {
-                var checkbox = L.control({ position: 'topright' });
-                checkbox.onAdd = function () {
-                    var div = L.DomUtil.create('div', 'layer-control');
-                    div.innerHTML = `<input type="checkbox" id="${layerName}-toggle" checked> ${layerName}`;
-                    div.firstChild.onclick = function () {
-                        var isChecked = div.firstChild.checked;
-                        layerGroup.eachLayer(function (layer) {
-                            if (isChecked) {
-                                map.addLayer(layer);
-                            } else {
-                                map.removeLayer(layer);
-                            }
-                        });
-                    };
-                    return div;
-                };
-                checkbox.addTo(map);
-            }
-        
-            function addLayerControlWithCheckboxes() {
-                createLayerControlWithCheckbox(geoJsonLayersAgeb, "Ageb");
-                createLayerControlWithCheckbox(geoJsonLayersUsoSuelo, "Uso de Suelo");
-                createLayerControlWithCheckbox(geoJsonLayersAlcaldias, "Alcaldías");
-                createLayerControlWithCheckbox(geoJsonLayersPoligonos, "Polígonos");
-                createLayerControlWithCheckbox(geoJsonLayersColonias, "Colonias");
-                createLayerControlWithCheckbox(geoJsonLayersCompetencias, "Competencias");
-            }
-        
-            // Llama a la función para agregar los controles de capas
-            addLayerControlWithCheckboxes();
     </script>
 </body>
 </html>
