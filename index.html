@@ -161,7 +161,7 @@
             if (!isNaN(lat) && !isNaN(lon)) {
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
-                    icon: L.divIcon({ className: 'yellow-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
+                    icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
                 }).addTo(map); // Eliminar la parte de bindPopup()
         
                 // Crear la etiqueta del marcador
