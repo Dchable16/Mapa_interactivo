@@ -297,54 +297,58 @@
         function extractBufferData() {
             if (bufferDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
-                return; // Evitar extraer datos si ya se ha hecho
+                return;
             }
-            
+        
             if (currentMarker) {
-                const lat = parseFloat(document.getElementById('lat').value);
-                const lon = parseFloat(document.getElementById('lon').value);
-                const selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
-                
-                fetch(selectedLayer)
-                    .then(response => response.json())
-                    .then(data => {
-                        const buffer = turf.circle([lon, lat], 400, { units: 'meters' });
-                        const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
-                            const intersection = turf.intersect(feature, buffer);
-                            if (intersection) {
-                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
-                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
-                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
-                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1; // Calcular población total
-                                
-                                intersection.properties.originalArea = originalArea;
-                                intersection.properties.extractedArea = extractedArea;
-                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
-                                intersection.properties.populationTotal = Math.floor(populationTotal); // Guardar población total en atributos
-                                
-                                return intersection;
-                            }
-                            return null;
-                        }).filter(feature => feature !== null)); // Filtrar características nulas
-                        
-                        // Limpiar la capa de buffer antes de añadir nuevas extracciones
-                        bufferLayerGroup.clearLayers();
-                        
-                        L.geoJSON(featuresWithinBuffer, {
-                            style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('click', function () {
-                                    let popupContent = "<b>Atributos:</b><br>";
-                                    for (const key in feature.properties) {
-                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
-                                    }
-                                    layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
-                                });
-                            }
-                        }).addTo(bufferLayerGroup);
-                        bufferDataExtracted = true; // Marcar como creado
-                    })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
+                const latLng = currentMarker.getLatLng();
+                const point = turf.point([latLng.lng, latLng.lat]);
+                let selectedLayer = null;
+        
+                if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebCDMXLayer.toGeoJSON();
+                } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebEdoMexLayer.toGeoJSON();
+                }
+        
+                if (selectedLayer) {
+                    const buffer = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                    const featuresWithinBuffer = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, buffer);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea) * 100;
+                            const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    bufferLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinBuffer, {
+                        style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
+                        onEachFeature: function (feature, layer) {
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(bufferLayerGroup);
+                    bufferDataExtracted = true;
+                } else {
+                    alert("El marcador no está dentro de ninguna capa AGEB.");
+                }
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -354,55 +358,61 @@
         function extractDifferenceData() {
             if (differenceDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
-                return; // Evitar extraer datos si ya se ha hecho
+                return;
             }
-            
+        
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
-                const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-                const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-                const difference = turf.difference(circle800, circle400);
-                const selectedLayer = (latLng.lat >= 19.0 && latLng.lat <= 20.0 && latLng.lng >= -100.0 && latLng.lng <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
-                
-                fetch(selectedLayer)
-                    .then(response => response.json())
-                    .then(data => {
-                        const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
-                            const intersection = turf.intersect(feature, difference);
-                            if (intersection) {
-                                const originalArea = Math.floor(turf.area(feature)); // Área original del polígono
-                                const extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
-                                const extractionPercentage = (extractedArea / originalArea) * 100; // Calcular porcentaje de extracción
-                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1; // Calcular población total
-                                
-                                intersection.properties.originalArea = originalArea;
-                                intersection.properties.extractedArea = extractedArea;
-                                intersection.properties.extractionPercentage = extractionPercentage; // Guardar porcentaje en atributos
-                                intersection.properties.populationTotal = Math.floor(populationTotal); // Guardar población total en atributos
-                                
-                                return intersection;
-                            }
-                            return null; // Retornar nulo si no hay intersección
-                        }).filter(feature => feature !== null)); // Filtrar características nulas
-                        
-                        // Limpiar la capa de diferencia antes de añadir nuevas extracciones
-                        differenceExtractionLayerGroup.clearLayers();
-                        
-                        L.geoJSON(featuresWithinDifference, {
-                            style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('click', function () {
-                                    let popupContent = "<b>Atributos:</b><br>";
-                                    for (const key in feature.properties) {
-                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
-                                    }
-                                    layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
-                                });
-                            }
-                        }).addTo(differenceExtractionLayerGroup);
-                        differenceDataExtracted = true; // Marcar como creado
-                    })
-                    .catch(err => console.error('Error al cargar la capa base:', err));
+                const point = turf.point([latLng.lng, latLng.lat]);
+                let selectedLayer = null;
+        
+                if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebCDMXLayer.toGeoJSON();
+                } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebEdoMexLayer.toGeoJSON();
+                }
+        
+                if (selectedLayer) {
+                    const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                    const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+                    const difference = turf.difference(circle800, circle400);
+        
+                    const featuresWithinDifference = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, difference);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea) * 100;
+                            const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    differenceExtractionLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinDifference, {
+                        style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
+                        onEachFeature: function (feature, layer) {
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(differenceExtractionLayerGroup);
+                    differenceDataExtracted = true;
+                } else {
+                    alert("El marcador no está dentro de ninguna capa AGEB.");
+                }
             } else {
                 alert("Asegúrese de que el marcador esté creado.");
             }
@@ -417,12 +427,13 @@
         });
 
         // Función para cargar capas GeoJSON desde archivos
-        function loadGeoJSON(url, layerName, type) {
+        function loadGeoJSON(url, layerName, type, callback) {
             if (loadedLayers.has(layerName)) {
                 console.log(`La capa ${layerName} ya ha sido cargada.`);
-                return; // No cargar si ya fue cargada
+                if (callback) callback();
+                return;
             }
-
+        
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
@@ -440,25 +451,31 @@
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
-                            // Calcular área y agregar a las propiedades
                             if (type === 'Poligono') {
-                                const area = Math.floor(turf.area(feature)); // Calcular área del polígono
-                                feature.properties['Área polígono'] = area; // Agregar área a las propiedades
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
                             }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
                                     popupContent += `${key}: ${feature.properties[key]}<br>`;
                                 }
-                                layer.bindPopup(popupContent).openPopup(); // Mostrar popup con atributos
+                                layer.bindPopup(popupContent).openPopup();
                             });
                         }
                     });
                     switch (type) {
-                        case 'Ageb': geoJsonLayersAgeb[layerName] = geoJsonLayer; break;
+                        case 'Ageb':
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
                         case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
                         case 'Alcaldias': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
                         case 'Municipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
@@ -466,8 +483,9 @@
                         case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
                         case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
-                    loadedLayers.add(layerName); // Marcar la capa como cargada
-                    updateLayerControls(); // Actualizar los controladores de capas
+                    loadedLayers.add(layerName);
+                    updateLayerControls();
+                    if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
