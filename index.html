@@ -147,6 +147,9 @@
         let bufferDataExtracted = false;
         let differenceDataExtracted = false;
 
+        // Conjunto para rastrear capas cargadas
+        const loadedLayers = new Set();
+
         // Función para agregar un marcador en el mapa
         function addMarker() {
             if (currentMarker) {
@@ -360,6 +363,11 @@
 
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
+            if (loadedLayers.has(layerName)) {
+                console.log(`La capa ${layerName} ya fue cargada.`);
+                return; // No cargar si ya fue cargada
+            }
+
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
@@ -398,6 +406,7 @@
                         case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
                         case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
+                    loadedLayers.add(layerName); // Marcar la capa como cargada
                     updateLayerControls(); // Actualizar los controladores de capas
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
@@ -442,43 +451,6 @@
             layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
             layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
             layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-        }
-
-        // Cargar capas GeoJSON bajo demanda
-        function loadLayer(layerName, type) {
-            const layerUrls = {
-                'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
-                'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson',
-                'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson',
-                'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson',
-                'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson',
-                'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson',
-                'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson',
-                'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson',
-                'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson',
-                'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson',
-                'Alcaldías CDMX': 'Alcaldias_Ciudad_de_México.geojson',
-                'Municipios Edo. Mex.': 'Municip_Estado_de_Mexico.geojson',
-                'Poligono Región Vallejo': 'Region_Vallejo.geojson',
-                'Poligono Azcapotzalco': 'Poligono_Azcapotzalco.geojson',
-                'Poligono Benito Juárez': 'Poligono_Benito_Juarez.geojson',
-                'Poligono Cuauhtémoc': 'Poligono_Cuauhtemoc.geojson',
-                'Poligono Ecatepec': 'Poligono_Ecatepec.geojson',
-                'Poligono M. Hidalgo': 'Poligono_Miguel_Hidalgo.geojson',
-                'Poligono Nezahualcoyotl': 'Poligono_Nezahualcoyotl.geojson',
-                'Colonias Azcapotzalco': 'Col_Azcapotzalco.geojson',
-                'Colonias Benito Juárez': 'Col_Benito_Juarez.geojson',
-                'Colonias Cuauhtemoc': 'Col_Cuauhtemoc.geojson',
-                'Colonias Ecatepec': 'Col_Ecatepec.geojson',
-                'Colonias M. Hidalgo': 'Col_Miguel_Hidalgo.geojson',
-                'Colonias Nezahualcoyotl': 'Col_Nezahualcoyotl.geojson',
-                'Tiendas 3B': 'Tiendas_3B.geojson'
-            };
-            if (layerUrls[layerName]) {
-                loadGeoJSON(layerUrls[layerName], layerName, type);
-            } else {
-                console.error('URL de capa no encontrada para:', layerName);
-            }
         }
 
         // Cargar capas GeoJSON desde archivos bajo demanda
