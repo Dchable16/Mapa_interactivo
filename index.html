@@ -161,6 +161,8 @@
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
         
+            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Agregar log para verificar coordenadas
+        
             if (!isNaN(lat) && !isNaN(lon)) {
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
