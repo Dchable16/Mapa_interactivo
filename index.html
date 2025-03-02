@@ -369,7 +369,9 @@
             iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
             popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
-
+        // Objeto para almacenar los grupos de clústeres por capa
+        const clusterGroups = {};
+        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type) {
             if (loadedLayers.has(layerName)) {
@@ -393,8 +395,17 @@
                         'Competencias': 'rgb(204, 85, 0)',
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
+                    // Crear un grupo de clústeres específico para esta capa
+                    clusterGroups[layerName] = L.markerClusterGroup();
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
+                        pointToLayer: (feature, latlng) => {
+                            const marker = L.marker(latlng, { icon: customIcon });
+                            if (type === 'Competencias') {
+                                // Añadir el marcador al grupo de clústeres específico
+                                clusterGroups[layerName].addLayer(marker);
+                            }
+                            return marker;
+                        },
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             layer.on('click', () => {
@@ -420,6 +431,16 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
+        // Manejar el evento de cambio de capa
+        map.on('overlayadd overlayremove', function (eventLayer) {
+            for (const layerName in clusterGroups) {
+                if (eventLayer.name === layerName) {
+                    if (eventLayer.type === 'overlayadd') {
+                        // Añadir el grupo de clústeres al mapa
+                        map.addLayer(clusterGroups[layerName]);
+                    } else {
+                        // Remover el grupo de clústeres del mapa
+                        map.removeLayer(clusterGroups[layerName]);
 
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
