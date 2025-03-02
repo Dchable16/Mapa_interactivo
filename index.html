@@ -403,6 +403,18 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
 
+        // Función para cargar capas visibles en el mapa
+        function loadVisibleLayers() {
+            const bounds = map.getBounds();
+            for (const layer in geoJsonLayersAgeb) {
+                const geoJsonLayer = geoJsonLayersAgeb[layer];
+                if (bounds.intersects(geoJsonLayer.getBounds())) {
+                    map.addLayer(geoJsonLayer);
+                }
+            }
+            // Repetir para otras capas según sea necesario
+        }
+
         // Capas base del mapa
         const baseMaps = {
             "OpenStreetMap": osmLayer,
@@ -471,6 +483,9 @@
         loadGeoJSON('Col_Miguel_Hidalgo.geojson', 'Colonias M. Hidalgo', 'Col');
         loadGeoJSON('Col_Nezahualcoyotl.geojson', 'Colonias Nezahualcoyotl', 'Col');
         loadGeoJSON('Tiendas_3B.geojson', 'Tiendas 3B', 'Competencias'); 
+
+        // Cargar capas visibles al desplazarse o hacer zoom
+        map.on('moveend', loadVisibleLayers);
     </script>
 </body>
 </html>
