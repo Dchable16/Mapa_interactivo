@@ -289,6 +289,12 @@
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
+
+                        // Calcular el área de los polígonos originales y agregarlo a las propiedades
+                        data.features.forEach(feature => {
+                            feature.properties['Área polígono original'] = Math.floor(turf.area(feature)); // Calcular área y agregar a propiedades
+                        });
+
                         L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -333,6 +339,12 @@
                             }
                             return null; // Retornar nulo si no hay intersección
                         }).filter(feature => feature !== null)); // Filtrar características nulas
+
+                        // Calcular el área de los polígonos originales y agregarlo a las propiedades
+                        data.features.forEach(feature => {
+                            feature.properties['Área polígono original'] = Math.floor(turf.area(feature)); // Calcular área y agregar a propiedades
+                        });
+
                         L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -450,7 +462,7 @@
         }
 
         // Establecer el rango de zoom para las capas de uso de suelo
-        const minZoomUsoSuelo = 17; // Nivel de zoom mínimo para activar las capas de uso de suelo
+        const minZoomUsoSuelo = 15; // Nivel de zoom mínimo para activar las capas de uso de suelo
 
         // Manejar el evento de cambio de zoom
         map.on('zoomend', function() {
