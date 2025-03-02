@@ -272,11 +272,12 @@
                 alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
                 return; // Evitar extraer datos si ya se ha hecho
             }
-
+        
             if (currentMarker) {
                 const lat = parseFloat(document.getElementById('lat').value);
                 const lon = parseFloat(document.getElementById('lon').value);
                 const selectedLayer = (lat >= 19.0 && lat <= 20.0 && lon >= -100.0 && lon <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                
                 fetch(selectedLayer)
                     .then(response => response.json())
                     .then(data => {
@@ -284,11 +285,13 @@
                         const featuresWithinBuffer = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, buffer);
                             if (intersection) {
-                                intersection.properties.area = Math.floor(turf.area(intersection)); // Calcular área de la intersección
+                                intersection.properties.originalArea = Math.floor(turf.area(feature)); // Área original del polígono
+                                intersection.properties.extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
                                 return intersection;
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
+                        
                         L.geoJSON(featuresWithinBuffer, {
                             style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
@@ -308,31 +311,34 @@
                 alert("Primero debe agregar un marcador.");
             }
         }
-
+        
         // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
             if (differenceDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
                 return; // Evitar extraer datos si ya se ha hecho
             }
-
+        
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
                 const difference = turf.difference(circle800, circle400);
                 const selectedLayer = (latLng.lat >= 19.0 && latLng.lat <= 20.0 && latLng.lng >= -100.0 && latLng.lng <= -98.0) ? 'Ageb_urb_CDMX.geojson' : 'Ageb_urb_Edo_Mex.geojson';
+                
                 fetch(selectedLayer)
                     .then(response => response.json())
                     .then(data => {
                         const featuresWithinDifference = turf.featureCollection(data.features.map(feature => {
                             const intersection = turf.intersect(feature, difference);
                             if (intersection) {
-                                intersection.properties.area = Math.floor(turf.area(intersection)); // Calcular área de la intersección
+                                intersection.properties.originalArea = Math.floor(turf.area(feature)); // Área original del polígono
+                                intersection.properties.extractedArea = Math.floor(turf.area(intersection)); // Área después de la extracción
                                 return intersection;
                             }
                             return null; // Retornar nulo si no hay intersección
                         }).filter(feature => feature !== null)); // Filtrar características nulas
+                        
                         L.geoJSON(featuresWithinDifference, {
                             style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                             onEachFeature: function (feature, layer) {
