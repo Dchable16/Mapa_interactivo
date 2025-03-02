@@ -394,7 +394,13 @@
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }), // Usar el icono personalizado
+                        pointToLayer: (feature, latlng) => {
+                            const marker = L.marker(latlng, { icon: customIcon });
+                            if (type === 'Competencias') { // O cualquier otro tipo que quieras clusterizar
+                                markersClusterGroup.addLayer(marker); // Añadir al cluster group
+                            }
+                            return marker;
+                        },
                         style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             layer.on('click', () => {
