@@ -198,14 +198,24 @@
                     currentMarkerLabel = null; // Limpiar la variable de la etiqueta
                 }
         
+                // Limpiar las capas de radios y restablecer las banderas
                 radius400Layer.clearLayers(); // Limpiar las capas de radios
                 radius800Layer.clearLayers();
+                radius400Created = false; // Reiniciar la bandera de creación de radio 400m
+                radius800Created = false; // Reiniciar la bandera de creación de radio 800m
+                
                 if (differenceLayer) {
                     differenceLayerGroup.removeLayer(differenceLayer); // Eliminar la capa de diferencia si existe
                     differenceLayer = null; // Limpiar la variable de la capa de diferencia
                 }
                 bufferLayerGroup.clearLayers(); // Limpiar las capas de buffer
                 differenceExtractionLayerGroup.clearLayers(); // Limpiar las capas de extracción
+        
+                // Reiniciar las banderas de extracción
+                bufferDataExtracted = false; // Reiniciar la bandera de extracción de buffer
+                differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
+        
+                // Limpiar los campos de entrada
                 document.getElementById('lat').value = ''; // Limpiar el campo de latitud
                 document.getElementById('lon').value = ''; // Limpiar el campo de longitud
                 document.getElementById('markerName').value = ''; // Limpiar el campo de nombre del marcador
