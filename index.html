@@ -225,6 +225,33 @@
                 alert("No hay ningún marcador para eliminar.");
             }
         }
+        // Función para agregar radios de 400m o 800m alrededor del marcador
+        function addRadius(radius) {
+            if (radius === 400 && radius400Created) {
+                alert("El radio de 400m ya ha sido creado.");
+                return; // Evitar agregar un nuevo radio si ya existe
+            }
+            if (radius === 800 && radius800Created) {
+                alert("El radio de 800m ya ha sido creado.");
+                return; // Evitar agregar un nuevo radio si ya existe
+            }
+
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
+                if (radius === 400) {
+                    radius400Layer.addLayer(circle); // Añadir el círculo de 400m al grupo de capas
+                    radius400m = circle; // Guardar el círculo en la variable
+                    radius400Created = true; // Marcar como creado
+                } else {
+                    radius800Layer.addLayer(circle); // Añadir el círculo de 800m al grupo de capas
+                    radius800m = circle; // Guardar el círculo en la variable
+                    radius800Created = true; // Marcar como creado
+                }
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        }
 
         // Función para calcular la diferencia entre dos círculos
         function calculateDifference() {
