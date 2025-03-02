@@ -449,6 +449,29 @@
             }
         }
 
+        // Establecer el rango de zoom para las capas de uso de suelo
+        const minZoomUsoSuelo = 15; // Nivel de zoom mínimo para activar las capas de uso de suelo
+
+        // Manejar el evento de cambio de zoom
+        map.on('zoomend', function() {
+            const currentZoom = map.getZoom();
+            if (currentZoom >= minZoomUsoSuelo) {
+                // Activar las capas de uso de suelo si el zoom es suficiente
+                for (const layerName in geoJsonLayersUsoSuelo) {
+                    if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
+                        map.addLayer(geoJsonLayersUsoSuelo[layerName]);
+                    }
+                }
+            } else {
+                // Desactivar las capas de uso de suelo si el zoom es insuficiente
+                for (const layerName in geoJsonLayersUsoSuelo) {
+                    if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
+                        map.removeLayer(geoJsonLayersUsoSuelo[layerName]);
+                    }
+                }
+            }
+        });
+
         // Capas base del mapa
         const baseMaps = {
             "OpenStreetMap": osmLayer,
