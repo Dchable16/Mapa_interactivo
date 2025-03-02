@@ -289,10 +289,10 @@
                             }
                             return null;
                         }).filter(feature => feature !== null)); // Filtrar características nulas
-
-                        // Calcular y agregar el área de los polígonos originales
+                        
+                        // Calcular el área de los polígonos originales y agregarlo a las propiedades
                         data.features.forEach(feature => {
-                            feature.properties['Área polígono original'] = Math.floor(turf.area(feature)); // Agregar área al atributo
+                            feature.properties['Area poligono original'] = Math.floor(turf.area(feature));
                         });
 
                         L.geoJSON(featuresWithinBuffer, {
@@ -339,10 +339,10 @@
                             }
                             return null; // Retornar nulo si no hay intersección
                         }).filter(feature => feature !== null)); // Filtrar características nulas
-
-                        // Calcular y agregar el área de los polígonos originales
+                        
+                        // Calcular el área de los polígonos originales y agregarlo a las propiedades
                         data.features.forEach(feature => {
-                            feature.properties['Área polígono original'] = Math.floor(turf.area(feature)); // Agregar área al atributo
+                            feature.properties['Area poligono original'] = Math.floor(turf.area(feature));
                         });
 
                         L.geoJSON(featuresWithinDifference, {
