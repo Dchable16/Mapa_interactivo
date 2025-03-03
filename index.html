@@ -137,14 +137,6 @@
             metric: true,           // Mostrar escala métrica
             imperial: false         // No mostrar escala imperial
         }).addTo(map);
-
-        // Crear grupos de capas
-        const agebGroup = L.layerGroup();
-        const usoSueloGroup = L.layerGroup();
-        const alcaldiasGroup = L.layerGroup();
-        const poligonosGroup = L.layerGroup();
-        const coloniasGroup = L.layerGroup();
-        const competenciasGroup = L.layerGroup();
         
         // Función para centrar el mapa en el marcador
         document.getElementById('center-button').addEventListener('click', function() {
@@ -462,78 +454,76 @@
             }
         }
 
-        const tiendas3bIcon = L.icon({
-            iconUrl: 'tiendas3b-icon.png', // Ruta al archivo del icono
-            iconSize: [32, 32], // Tamaño del icono (ajusta según sea necesario)
-            iconAnchor: [16, 32], // Punto de anclaje del icono (ajusta según sea necesario)
-            popupAnchor: [0, -32] // Punto de anclaje del popup (ajusta según sea necesario)
+        // Crear un icono personalizado usando el logotipo
+        const customIcon = L.icon({
+            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
+            iconSize: [20, 20], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
-
 
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
+            if (loadedLayers.has(layerName)) {
+                console.log(`La capa ${layerName} ya ha sido cargada.`);
+                if (callback) callback();
+                return;
+            }
+        
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    return response.json();
+                })
                 .then(data => {
-                    let geoJsonLayer;
-                    if (layerName === 'Tiendas 3B') {
-                        // Utilizar el icono personalizado para Tiendas 3B
-                        geoJsonLayer = L.geoJSON(data, {
-                            pointToLayer: function(feature, latlng) {
-                                return L.marker(latlng, { icon: tiendas3bIcon });
+                    const colorMap = {
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municipios': 'rgb(255, 255, 0)',
+                        'Alcaldias': 'rgb(0, 255, 127)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                    };
+                    const geoJsonLayer = L.geoJSON(data, {
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
+                        style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
+                        onEachFeature: (feature, layer) => {
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
                             }
-                        });
-                    } else {
-                        // Utilizar estilos de color para otras capas
-                        geoJsonLayer = L.geoJSON(data, {
-                            style: getLayerStyle(layerName)
-                        });
-                    }
+                            layer.on('click', () => {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    });
                     switch (type) {
-                        case 'Ageb': agebGroup.addLayer(geoJsonLayer); break;
-                        case 'UsoSuelo': usoSueloGroup.addLayer(geoJsonLayer); break;
-                        case 'Alcaldias': alcaldiasGroup.addLayer(geoJsonLayer); break;
-                        case 'Municipios': alcaldiasGroup.addLayer(geoJsonLayer); break;
-                        case 'Poligono': poligonosGroup.addLayer(geoJsonLayer); break;
-                        case 'Col': coloniasGroup.addLayer(geoJsonLayer); break;
-                        case 'Competencias': competenciasGroup.addLayer(geoJsonLayer); break;
+                        case 'Ageb':
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
+                        case 'Alcaldias': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
+                        case 'Municipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
+                        case 'Poligono': geoJsonLayersPoligonos[layerName] = geoJsonLayer; break;
+                        case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
+                        case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
                     loadedLayers.add(layerName);
                     updateLayerControls();
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
-        
-        function getLayerStyle(layerName) {
-            switch (layerName) {
-                case 'Ageb CDMX': return { color: 'blue', weight: 1, fillOpacity: 0.2 };
-                case 'Ageb Edo. Mex.': return { color: 'green', weight: 1, fillOpacity: 0.2 };
-                case 'Uso de suelo Centro Barrio': return { color: 'red', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Equipamento': return { color: 'orange', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Habitacional Comercio': return { color: 'purple', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Planta Baja': return { color: 'brown', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Entrada': return { color: 'pink', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Mixto': return { color: 'teal', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Oficinas': return { color: 'cyan', weight: 1, fillOpacity: 0.5 };
-                case 'Uso de suelo Plurifamiliar': return { color: 'lime', weight: 1, fillOpacity: 0.5 };
-                case 'Alcaldías CDMX': return { color: 'darkblue', weight: 2, fillOpacity: 0.1 };
-                case 'Municipios Edo. Mex.': return { color: 'darkgreen', weight: 2, fillOpacity: 0.1 };
-                case 'Poligono Región Vallejo': return { color: 'violet', weight: 2, fillOpacity: 0.3 };
-                case 'Poligono Azcapotzalco': return { color: 'indigo', weight: 2, fillOpacity: 0.3 };
-                case 'Poligono Benito Juárez': return { color: 'magenta', weight: 2, fillOpacity: 0.3 };
-                case 'Poligono Cuauhtémoc': return { color: 'olive', weight: 2, fillOpacity: 0.3 };
-                case 'Poligono Ecatepec': return { color: 'darkred', weight: 2, fillOpacity: 0.3 };
-                case 'Poligono M. Hidalgo': return { color: 'darkorange', weight: 2, fillOpacity: 0.3 };
-                case 'Poligono Nezahualcoyotl': return { color: 'darkcyan', weight: 2, fillOpacity: 0.3 };
-                case 'Colonias Azcapotzalco': return { color: 'lightblue', weight: 1, fillOpacity: 0.4 };
-                case 'Colonias Benito Juárez': return { color: 'lightgreen', weight: 1, fillOpacity: 0.4 };
-                case 'Colonias Cuauhtemoc': return { color: 'lightcoral', weight: 1, fillOpacity: 0.4 };
-                case 'Colonias Ecatepec': return { color: 'lightsalmon', weight: 1, fillOpacity: 0.4 };
-                case 'Colonias M. Hidalgo': return { color: 'lightskyblue', weight: 1, fillOpacity: 0.4 };
-                case 'Colonias Nezahualcoyotl': return { color: 'lightseagreen', weight: 1, fillOpacity: 0.4 };
-                default: return { color: 'gray', weight: 1, fillOpacity: 0.2 };
-            }
         }
 
         // Función para cargar capas bajo demanda
@@ -624,21 +614,18 @@
 
         // Función para actualizar los controladores de capas
         function updateLayerControls() {
-            function updateLayerControls() {
-    layerControlAgeb.remove();
-    layerControlUsoSuelo.remove();
-    layerControlAlcaldias.remove();
-    layerControlPoligonos.remove();
-    layerControlColonias.remove();
-    layerControlCompetencias.remove();
-
-    layerControlAgeb = L.control.layers(null, { "AGEB": agebGroup }, { collapsed: true }).addTo(map);
-    layerControlUsoSuelo = L.control.layers(null, { "Uso de Suelo": usoSueloGroup }, { collapsed: true }).addTo(map);
-    layerControlAlcaldias = L.control.layers(null, { "Alcaldías/Municipios": alcaldiasGroup }, { collapsed: true }).addTo(map);
-    layerControlPoligonos = L.control.layers(null, { "Polígonos": poligonosGroup }, { collapsed: true }).addTo(map);
-    layerControlColonias = L.control.layers(null, { "Colonias": coloniasGroup }, { collapsed: true }).addTo(map);
-    layerControlCompetencias = L.control.layers(null, { "Competencias": competenciasGroup }, { collapsed: true }).addTo(map);
-}
+            layerControlAgeb.remove();
+            layerControlUsoSuelo.remove();
+            layerControlAlcaldias.remove();
+            layerControlPoligonos.remove();
+            layerControlColonias.remove();
+            layerControlCompetencias.remove();
+            layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
+            layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
+            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
+            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
+            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
+            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
         }
 
         // Cargar capas GeoJSON desde archivos bajo demanda
