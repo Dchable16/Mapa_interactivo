@@ -455,15 +455,19 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Simplificar las geometrías
-                    const simplifiedFeatures = turf.simplify(data, { tolerance: .0009, highQuality: false });
-                    const geoJsonLayer = L.geoJSON(simplifiedFeatures, {
+                    const colorMap = {
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municipios': 'rgb(255, 255, 0)',
+                        'Alcaldias': 'rgb(0, 255, 127)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                    };
+                    const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
-                        style: {
-                            color: getColorForLayer(type), // Usar solo el tipo para obtener el color
-                            weight: 2,
-                            fillOpacity: 0.5
-                        },
+                        style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
                         onEachFeature: (feature, layer) => {
                             if (type === 'Poligono') {
                                 const area = Math.floor(turf.area(feature));
@@ -478,8 +482,6 @@
                             });
                         }
                     });
-        
-                    // Agregar la capa simplificada
                     switch (type) {
                         case 'Ageb':
                             if (url === 'Ageb_urb_CDMX.geojson') {
@@ -489,46 +491,18 @@
                             }
                             geoJsonLayersAgeb[layerName] = geoJsonLayer;
                             break;
-                        case 'UsoSuelo':
-                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                            break;
-                        case 'Alcaldias':
-                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Municipios':
-                            geoJsonLayersMunicipios[layerName] = geoJsonLayer;
-                            break;
-                        case 'Poligono':
-                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
-                            break;
-                        case 'Col':
-                            geoJsonLayersColonias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Competencias':
-                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
-                            break;
+                        case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
+                        case 'Alcaldias': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
+                        case 'Municipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
+                        case 'Poligono': geoJsonLayersPoligonos[layerName] = geoJsonLayer; break;
+                        case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
+                        case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
-        
                     loadedLayers.add(layerName);
                     updateLayerControls();
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
-        
-        // Función auxiliar para obtener el color según el tipo de capa
-        function getColorForLayer(type) {
-            const colorMap = {
-                'UsoSuelo': 'rgb(128, 0, 128)',
-                'Poligono': 'rgb(255, 127, 80)',
-                'Col': 'rgb(0, 150, 136)',
-                'Region_Vallejo': 'rgb(204, 85, 0)',
-                'Municipios': 'rgb(255, 255, 0)',
-                'Alcaldias': 'rgb(0, 255, 127)',
-                'Competencias': 'rgb(204, 85, 0)',
-                'Ageb': 'rgb(135, 206, 235)' // Color por defecto para Ageb
-            };
-            return colorMap[type] || 'gray'; // Color por defecto si no se encuentra el tipo
         }
 
         // Función para cargar capas bajo demanda
