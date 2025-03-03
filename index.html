@@ -488,7 +488,7 @@
                     };
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
-                        style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
+                        style: type === 'UsoSuelo' ? { color: colorMap[type], weight: 1, fillOpacity: 0 } : { color: colorMap[type], weight: 2, fillOpacity: 0.5 }, // Estilos específicos para UsoSuelo
                         onEachFeature: (feature, layer) => {
                             if (type === 'Poligono') {
                                 const area = Math.floor(turf.area(feature));
