@@ -456,7 +456,7 @@
                 })
                 .then(data => {
                     // Simplificar las geometrías
-                    const simplifiedFeatures = turf.simplify(data, { tolerance: 0.01, highQuality: false });
+                    const simplifiedFeatures = turf.simplify(data, { tolerance: 0.5, highQuality: false });
                     const geoJsonLayer = L.geoJSON(simplifiedFeatures, {
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
                         style: {
