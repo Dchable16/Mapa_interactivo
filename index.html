@@ -69,46 +69,101 @@
             .form-container input, .form-container button { padding: 5px; font-size: 15px; }
             .logo { width: 120px; }
         }
+
+        .map-container {
+            position: relative;
+            height: 100vh;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+            
+        .form-wrapper {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            transition: bottom 0.3s ease;
+        }
+        
+        .form-container {
+            background-color: rgb(248, 248, 255);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
+            max-width: 600px;
+            transition: max-height 0.3s ease;
+            max-height: 500px;
+            overflow: hidden;
+        }
+        
+        .form-container.collapsed {
+            max-height: 0;
+        }
+        
+        .arrow-button {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
     </style>
 </head>
 <body>
-    <div class="header-container">
+    <div class="map-container">
+        <div class="header-container">
         <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
         <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Logotipo -->
     </div>
     
-    <div class="form-container">
-        <div class="form-row">
-            <div class="form-column">
-                <label for="lat">Latitud:</label>
-                <input type="text" id="lat" value="19.4326"> <!-- Campo de entrada para latitud -->
-            </div>
-            <div class="form-column">
-                <label for="lon">Longitud:</label>
-                <input type="text" id="lon" value="-99.1332"> <!-- Campo de entrada para longitud -->
-            </div>
-            <div class="form-column">
-                <label for="markerName">Nombre del Marcador:</label>
-                <input type="text" id="markerName" value="Marcador Manual"> <!-- Campo de entrada para el nombre del marcador -->
-            </div>
-        </div>
-        
-        <div class="button-container">
-            <button onclick="addMarker()">Agregar Marcador</button>
-            <button onclick="removeMarker()">Eliminar Marcador</button>
-            <button onclick="addRadius(400)">Agregar Radio 400m</button>
-            <button onclick="addRadius(800)">Agregar Radio 800m</button>
-            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
-        </div>
-
+   <div id="map" style="position: relative;">
+    <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" fill="#3c4043" />
+            <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
+        </svg>
+    </button>
+    <div id="zoom-level" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+        <span id="zoom-value">12</span>
     </div>
-    
-    <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
-    <!-- Div para mostrar el nivel de zoom -->
-    <div id="map" title="Muestra el zoom de la capa" style="position: relative;"> <!-- Contenedor para el mapa -->
-
+    <div class="form-wrapper">
+        <button id="toggle-form" class="arrow-button">&#9660;</button>
+        <div class="form-container">
+            <div class="form-row">
+                <div class="form-column">
+                    <label for="lat">Latitud:</label>
+                    <input type="text" id="lat" value="19.4326">
+                </div>
+                <div class="form-column">
+                    <label for="lon">Longitud:</label>
+                    <input type="text" id="lon" value="-99.1332">
+                </div>
+                <div class="form-column">
+                    <label for="markerName">Nombre del Marcador:</label>
+                    <input type="text" id="markerName" value="Marcador Manual">
+                </div>
+            </div>
+            <div class="button-container">
+                <button onclick="addMarker()">Agregar Marcador</button>
+                <button onclick="removeMarker()">Eliminar Marcador</button>
+                <button onclick="addRadius(400)">Agregar Radio 400m</button>
+                <button onclick="addRadius(800)">Agregar Radio 800m</button>
+                <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
+                <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
+                <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
+            </div>
+        </div>
+    </div>
+</div>
+          
     // Crea botón para centrar marcador
     <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -656,5 +711,21 @@
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
     </script>
+</div>        
+        const formContainer = document.querySelector('.form-container');
+        const toggleFormButton = document.getElementById('toggle-form');
+        const formWrapper = document.querySelector('.form-wrapper');
+        
+        toggleFormButton.addEventListener('click', () => {
+            formContainer.classList.toggle('collapsed');
+            if (formContainer.classList.contains('collapsed')) {
+                toggleFormButton.textContent = '&#9650;';
+                formWrapper.style.bottom = "-470px"
+        
+            } else {
+                toggleFormButton.textContent = '&#9660;';
+                formWrapper.style.bottom = "0px"
+            }
+        });
 </body>
 </html>
