@@ -462,13 +462,13 @@
             }
         }
 
-        // Crear un icono personalizado usando el logotipo
-        const customIcon = L.icon({
-            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
-            iconSize: [20, 20], // Tamaño del icono
-            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
-            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
+        const tiendas3bIcon = L.icon({
+            iconUrl: 'tiendas3b-icon.png', // Ruta al archivo del icono
+            iconSize: [32, 32], // Tamaño del icono (ajusta según sea necesario)
+            iconAnchor: [16, 32], // Punto de anclaje del icono (ajusta según sea necesario)
+            popupAnchor: [0, -32] // Punto de anclaje del popup (ajusta según sea necesario)
         });
+
 
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
