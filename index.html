@@ -101,14 +101,15 @@
             <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button> <!-- Botón para calcular la diferencia entre radios -->
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button> <!-- Botón para extraer información del buffer de 400m -->
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button> <!-- Botón para extraer información de la diferencia de 800m -->
+            <!-- Div para mostrar el nivel de zoom -->
+            <div id="zoom-level" style="background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: default; text-align: center; font-weight: bold;">
+                Zoom: <span id="zoom-value">12</span>
+            </div>
         </div>
     </div>
     
     <div id="map"></div> <!-- Contenedor para el mapa -->
     
-    <!-- Div para mostrar el nivel de zoom -->
-    <div id="zoom-level" style="position: absolute; top: 10px; left: 10px; background: white; padding: 5px; border-radius: 5px; z-index: 1000;">
-        Zoom: <span id="zoom-value">12</span>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
