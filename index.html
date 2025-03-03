@@ -106,8 +106,13 @@
     </div>
     
     <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
-        <button id="center-button" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid black; border-radius: 5px; padding: 5px; cursor: pointer;">
-            Centrar en Marcador
+        <button id="center-button" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);">
+        <!-- Icono de centrar (SVG) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="6" x2="12" y2="12" />
+            <line x1="12" y1="12" x2="15" y2="9" />
+        </svg>
         </button>
     <!-- Div para mostrar el nivel de zoom -->
     <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
