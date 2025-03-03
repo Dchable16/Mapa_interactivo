@@ -568,7 +568,6 @@
         // Manejar el evento de cambio de zoom
         map.on('zoomend', function() {
             const currentZoom = map.getZoom();
-            document.getElementById('zoom-value').textContent = currentZoom; // Actualizar el valor del zoom
             if (currentZoom >= minZoomUsoSuelo) {
                 // Activar las capas de uso de suelo si el zoom es suficiente
                 for (const layerName in geoJsonLayersUsoSuelo) {
