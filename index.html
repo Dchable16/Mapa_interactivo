@@ -455,6 +455,9 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Simplificar las geometrías
+                const simplifiedFeatures = turf.simplify(data, { tolerance: 0.01, highQuality: false });
+                const geoJsonLayer = L.geoJSON(simplifiedFeatures);
                     const colorMap = {
                         'UsoSuelo': 'rgb(128, 0, 128)',
                         'Poligono': 'rgb(255, 127, 80)',
