@@ -128,7 +128,9 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
-        const map = L.map("map").setView([19.4326, -99.1332], 12);
+        const map = L.map("map", {
+            zoomControl: false // Agrega esta línea para desactivar el control de zoom
+        }).setView([19.4326, -99.1332], 12);
 
         
         // Agregar el control de escala dinámica al mapa
