@@ -94,19 +94,19 @@
         </div>
         
         <div class="button-container">
-            <button onclick="addMarker()">Agregar Marcador</button> <!-- Botón para agregar un marcador -->
-            <button onclick="removeMarker()">Eliminar Marcador</button> <!-- Botón para eliminar el marcador -->
-            <button onclick="addRadius(400)">Agregar Radio 400m</button> <!-- Botón para agregar un radio de 400m -->
-            <button onclick="addRadius(800)">Agregar Radio 800m</button> <!-- Botón para agregar un radio de 800m -->
-            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button> <!-- Botón para calcular la diferencia entre radios -->
-            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button> <!-- Botón para extraer información del buffer de 400m -->
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button> <!-- Botón para extraer información de la diferencia de 800m -->
-            <!-- Div para mostrar el nivel de zoom -->
-            <div id="zoom-level" style="background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: default; text-align: center; font-weight: bold;">
-                Zoom: <span id="zoom-value">12</span>
-            </div>
+            <button onclick="addMarker()">Agregar Marcador</button>
+            <button onclick="removeMarker()">Eliminar Marcador</button>
+            <button onclick="addRadius(400)">Agregar Radio 400m</button>
+            <button onclick="addRadius(800)">Agregar Radio 800m</button>
+            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
+            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
+            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
         </div>
-    </div>
+        
+        <!-- Div para mostrar el nivel de zoom -->
+        <div id="zoom-level" style="background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: default; text-align: center; font-weight: bold; margin-top: 10px;">
+            Zoom: <span id="zoom-value">12</span>
+        </div>
     
     <div id="map"></div> <!-- Contenedor para el mapa -->
     
