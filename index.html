@@ -102,14 +102,14 @@
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
         </div>
-        
+
+    </div>
+    
+    <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
         <!-- Div para mostrar el nivel de zoom -->
-        <div id="zoom-level" style="background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: default; text-align: center; font-weight: bold; margin-top: 10px;">
+        <div id="zoom-level" style="position: absolute; bottom: 10px; left: 10px; background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: default; text-align: center; font-weight: bold;">
             Zoom: <span id="zoom-value">12</span>
         </div>
-    
-    <div id="map"></div> <!-- Contenedor para el mapa -->
-    
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
