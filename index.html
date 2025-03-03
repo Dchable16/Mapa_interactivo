@@ -112,10 +112,6 @@
     <div id="zoom-level" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
         <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
     </div>
-    <!-- Div para mostrar la escala -->
-    <div id="scale" style="background-color: rgba(255, 255, 255, 0.8); color: black; border-radius: 5px; padding: 5px; position: absolute; bottom: 10px; left: 10px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-        Escala: 1 km
-    </div>    
 </div>
         <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
     </div>
@@ -125,6 +121,14 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
+
+        Mostrar escala dinámica
+        // Agregar el control de escala al mapa
+        L.control.scale({
+            position: 'bottomleft', // Posición del control
+            metric: true,           // Mostrar escala métrica
+            imperial: false         // No mostrar escala imperial
+        }).addTo(map);
         
         // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
