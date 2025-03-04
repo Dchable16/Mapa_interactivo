@@ -578,41 +578,7 @@
                 console.error('URL de capa no encontrada para:', layerName);
             }
         }
-        // Cuando se inicializa el controlador de capas, asegúrate de que las capas de uso de suelo estén presentes pero no activadas
-        let layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-
-        // Establecer el rango de zoom para las capas de uso de suelo
-        const minZoomUsoSuelo = 12; // Nivel de zoom mínimo para habilitar las capas de uso de suelo
         
-        // Manejar el evento de cambio de zoom
-        map.on('zoomend', function() {
-            const currentZoom = map.getZoom();
-            document.getElementById('zoom-value').textContent = currentZoom; // Actualizar el valor del zoom
-        
-            // Verificar si el zoom es suficiente
-            if (currentZoom >= minZoomUsoSuelo) {
-                // Habilitar las opciones en el controlador de capas
-                for (const layerName in geoJsonLayersUsoSuelo) {
-                    if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
-                        // Agregar la capa al mapa si no está ya agregada
-                        if (!map.hasLayer(geoJsonLayersUsoSuelo[layerName])) {
-                            map.addLayer(geoJsonLayersUsoSuelo[layerName]);
-                        }
-                    }
-                }
-            } else {
-                // Desactivar las capas de uso de suelo si el zoom es insuficiente
-                for (const layerName in geoJsonLayersUsoSuelo) {
-                    if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
-                        // Remover la capa del mapa
-                        if (map.hasLayer(geoJsonLayersUsoSuelo[layerName])) {
-                            map.removeLayer(geoJsonLayersUsoSuelo[layerName]);
-                        }
-                    }
-                }
-            }
-        });
-
         // Capas base del mapa
         const baseMaps = {
             "OpenStreetMap": osmLayer,
