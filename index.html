@@ -102,41 +102,35 @@
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
         </div>
-
     </div>
     
     <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
-    
-    // Crea botón para centrar marcador
-    <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3" fill="#3c4043" />
-            <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
-        </svg>
-    </button>
-        
         <!-- Div para mostrar el nivel de zoom -->
-    <div id="zoom-level" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-        <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
-    </div>
-        
-    </div>
-        <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
-    </div>
+        <div id="zoom-level" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+            <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
+        </div>
+
+        <!-- Crea botón para centrar marcador -->
+        <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" fill="#3c4043" />
+                <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
+            </svg>
+        </button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
-
+        
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
             position: 'bottomleft', // Posición del control
             metric: true,           // Mostrar escala métrica
             imperial: false         // No mostrar escala imperial
         }).addTo(map);
-        
+
         // Función para centrar el mapa en el marcador
         document.getElementById('center-button').addEventListener('click', function() {
             if (currentMarker) {
@@ -274,7 +268,6 @@
                 alert("No hay ningún marcador para eliminar.");
             }
         }
-
 
         // Función para agregar radios de 400m o 800m alrededor del marcador
         function addRadius(radius) {
