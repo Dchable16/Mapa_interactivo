@@ -132,6 +132,10 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
         
+        map.on('zoomend', function() {
+            document.getElementById('zoom-value').textContent = map.getZoom();
+        });
+        
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
             position: 'bottomleft', // Posición del control
@@ -652,7 +656,7 @@
         layerControlContainer.onAdd = function(map) {
             const div = L.DomUtil.create('div', 'layer-control-container');
             div.innerHTML = '<h4>Controles de Capas</h4>';
-            
+        
             // Crear un controlador base para las capas
             const baseMaps = {
                 "OpenStreetMap": osmLayer,
@@ -673,23 +677,38 @@
             const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
             layerControlUsoSuelo.addTo(map);
             div.appendChild(layerControlUsoSuelo.getContainer());
-
+        
             const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
             layerControlAlcaldias.addTo(map);
             div.appendChild(layerControlAlcaldias.getContainer());
-
+        
             const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
             layerControlPoligonos.addTo(map);
             div.appendChild(layerControlPoligonos.getContainer());
-
+        
             const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
             layerControlColonias.addTo(map);
             div.appendChild(layerControlColonias.getContainer());
-
+        
             const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
             layerControlCompetencias.addTo(map);
             div.appendChild(layerControlCompetencias.getContainer());
-
+        
+            // Agregar eventos para desplegar y replegar el controlador
+            div.addEventListener('mouseover', function() {
+                div.style.maxHeight = '500px'; // Ajusta la altura máxima según sea necesario
+                div.style.overflowY = 'auto';
+            });
+        
+            div.addEventListener('mouseout', function() {
+                div.style.maxHeight = '30px'; // Ajusta la altura para ocultar el contenido
+                div.style.overflowY = 'hidden';
+            });
+        
+            // Establecer la altura inicial para ocultar el contenido
+            div.style.maxHeight = '30px';
+            div.style.overflowY = 'hidden';
+        
             return div;
         };
         
