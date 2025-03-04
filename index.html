@@ -580,7 +580,7 @@
         }
 
         // Establecer el rango de zoom para las capas de uso de suelo
-        const minZoomUsoSuelo = 14; // Nivel de zoom mínimo para habilitar las capas de uso de suelo
+        const minZoomUsoSuelo = 12; // Nivel de zoom mínimo para habilitar las capas de uso de suelo
         
         // Manejar el evento de cambio de zoom
         map.on('zoomend', function() {
@@ -592,16 +592,20 @@
                 // Activar las capas de uso de suelo si el zoom es suficiente
                 for (const layerName in geoJsonLayersUsoSuelo) {
                     if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
-                        map.addLayer(geoJsonLayersUsoSuelo[layerName]);
-                        layerControlUsoSuelo._layers[layerName].layer.addTo(map); // Asegurarse de que la opción esté habilitada en el controlador
+                        // Agregar la capa al mapa si no está ya agregada
+                        if (!map.hasLayer(geoJsonLayersUsoSuelo[layerName])) {
+                            map.addLayer(geoJsonLayersUsoSuelo[layerName]);
+                        }
                     }
                 }
             } else {
                 // Desactivar las capas de uso de suelo si el zoom es insuficiente
                 for (const layerName in geoJsonLayersUsoSuelo) {
                     if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
-                        map.removeLayer(geoJsonLayersUsoSuelo[layerName]);
-                        layerControlUsoSuelo._layers[layerName].layer.remove(); // Desactivar la opción en el controlador
+                        // Remover la capa del mapa
+                        if (map.hasLayer(geoJsonLayersUsoSuelo[layerName])) {
+                            map.removeLayer(geoJsonLayersUsoSuelo[layerName]);
+                        }
                     }
                 }
             }
