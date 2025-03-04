@@ -547,7 +547,7 @@
                         case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
                     loadedLayers.add(layerName);
-                    updateLayerControls();
+                    updateLayerControls(); // Asegúrate de que esta llamada esté aquí
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
