@@ -632,10 +632,11 @@
                     div.style.width = '30px'; // Ancho contraído
                     div.style.height = '30px'; // Altura contraída
                     div.style.overflow = 'hidden';
-                    // Ocultar los controladores internos
+                    // Ocultar el contenido de los controladores internos
                     Array.from(div.children).forEach(child => {
                         if (child.classList.contains('leaflet-control-layers')) {
-                            child.style.display = 'none';
+                            // Ocultar el contenido dentro del controlador
+                            child.querySelector('.leaflet-control-layers-list').style.display = 'none';
                         }
                     });
                 }
