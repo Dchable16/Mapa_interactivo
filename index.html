@@ -506,20 +506,20 @@
                             }
                         },
                         onEachFeature: (feature, layer) => {
-                            if (type === 'Poligono') {
-                                const area = Math.floor(turf.area(feature));
-                                feature.properties['Área polígono'] = area;
-                            }
-                            layer.on('click', () => {
-                                let popupContent = "<b>Atributos:</b><br>";
-                                for (const key in feature.properties) {
-                                    if (key !== 'liga_ciuda') { // Omitir este atributo
+                        if (type === 'Poligono') {
+                            const area = Math.floor(turf.area(feature));
+                            feature.properties['Área polígono'] = area;
+                        }
+                        layer.on('click', () => {
+                            let popupContent = "<b>Atributos:</b><br>";
+                            for (const key in feature.properties) {
+                                if (key !== 'liga_ciuda') { // Omitir este atributo
                                     popupContent += `${key}: ${feature.properties[key]}<br>`;
                                 }
-                                layer.bindPopup(popupContent).openPopup();
-                            });
-                        }
-                    });
+                            }
+                            layer.bindPopup(popupContent).openPopup();
+                        });
+                    }
                     switch (type) {
                         case 'Ageb':
                             if (url === 'Ageb_urb_CDMX.geojson') {
