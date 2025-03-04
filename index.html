@@ -614,6 +614,27 @@
             geoJsonLayerControl.addTo(map);
             div.appendChild(geoJsonLayerControl.getContainer());
         
+            // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
+            const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+            layerControlUsoSuelo.addTo(map);
+            div.appendChild(layerControlUsoSuelo.getContainer());
+
+            const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+            layerControlAlcaldias.addTo(map);
+            div.appendChild(layerControlAlcaldias.getContainer());
+
+            const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+            layerControlPoligonos.addTo(map);
+            div.appendChild(layerControlPoligonos.getContainer());
+
+            const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+            layerControlColonias.addTo(map);
+            div.appendChild(layerControlColonias.getContainer());
+
+            const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+            layerControlCompetencias.addTo(map);
+            div.appendChild(layerControlCompetencias.getContainer());
+
             // Crear un controlador para los radios
             const layerControlRadios = L.control.layers(null, {
                 "Radio 400m": radius400Layer,
@@ -629,12 +650,20 @@
             div.addEventListener('mouseover', () => {
                 layerControlBase.getContainer().style.display = 'block';
                 geoJsonLayerControl.getContainer().style.display = 'block';
+                layerControlUsoSuelo.getContainer().style.display = 'block';
+                layerControlAlcaldias.getContainer().style.display = 'block';
+                layerControlPoligonos.getContainer().style.display = 'block';
+                layerControlColonias.getContainer().style.display = 'block';
                 layerControlRadios.getContainer().style.display = 'block';
             });
         
             div.addEventListener('mouseout', () => {
                 layerControlBase.getContainer().style.display = 'none';
                 geoJsonLayerControl.getContainer().style.display = 'none';
+                layerControlUsoSuelo.getContainer().style.display = 'none';
+                layerControlAlcaldias.getContainer().style.display = 'none';
+                layerControlPoligonos.getContainer().style.display = 'none';
+                layerControlColonias.getContainer().style.display = 'none';
                 layerControlRadios.getContainer().style.display = 'none';
             });
         
@@ -656,7 +685,7 @@
         loadLayer('Uso de suelo Oficinas', 'UsoSuelo');
         loadLayer('Uso de suelo Plurifamiliar', 'UsoSuelo');
         loadLayer('Alcaldías CDMX', 'Alcaldias');
-        loadLayer('Municipios Edo. Mex.', 'Municipios');
+                loadLayer('Municipios Edo. Mex.', 'Municipios');
         loadLayer('Poligono Región Vallejo', 'Poligono');
         loadLayer('Poligono Azcapotzalco', 'Poligono');
         loadLayer('Poligono Benito Juárez', 'Poligono');
