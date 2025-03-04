@@ -635,7 +635,32 @@
             layerControlCompetencias.addTo(map);
             div.appendChild(layerControlCompetencias.getContainer());
 
-            // Crear un controlador para los radios
+            function updateLayerControls() {
+            // Limpiar los controles existentes
+            const layerControlContainer = document.querySelector('.layer-control-container');
+            layerControlContainer.innerHTML = '<h4>Controles de Capas</h4>'; // Reiniciar el contenedor
+        
+            // Reagregar los controles de capas
+            const baseMaps = {
+                "OpenStreetMap": osmLayer,
+                "Google Road": googleRoadLayer,
+                "Google Hybrid": googleHybridLayer
+            };
+        
+            // Controlador base
+            const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+            layerControlBase.addTo(map);
+            layerControlContainer.appendChild(layerControlBase.getContainer());
+        
+            // Controladores para las capas GeoJSON
+            L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
+            L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
+            L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
+            L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
+            L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
+            L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
+            
+            // Controlador para los radios
             const layerControlRadios = L.control.layers(null, {
                 "Radio 400m": radius400Layer,
                 "Radio 800m": radius800Layer,
@@ -644,7 +669,8 @@
                 "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
             }, { collapsed: true });
             layerControlRadios.addTo(map);
-            div.appendChild(layerControlRadios.getContainer());
+            layerControlContainer.appendChild(layerControlRadios.getContainer());
+            }
         
             // Mostrar/ocultar el controlador al pasar el mouse
             div.addEventListener('mouseover', () => {
