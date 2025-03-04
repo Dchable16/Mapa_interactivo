@@ -586,20 +586,14 @@
         map.on('zoomend', function() {
             const currentZoom = map.getZoom();
             document.getElementById('zoom-value').textContent = currentZoom; // Actualizar el valor del zoom
+        
+            // Habilitar o deshabilitar las opciones de las capas de uso de suelo en el control
             if (currentZoom >= minZoomUsoSuelo) {
-                // Activar las capas de uso de suelo si el zoom es suficiente
-                for (const layerName in geoJsonLayersUsoSuelo) {
-                    if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
-                        map.addLayer(geoJsonLayersUsoSuelo[layerName]);
-                    }
-                }
+                // Aquí puedes habilitar las opciones en el control de capas
+                layerControlUsoSuelo.addTo(map);
             } else {
-                // Desactivar las capas de uso de suelo si el zoom es insuficiente
-                for (const layerName in geoJsonLayersUsoSuelo) {
-                    if (geoJsonLayersUsoSuelo.hasOwnProperty(layerName)) {
-                        map.removeLayer(geoJsonLayersUsoSuelo[layerName]);
-                    }
-                }
+                // Aquí puedes eliminar las opciones del control de capas
+                layerControlUsoSuelo.remove();
             }
         });
 
