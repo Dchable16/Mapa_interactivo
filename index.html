@@ -694,20 +694,23 @@
             layerControlCompetencias.addTo(map);
             div.appendChild(layerControlCompetencias.getContainer());
         
-            // Estilos iniciales para el contenedor
-            div.style.maxHeight = '30px';
-            div.style.overflowY = 'hidden';
-            div.style.transition = 'max-height 0.3s ease-in-out'; // Agregar transición
+            // Estilos iniciales para el contenedor contraído
+            div.style.width = '30px'; // Ancho mínimo
+            div.style.height = '30px'; // Altura mínima
+            div.style.overflow = 'hidden';
+            div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out'; // Transición para ancho y alto
         
             // Agregar eventos para desplegar y replegar el controlador
             div.addEventListener('mouseover', function() {
-                div.style.maxHeight = '500px'; // Ajusta la altura máxima según sea necesario
-                div.style.overflowY = 'auto'; // Mostrar la barra de desplazamiento
+                div.style.width = '300px'; // Ancho desplegado (ajusta según sea necesario)
+                div.style.height = 'auto'; // Altura automática para el contenido
+                div.style.overflow = 'auto'; // Mostrar barra de desplazamiento si es necesario
             });
         
             div.addEventListener('mouseout', function() {
-                div.style.maxHeight = '30px';
-                div.style.overflowY = 'hidden'; // Ocultar la barra de desplazamiento
+                div.style.width = '30px'; // Ancho contraído
+                div.style.height = '30px'; // Altura contraída
+                div.style.overflow = 'hidden';
             });
         
             return div;
