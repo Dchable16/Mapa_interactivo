@@ -770,6 +770,9 @@
         loadLayer('Colonias M. Hidalgo', 'Col');
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
+
+        // Llamar a updateLayerControls() solo una vez después de cargar todas las capas
+        updateLayerControls();
     </script>
 </body>
 </html>
