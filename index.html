@@ -580,13 +580,15 @@
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
         
-                // Estilos para centrar el icono
-                div.style.textAlign = 'center';
+                // Estilos para centrar el icono usando flexbox
+                div.style.display = 'flex';
+                div.style.flexDirection = 'column';
+                div.style.alignItems = 'center';
         
                 // Agregar el icono y el título
-                div.innerHTML = '<span class="leaflet-control-layers-toggle" style="display: inline-block;"></span><h4>Control de Capas</h4>';
+                div.innerHTML = '<span class="leaflet-control-layers-toggle"></span><h4>Control de Capas</h4>';
         
-                // Agregar leyendas de identificación ANTES de los controladores
+                // Agregar leyendas de identificación entre los controladores
                 div.innerHTML += '<h5>1. Capas base</h5>';
                 const baseMaps = {
                     "OpenStreetMap": osmLayer,
