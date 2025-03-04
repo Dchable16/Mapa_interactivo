@@ -494,7 +494,17 @@
                     };
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
-                        style: { color: colorMap[type], weight: 2, fillOpacity: 0.5 },
+                        style: (feature) => {
+                            if (type === 'UsoSuelo') {
+                                return {
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.5, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
+                                };
+                            } else {
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.5 }; // Estilo para otras capas
+                            }
+                        },
                         onEachFeature: (feature, layer) => {
                             if (type === 'Poligono') {
                                 const area = Math.floor(turf.area(feature));
