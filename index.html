@@ -702,10 +702,12 @@
             // Agregar eventos para desplegar y replegar el controlador
             div.addEventListener('mouseover', function() {
                 div.style.maxHeight = '500px'; // Ajusta la altura máxima según sea necesario
+                div.style.overflowY = 'auto'; // Mostrar la barra de desplazamiento
             });
         
             div.addEventListener('mouseout', function() {
                 div.style.maxHeight = '30px';
+                div.style.overflowY = 'hidden'; // Ocultar la barra de desplazamiento
             });
         
             return div;
