@@ -635,64 +635,6 @@
             layerControlCompetencias.addTo(map);
             div.appendChild(layerControlCompetencias.getContainer());
 
-            function updateLayerControls() {
-            // Limpiar los controles existentes
-            const layerControlContainer = document.querySelector('.layer-control-container');
-            layerControlContainer.innerHTML = '<h4>Controles de Capas</h4>'; // Reiniciar el contenedor
-        
-            // Reagregar los controles de capas
-            const baseMaps = {
-                "OpenStreetMap": osmLayer,
-                "Google Road": googleRoadLayer,
-                "Google Hybrid": googleHybridLayer
-            };
-        
-            // Controlador base
-            const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
-            layerControlBase.addTo(map);
-            layerControlContainer.appendChild(layerControlBase.getContainer());
-        
-            // Controladores para las capas GeoJSON
-            L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-            L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-            L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-            L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-            L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-            
-            // Controlador para los radios
-            const layerControlRadios = L.control.layers(null, {
-                "Radio 400m": radius400Layer,
-                "Radio 800m": radius800Layer,
-                "Diferencia entre Radios": differenceLayerGroup,
-                "Extracción Ageb - Radio 400m": bufferLayerGroup,
-                "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
-            }, { collapsed: true });
-            layerControlRadios.addTo(map);
-            layerControlContainer.appendChild(layerControlRadios.getContainer());
-            }
-        
-            // Mostrar/ocultar el controlador al pasar el mouse
-            div.addEventListener('mouseover', () => {
-                layerControlBase.getContainer().style.display = 'block';
-                geoJsonLayerControl.getContainer().style.display = 'block';
-                layerControlUsoSuelo.getContainer().style.display = 'block';
-                layerControlAlcaldias.getContainer().style.display = 'block';
-                layerControlPoligonos.getContainer().style.display = 'block';
-                layerControlColonias.getContainer().style.display = 'block';
-                layerControlRadios.getContainer().style.display = 'block';
-            });
-        
-            div.addEventListener('mouseout', () => {
-                layerControlBase.getContainer().style.display = 'none';
-                geoJsonLayerControl.getContainer().style.display = 'none';
-                layerControlUsoSuelo.getContainer().style.display = 'none';
-                layerControlAlcaldias.getContainer().style.display = 'none';
-                layerControlPoligonos.getContainer().style.display = 'none';
-                layerControlColonias.getContainer().style.display = 'none';
-                layerControlRadios.getContainer().style.display = 'none';
-            });
-        
             return div;
         };
         
@@ -711,7 +653,7 @@
         loadLayer('Uso de suelo Oficinas', 'UsoSuelo');
         loadLayer('Uso de suelo Plurifamiliar', 'UsoSuelo');
         loadLayer('Alcaldías CDMX', 'Alcaldias');
-                loadLayer('Municipios Edo. Mex.', 'Municipios');
+        loadLayer('Municipios Edo. Mex.', 'Municipios');
         loadLayer('Poligono Región Vallejo', 'Poligono');
         loadLayer('Poligono Azcapotzalco', 'Poligono');
         loadLayer('Poligono Benito Juárez', 'Poligono');
