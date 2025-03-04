@@ -513,6 +513,7 @@
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
                                     popupContent += `${key}: ${feature.properties[key]}<br>`;
                                 }
                                 layer.bindPopup(popupContent).openPopup();
