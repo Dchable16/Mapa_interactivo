@@ -704,13 +704,16 @@
             div.addEventListener('mouseover', function() {
                 div.style.width = '300px'; // Ancho desplegado (ajusta según sea necesario)
                 div.style.height = 'auto'; // Altura automática para el contenido
-                div.style.overflowY = 'auto'; // Mostrar barra de desplazamiento si es necesario
+                div.style.overflow = 'auto'; // Mostrar barra de desplazamiento si es necesario
             });
         
-            div.addEventListener('mouseout', function() {
-                div.style.width = '30px'; // Ancho contraído
-                div.style.height = '30px'; // Altura contraída
-                div.style.overflow = 'hidden';
+            div.addEventListener('mouseout', function(event) {
+                // Verificar si el mouse está dentro del contenedor
+                if (!div.contains(event.relatedTarget)) {
+                    div.style.width = '30px'; // Ancho contraído
+                    div.style.height = '30px'; // Altura contraída
+                    div.style.overflow = 'hidden';
+                }
             });
         
             return div;
