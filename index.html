@@ -551,12 +551,12 @@
                         case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
                     }
                     loadedLayers.add(layerName);
-                    updateLayerControls(); // Asegúrate de que esta llamada esté aquí
+                    // Elimina la llamada a updateLayerControls() de aquí
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
+        
         function updateLayerControls() {
             // Eliminar el controlador de capas existente
             if (layerControlContainer && map.hasLayer(layerControlContainer)) {
@@ -565,73 +565,74 @@
         
             // Crear un nuevo controlador de capas
             layerControlContainer.onAdd = function(map) {
-            const div = L.DomUtil.create('div', 'layer-control-container');
-            div.innerHTML = '<h4>Controles de Capas</h4>';
+                const div = L.DomUtil.create('div', 'layer-control-container');
+                div.innerHTML = '<h4>Controles de Capas</h4>';
         
-            // Crear un controlador base para las capas
-            const baseMaps = {
-                "OpenStreetMap": osmLayer,
-                "Google Road": googleRoadLayer,
-                "Google Hybrid": googleHybridLayer
+                // Crear un controlador base para las capas
+                const baseMaps = {
+                    "OpenStreetMap": osmLayer,
+                    "Google Road": googleRoadLayer,
+                    "Google Hybrid": googleHybridLayer
+                };
+        
+                const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+                layerControlBase.addTo(map);
+                div.appendChild(layerControlBase.getContainer());
+        
+                // Crear un controlador para las capas GeoJSON
+                const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
+                geoJsonLayerControl.addTo(map);
+                div.appendChild(geoJsonLayerControl.getContainer());
+        
+                // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
+                const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+                layerControlUsoSuelo.addTo(map);
+                div.appendChild(layerControlUsoSuelo.getContainer());
+        
+                const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+                layerControlAlcaldias.addTo(map);
+                div.appendChild(layerControlAlcaldias.getContainer());
+        
+                const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+                layerControlPoligonos.addTo(map);
+                div.appendChild(layerControlPoligonos.getContainer());
+        
+                const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+                layerControlColonias.addTo(map);
+                div.appendChild(layerControlColonias.getContainer());
+        
+                const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+                layerControlCompetencias.addTo(map);
+                div.appendChild(layerControlCompetencias.getContainer());
+        
+                // Estilos iniciales para el contenedor contraído
+                div.style.width = '30px'; // Ancho mínimo
+                div.style.height = '30px'; // Altura mínima
+                div.style.overflow = 'hidden';
+                div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out'; // Transición para ancho y alto
+        
+                // Agregar eventos para desplegar y replegar el controlador
+                div.addEventListener('mouseover', function() {
+                    div.style.width = '300px'; // Ancho desplegado (ajusta según sea necesario)
+                    div.style.height = 'auto'; // Altura automática para el contenido
+                    div.style.overflow = 'auto'; // Mostrar barra de desplazamiento si es necesario
+                });
+        
+                div.addEventListener('mouseout', function(event) {
+                    // Verificar si el mouse está dentro del contenedor
+                    if (!div.contains(event.relatedTarget)) {
+                        div.style.width = '30px'; // Ancho contraído
+                        div.style.height = '30px'; // Altura contraída
+                        div.style.overflow = 'hidden';
+                    }
+                });
+        
+                return div;
             };
         
-            const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
-            layerControlBase.addTo(map);
-            div.appendChild(layerControlBase.getContainer());
-        
-            // Crear un controlador para las capas GeoJSON
-            const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
-            geoJsonLayerControl.addTo(map);
-            div.appendChild(geoJsonLayerControl.getContainer());
-        
-            // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
-            const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
-            layerControlUsoSuelo.addTo(map);
-            div.appendChild(layerControlUsoSuelo.getContainer());
-        
-            const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
-            layerControlAlcaldias.addTo(map);
-            div.appendChild(layerControlAlcaldias.getContainer());
-        
-            const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
-            layerControlPoligonos.addTo(map);
-            div.appendChild(layerControlPoligonos.getContainer());
-        
-            const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
-            layerControlColonias.addTo(map);
-            div.appendChild(layerControlColonias.getContainer());
-        
-            const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
-            layerControlCompetencias.addTo(map);
-            div.appendChild(layerControlCompetencias.getContainer());
-        
-            // Estilos iniciales para el contenedor contraído
-            div.style.width = '30px'; // Ancho mínimo
-            div.style.height = '30px'; // Altura mínima
-            div.style.overflow = 'hidden';
-            div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out'; // Transición para ancho y alto
-        
-            // Agregar eventos para desplegar y replegar el controlador
-            div.addEventListener('mouseover', function() {
-                div.style.width = '300px'; // Ancho desplegado (ajusta según sea necesario)
-                div.style.height = 'auto'; // Altura automática para el contenido
-                div.style.overflow = 'auto'; // Mostrar barra de desplazamiento si es necesario
-            });
-        
-            div.addEventListener('mouseout', function(event) {
-                // Verificar si el mouse está dentro del contenedor
-                if (!div.contains(event.relatedTarget)) {
-                    div.style.width = '30px'; // Ancho contraído
-                    div.style.height = '30px'; // Altura contraída
-                    div.style.overflow = 'hidden';
-                }
-            });
-        
-            return div;
-        };
-        
-        // Agregar el contenedor del controlador al mapa
-        layerControlContainer.addTo(map);
+            // Agregar el contenedor del controlador al mapa
+            layerControlContainer.addTo(map);
+        }
 
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
