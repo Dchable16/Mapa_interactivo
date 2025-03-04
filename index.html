@@ -534,6 +534,7 @@
                         }
                     });
         
+                    // Agregar la capa a los grupos correspondientes
                     switch (type) {
                         case 'Ageb':
                             if (url === 'Ageb_urb_CDMX.geojson') {
@@ -543,15 +544,27 @@
                             }
                             geoJsonLayersAgeb[layerName] = geoJsonLayer;
                             break;
-                        case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
-                        case 'Alcaldias': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
-                        case 'Municipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
-                        case 'Poligono': geoJsonLayersPoligonos[layerName] = geoJsonLayer; break;
-                        case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
-                        case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'Alcaldias':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Municipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Competencias':
+                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            break;
                     }
                     loadedLayers.add(layerName);
-                    // Elimina la llamada a updateLayerControls() de aquí
+                    updateLayerControls(); // Asegúrate de que esto se llame aquí
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
