@@ -592,6 +592,19 @@
                 layerControlBase.addTo(map);
                 div.appendChild(layerControlBase.getContainer());
 
+                // Crear un controlador para las capas de radios y diferencia
+                const radiusLayers = {
+                    "Radio 400m": radius400Layer,
+                    "Radio 800m": radius800Layer,
+                    "Diferencia Radios": differenceLayerGroup,
+                    "Buffer Ageb": bufferLayerGroup,
+                    "Diferencia Ageb": differenceExtractionLayerGroup
+                };
+
+                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+                radiusLayerControl.addTo(map);
+                div.appendChild(radiusLayerControl.getContainer());
+
                 // Crear un controlador para las capas GeoJSON
                 const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
                 geoJsonLayerControl.addTo(map);
@@ -617,19 +630,6 @@
                 const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
                 layerControlCompetencias.addTo(map);
                 div.appendChild(layerControlCompetencias.getContainer());
-
-                // Crear un controlador para las capas de radios y diferencia
-                const radiusLayers = {
-                    "Radio 400m": radius400Layer,
-                    "Radio 800m": radius800Layer,
-                    "Diferencia Radios": differenceLayerGroup,
-                    "Buffer Ageb": bufferLayerGroup,
-                    "Diferencia Ageb": differenceExtractionLayerGroup
-                };
-
-                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
-                radiusLayerControl.addTo(map);
-                div.appendChild(radiusLayerControl.getContainer());
 
                 // Estilos iniciales para el contenedor contraído
                 div.style.width = '30px';
