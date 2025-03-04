@@ -69,6 +69,14 @@
             .form-container input, .form-container button { padding: 5px; font-size: 15px; }
             .logo { width: 120px; }
         }
+
+        .layer-control-container {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
+        }
     </style>
 </head>
 <body>
@@ -642,31 +650,6 @@
         
         // Agregar el contenedor del controlador al mapa
         layerControlContainer.addTo(map);
-
-        // Agregar los grupos de capas de radios y diferencia a un nuevo controlador
-        const layerControlRadios = L.control.layers(null, {
-            "Radio 400m": radius400Layer,
-            "Radio 800m": radius800Layer,
-            "Diferencia entre Radios": differenceLayerGroup,
-            "Extracción Ageb - Radio 400m": bufferLayerGroup,
-            "Extracción Ageb - Radio 800m": differenceExtractionLayerGroup
-        }, { collapsed: true }).addTo(map);
-
-        // Función para actualizar los controladores de capas
-        function updateLayerControls() {
-            layerControlAgeb.remove();
-            layerControlUsoSuelo.remove();
-            layerControlAlcaldias.remove();
-            layerControlPoligonos.remove();
-            layerControlColonias.remove();
-            layerControlCompetencias.remove();
-            layerControlAgeb = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true }).addTo(map);
-            layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true }).addTo(map);
-            layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true }).addTo(map);
-            layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true }).addTo(map);
-            layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true }).addTo(map);
-            layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true }).addTo(map);
-        }
 
         // Cargar capas GeoJSON desde archivos bajo demanda
         loadLayer('Ageb CDMX', 'Ageb');
