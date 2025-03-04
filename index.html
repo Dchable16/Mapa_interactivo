@@ -459,7 +459,7 @@
             return {
                 type: "FeatureCollection",
                 features: data.features.map(feature => {
-                    return turf.simplify(feature, { tolerance: tolerance, highQuality: false });
+                    return turf.simplify(feature, { tolerance: tolerance, highQuality: true });
                 })
             };
         }
