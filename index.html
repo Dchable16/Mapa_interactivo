@@ -454,6 +454,16 @@
             popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
 
+         // Función para simplificar geometrías
+        function simplifyGeoJSON(data, tolerance) {
+            return {
+                type: "FeatureCollection",
+                features: data.features.map(feature => {
+                    return turf.simplify(feature, { tolerance: tolerance, highQuality: false });
+                })
+            };
+        }
+        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
             if (loadedLayers.has(layerName)) {
@@ -468,6 +478,10 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Simplificar geometrías si es una capa de uso de suelo
+                    if (type === 'UsoSuelo') {
+                        data = simplifyGeoJSON(data, 0.01); // Ajusta la tolerancia según sea necesario
+                    }
                     const colorMap = {
                         'UsoSuelo': 'rgb(128, 0, 128)',
                         'Poligono': 'rgb(255, 127, 80)',
