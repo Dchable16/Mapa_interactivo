@@ -10,14 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
         html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: 100%; }
-        .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
-        .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
-        .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; }
-        .form-container label { color: rgb(0, 187, 45); font-weight: bold; }
-        .form-container input { margin-bottom: 10px; padding: 5px; border: 1px solid rgb(0, 187, 45); border-radius: 5px; width: calc(100% - 12px); }
-        .form-container button { background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        .form-container button:hover { background-color: rgb(200, 25, 25); }
+        #map { width: 100%; height: calc(100% - 200px); }
+        .red-marker { background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
+        .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
+        .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; transition: max-height 0.3s ease; max-height: 500px; overflow: hidden; }
+        .form-container.collapsed { max-height: 0; }
+        .arrow-button { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: white; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; cursor: pointer; }
         .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .logo { display: block; margin: 0 auto 20px; width: 80px; }
         .centered-title { text-align: center; margin: 20px 0; }
@@ -27,50 +25,12 @@
             .form-row { grid-template-columns: 1fr; }
             .button-container { grid-template-columns: 1fr; }
             .logo { width: 80px; }
-            body { padding: 8px; margin: 0; height: 100%;  }
+            body { padding: 8px; margin: 0; height: 100%; }
         }
         @media (min-width: 1024px) {
             .form-container { max-width: 65%; padding: 30px; }
             .form-container input, .form-container button { padding: 5px; font-size: 15px; }
             .logo { width: 120px; }
-        }
-        .map-container {
-            position: relative;
-            height: 100vh;
-        }
-        #map {
-            width: 100%;
-            height: calc(100% - 200px); /* Ajusta la altura para dejar espacio al formulario */
-        }
-        .form-wrapper {
-            position: relative; /* Cambiado a relative */
-            width: 100%;
-            bottom: 0;
-        }
-        .form-container {
-            background-color: rgb(248, 248, 255);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin: 20px auto;
-            max-width: 600px;
-            transition: max-height 0.3s ease;
-            max-height: 500px;
-            overflow: hidden;
-        }
-        .form-container.collapsed {
-            max-height: 0;
-        }
-        .arrow-button {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -81,7 +41,7 @@
             <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
         </div>
         <div id="map" style="position: relative;">
-            <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10 ; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
+            <button id="center-button" title="Centrar en el marcador" aria-label="Centrar en el marcador" class="arrow-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3" fill="#3c4043" />
                     <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
@@ -120,6 +80,8 @@
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
           
     // Crea botón para centrar marcador
     <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
@@ -139,21 +101,15 @@
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
-    <script>
+<script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
-
         // Agregar el control de escala dinámica al mapa
-        L.control.scale({
-            position: 'bottomleft', // Posición del control
-            metric: true,           // Mostrar escala métrica
-            imperial: false         // No mostrar escala imperial
-        }).addTo(map);
+        L.control.scale({ position: 'bottomleft', metric: true, imperial: false }).addTo(map);
         
-        // Función para centrar el mapa en el marcador
         document.getElementById('center-button').addEventListener('click', function() {
             if (currentMarker) {
-                map.setView(currentMarker.getLatLng(), map.getZoom()); // Centrar el mapa en el marcador
+                map.setView(currentMarker.getLatLng(), map.getZoom());
             } else {
                 alert("No hay ningún marcador en el mapa para centrar.");
             }
@@ -162,7 +118,7 @@
         // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }).addTo(map); // Añadir capa de OpenStreetMap al mapa
+        }).addTo(map);
 
         const googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { attribution: "Google" });
         const googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { attribution: "Google" });
