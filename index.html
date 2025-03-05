@@ -838,17 +838,27 @@
             }
         });
 
+        let lastAlertTime = 0; // Variable para almacenar el tiempo del último mensaje de alerta
+
         function startRealtimeLocation() {
             if (navigator.geolocation) {
-                realtimeLocationBtn.style.backgroundColor = 'lightgreen'; // Cambiar color del botón
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
                 isRealtimeLocationActive = true;
-                
+        
                 watchId = navigator.geolocation.watchPosition(
                     position => {
                         updateRealtimeLocation(position);
                         lastAccuracy = position.coords.accuracy;
-                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
-                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
+        
+                        // Verificar si la precisión es razonable
+                        if (lastAccuracy < 100) { // Cambia 100 a un valor que consideres razonable
+                            const currentTime = Date.now();
+                            // Mostrar el mensaje solo si ha pasado más de 5 segundos desde el último mensaje
+                            if (currentTime - lastAlertTime > 5000) {
+                                alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
+                                lastAlertTime = currentTime; // Actualizar el tiempo del último mensaje
+                            }
+                        }
                     },
                     error => {
                         handleLocationError(error);
