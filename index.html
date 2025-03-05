@@ -127,8 +127,11 @@
             </svg>
         </button>
     </div>
-    <button id="location-button" title="Localización en Tiempo Real" style="position: absolute; top: 10px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
-        <img src="localization-icon.png" alt="Localización" style="width: 30px; height: 30px;">
+    <button id="realtime-location-button" title="Localización en tiempo real" style="position: absolute; bottom: 110px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
+        <circle cx="12" cy="12" r="3" fill="#3c4043" />
+    </svg>
     </button>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
     <script>
@@ -744,7 +747,7 @@
         let isTrackingLocation = false;
         let watchId;
         
-        document.getElementById('location-button').addEventListener('click', function() {
+        document.getElementById('realtime-location-button').addEventListener('click', function() {
             if (isTrackingLocation) {
                 stopLocationTracking();
             } else {
@@ -760,7 +763,7 @@
                     timeout: 5000
                 });
                 isTrackingLocation = true;
-                document.getElementById('location-button').style.backgroundColor = 'green'; // Cambiar color
+                document.getElementById('realtime-location-button').style.backgroundColor = 'green'; // Cambiar color
                 alert("Localización activada");
             } else {
                 alert("GPS no disponible.");
@@ -770,7 +773,7 @@
         function stopLocationTracking() {
             navigator.geolocation.clearWatch(watchId);
             isTrackingLocation = false;
-            document.getElementById('location-button').style.backgroundColor = 'white'; // Cambiar color
+            document.getElementById('realtime-location-button').style.backgroundColor = 'white'; // Cambiar color
             alert("Localización desactivada");
         }
         
