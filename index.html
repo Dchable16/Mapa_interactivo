@@ -580,6 +580,11 @@
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
                 div.innerHTML = '<h4>Controles de Capas</h4>';
+                
+                // Agregar el ícono como un elemento <img>
+                const icon = L.DomUtil.create('img', 'layer-control-icon');
+                icon.src = 'tu-icono.svg'; // Reemplaza 'tu-icono.svg' con la ruta de tu ícono
+                div.appendChild(icon);
 
                 // Crear un controlador base para las capas
                 const baseMaps = {
