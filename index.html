@@ -622,7 +622,7 @@
                     <div style="display: flex; align-items: center; justify-content: center; height: 50%;">
                         <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; margin: auto;"></i>
                     </div>
-                    <h4 style="text-align: center; margin: 0;">Controles de Capas</h4>
+                    <h4 style="text-align: center; margin: 20;">Controles de Capas</h4>
                 `;
 
                 // Crear un controlador base para las capas
@@ -683,15 +683,15 @@
 
                 // Agregar eventos para desplegar y replegar el controlador
                 div.addEventListener('mouseover', function() {
-                    div.style.width = '200px';
+                    div.style.width = '250px';
                     div.style.height = 'auto';
                     div.style.overflow = 'auto';
                 });
 
                 div.addEventListener('mouseout', function(event) {
                     if (!div.contains(event.relatedTarget)) {
-                        div.style.width = '30px';
-                        div.style.height = '30px';
+                        div.style.width = '20px';
+                        div.style.height = '20px';
                         div.style.overflow = 'hidden';
                     }
                 });
