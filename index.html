@@ -580,8 +580,10 @@
                 layerControlContainer.onAdd = function(map) {
                     const div = L.DomUtil.create('div', 'layer-control-container');
                     div.innerHTML = `
-                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000;"></i>
-                        <h4>Controles de Capas</h4>
+                        <div style="display: flex; align-items: center; justify-content: center; height: 50px;">
+                            <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000;"></i>
+                        </div>
+                        <h4 style="text-align: center;">Controles de Capas</h4>
                     `;
                 
         
