@@ -486,24 +486,50 @@
             };
         }
         
-        // Función para cargar capas GeoJSON desde archivos
-        function loadGeoJSON(url, layerName, type, callback) {
-            if (loadedLayers.has(layerName)) {
-                console.log(`La capa ${layerName} ya ha sido cargada.`);
-                if (callback) callback();
-                return;
-            }
-        
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
-                    return response.json();
-                })
-                .then(data => {
-                    // Simplificar geometrías si es una capa de uso de suelo
-                    if (type === 'UsoSuelo') {
-                        data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
+        // Objeto de caché para almacenar datos GeoJSON
+                const geoJsonCache = {};
+                
+                // Función para cargar capas GeoJSON desde archivos
+                function loadGeoJSON(url, layerName, type, callback) {
+                    // Verificar si los datos ya están en la caché
+                    if (geoJsonCache[url]) {
+                        console.log(`Cargando desde caché: ${layerName}`);
+                        const data = geoJsonCache[url];
+                        processGeoJSONData(data, layerName, type); // Procesar los datos directamente desde la caché
+                        if (callback) callback();
+                        return;
                     }
+                
+                    // Verificar si la capa ya ha sido cargada
+                    if (loadedLayers.has(layerName)) {
+                        console.log(`La capa ${layerName} ya ha sido cargada.`);
+                        if (callback) callback();
+                        return;
+                    }
+                
+                    // Si no está en caché, realizar la solicitud
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Almacenar los datos en la caché
+                            geoJsonCache[url] = data;
+                
+                            // Simplificar geometrías si es una capa de uso de suelo
+                            if (type === 'UsoSuelo') {
+                                data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
+                            }
+                
+                            processGeoJSONData(data, layerName, type); // Procesar los datos
+                            if (callback) callback();
+                        })
+                        .catch(err => console.error('Error al cargar GeoJSON:', err));
+                }
+                
+                // Función para procesar los datos GeoJSON
+                function processGeoJSONData(data, layerName, type) {
                     const colorMap = {
                         'UsoSuelo': 'rgb(128, 0, 128)',
                         'Poligono': 'rgb(255, 127, 80)',
@@ -512,8 +538,9 @@
                         'Municipios': 'rgb(255, 255, 0)',
                         'Alcaldias': 'rgb(0, 255, 127)',
                         'Competencias': 'rgb(204, 85, 0)',
-                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                        'Ageb': layerName.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
+                
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
                         style: (feature) => {
@@ -543,7 +570,7 @@
                             });
                         }
                     });
-        
+
                     // Agregar la capa a los grupos correspondientes
                     switch (type) {
                         case 'Ageb':
