@@ -408,7 +408,7 @@
                 }
                 
                 if (selectedLayer) {
-                    const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters'], 800, { units: 'meters' });
+                    const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                     const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
                     const difference = turf.difference(circle800, circle400);
                     
