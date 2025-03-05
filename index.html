@@ -622,7 +622,7 @@
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
                         <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
                     </div>
-                    <h4 style="text-align: center; margin: -10;">Controles de Capas</h4>
+                    <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
                 `;
 
                 // Crear un controlador base para las capas
@@ -676,22 +676,22 @@
                 div.appendChild(radiusLayerControl.getContainer());
 
                 // Estilos iniciales para el contenedor contraído
-                div.style.width = '20px';
-                div.style.height = '20px';
+                div.style.width = '25px';
+                div.style.height = '25px';
                 div.style.overflow = 'hidden';
                 div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
 
                 // Agregar eventos para desplegar y replegar el controlador
                 div.addEventListener('mouseover', function() {
-                    div.style.width = '250px';
+                    div.style.width = '280px';
                     div.style.height = 'auto';
                     div.style.overflow = 'auto';
                 });
 
                 div.addEventListener('mouseout', function(event) {
                     if (!div.contains(event.relatedTarget)) {
-                        div.style.width = '20px';
-                        div.style.height = '20px';
+                        div.style.width = '25px';
+                        div.style.height = '25px';
                         div.style.overflow = 'hidden';
                     }
                 });
