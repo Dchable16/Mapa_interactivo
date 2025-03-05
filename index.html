@@ -513,6 +513,15 @@
             }
         }
 
+        function updateLayerControls() {
+            // Eliminar el controlador de capas existente
+            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
+                map.removeControl(layerControlContainer);
+            }
+
+         // Crear un contenedor para el controlador
+        const layerControlContainer = L.control({ position: 'topright' });
+            
         // Crear un nuevo controlador de capas
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
@@ -691,13 +700,7 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
         
-       function updateLayerControls() {
-            // Eliminar el controlador de capas existente
-            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
-                map.removeControl(layerControlContainer);
-            }
-
-            
+                  
 
         // Cargar capas GeoJSON desde archivos bajo demanda
         loadLayer('Ageb CDMX', 'Ageb');
