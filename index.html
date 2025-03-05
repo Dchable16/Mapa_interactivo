@@ -752,6 +752,7 @@
         const useLocationBtn = document.getElementById('useLocationBtn');
         let isRealtimeLocationActive = false;
         let lastAccuracy = null;
+        let initialLocationReceived = false; // Nueva variable para controlar el zoom inicial
         
         realtimeLocationBtn.addEventListener('click', () => {
             if (isRealtimeLocationActive) {
@@ -776,16 +777,14 @@
             if (navigator.geolocation) {
                 realtimeLocationBtn.style.backgroundColor = 'lightgreen';
                 isRealtimeLocationActive = true;
+                initialLocationReceived = false; // Restablecer la variable
         
-                // Obtener ubicación inicial con getCurrentPosition
                 navigator.geolocation.getCurrentPosition(
                     initialPosition => {
                         updateRealtimeLocation(initialPosition);
                         lastAccuracy = initialPosition.coords.accuracy;
                         console.log(`Precisión inicial: ${lastAccuracy} metros`);
-                        alert(`Localización activada. Precisión inicial: ${lastAccuracy} metros`);
         
-                        // Iniciar watchPosition después de obtener la ubicación inicial
                         watchId = navigator.geolocation.watchPosition(
                             position => {
                                 updateRealtimeLocation(position);
@@ -796,7 +795,7 @@
                                 handleLocationError(error);
                                 stopRealtimeLocation();
                             },
-                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // maximumAge: 0
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                         );
                     },
                     error => {
@@ -822,22 +821,23 @@
             realtimeLocationBtn.style.backgroundColor = 'white';
             isRealtimeLocationActive = false;
             console.log("Localización desactivada.");
-            alert("Localización desactivada.");
         }
         
         function updateRealtimeLocation(position) {
             const accuracy = position.coords.accuracy;
-            if (accuracy <= 100) { // Umbral de precisión (100 metros)
+            if (accuracy <= 100) {
                 const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
                 if (realtimeMarker) {
                     realtimeMarker.setLatLng(latLng);
                 } else {
                     realtimeMarker = L.marker(latLng).addTo(map);
                 }
-                map.setView(latLng, 18);
+                if (!initialLocationReceived) { // Ajustar el zoom solo la primera vez
+                    map.setView(latLng, 18);
+                    initialLocationReceived = true;
+                }
             } else {
                 console.log(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
-                alert(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
             }
         }
         
