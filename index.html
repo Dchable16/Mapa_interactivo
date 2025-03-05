@@ -486,24 +486,42 @@
             };
         }
         
+        // Definición del objeto de caché
+        const geoJsonCache = {};
+        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
+            // Verificar si la capa ya ha sido cargada
             if (loadedLayers.has(layerName)) {
                 console.log(`La capa ${layerName} ya ha sido cargada.`);
                 if (callback) callback();
                 return;
             }
         
+            // Verificar si los datos ya están en la caché
+            if (geoJsonCache[url]) {
+                console.log(`Cargando desde caché: ${layerName}`);
+                const data = geoJsonCache[url];
+                processGeoJSONData(data, layerName, type); // Procesar los datos desde la caché
+                if (callback) callback();
+                return;
+            }
+        
+            // Si no está en caché, realizar la solicitud
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
                     return response.json();
                 })
                 .then(data => {
+                    // Almacenar los datos en la caché
+                    geoJsonCache[url] = data;
+        
                     // Simplificar geometrías si es una capa de uso de suelo
                     if (type === 'UsoSuelo') {
                         data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
                     }
+        
                     const colorMap = {
                         'UsoSuelo': 'rgb(128, 0, 128)',
                         'Poligono': 'rgb(255, 127, 80)',
@@ -514,6 +532,7 @@
                         'Competencias': 'rgb(204, 85, 0)',
                         'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
                     };
+        
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
                         style: (feature) => {
@@ -579,7 +598,6 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
