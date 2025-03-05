@@ -126,16 +126,16 @@
                 <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
             </svg>
         </button>
+        <button id="realtime-location-button" title="Localización en tiempo real" style="position: absolute; bottom: 110px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" fill="#3c4043" />
+            </svg>
+        </button>
     </div>
-    <button id="realtime-location-button" title="Localización en tiempo real" style="position: absolute; bottom: 110px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px;">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
-        <circle cx="12" cy="12" r="3" fill="#3c4043" />
-    </svg>
-    </button>
+
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
     <script>
-        
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
         
@@ -183,14 +183,6 @@
         let radius400m = null;
         let radius800m = null;
         let differenceLayer = null;
-        
-        // Variables para la localización en tiempo real
-        let watchId = null;
-        let realtimeMarker = null;
-        const realtimeLocationBtn = document.getElementById('realtime-location-button');
-        const useLocationBtn = document.getElementById('useLocationBtn');
-        let isRealtimeLocationActive = false;
-        let lastAccuracy = null;
 
         // Grupos de capas para los radios y la diferencia
         const radius400Layer = L.layerGroup().addTo(map);
@@ -476,74 +468,6 @@
             }
         }
 
-        function startRealtimeLocation() {
-            if (navigator.geolocation) {
-                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
-                isRealtimeLocationActive = true;
-        
-                watchId = navigator.geolocation.watchPosition(
-                    position => {
-                        updateRealtimeLocation(position);
-                    },
-                    error => {
-                        handleLocationError(error);
-                        stopRealtimeLocation();
-                    },
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-                );
-                    error => {
-                        handleLocationError(error);
-                        stopRealtimeLocation();
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
-                );
-            } else {
-                alert("La geolocalización no es compatible con este navegador.");
-            }
-        }
-        
-        function stopRealtimeLocation() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            if (realtimeMarker) {
-                map.removeLayer(realtimeMarker);
-                realtimeMarker = null;
-            }
-            realtimeLocationBtn.style.backgroundColor = 'white';
-            isRealtimeLocationActive = false;
-            console.log("Localización desactivada.");
-            alert("Localización desactivada.");
-        }
-        
-        function updateRealtimeLocation(position) {
-            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
-            if (realtimeMarker) {
-                realtimeMarker.setLatLng(latLng);
-            } else {
-                realtimeMarker = L.marker(latLng).addTo(map);
-            }
-            map.setView(latLng, 18); // Asegúrate de que el mapa se centre en la nueva ubicación
-        }
-        
-        function handleLocationError(error) {
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("Permiso de geolocalización denegado.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("Información de ubicación no disponible.");
-                    break;
-                case error.TIMEOUT:
-                    alert("Tiempo de espera agotado.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("Ocurrió un error desconocido.");
-                    break;
-            }
-        }
-
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
@@ -820,8 +744,14 @@
         loadLayer('Colonias M. Hidalgo', 'Col');
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
-        
-        
+        // Localización en tiempo real
+        let watchId = null;
+        let realtimeMarker = null;
+        const realtimeLocationBtn = document.getElementById('realtime-location-button');
+        const useLocationBtn = document.getElementById('useLocationBtn');
+        let isRealtimeLocationActive = false;
+        let lastAccuracy = null;
+
         realtimeLocationBtn.addEventListener('click', () => {
             if (isRealtimeLocationActive) {
                 stopRealtimeLocation();
@@ -841,27 +771,17 @@
             }
         });
 
-        let lastAlertTime = 0; // Variable para almacenar el tiempo del último mensaje de alerta
-
         function startRealtimeLocation() {
             if (navigator.geolocation) {
-                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen'; // Cambiar color del botón
                 isRealtimeLocationActive = true;
-        
+                
                 watchId = navigator.geolocation.watchPosition(
                     position => {
                         updateRealtimeLocation(position);
                         lastAccuracy = position.coords.accuracy;
-        
-                        // Verificar si la precisión es razonable
-                        if (lastAccuracy < 100) { // Cambia 100 a un valor que consideres razonable
-                            const currentTime = Date.now();
-                            // Mostrar el mensaje solo si ha pasado más de 5 segundos desde el último mensaje
-                            if (currentTime - lastAlertTime > 5000) {
-                                alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
-                                lastAlertTime = currentTime; // Actualizar el tiempo del último mensaje
-                            }
-                        }
+                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
+                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
                     },
                     error => {
                         handleLocationError(error);
