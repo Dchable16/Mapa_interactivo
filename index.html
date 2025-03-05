@@ -521,7 +521,7 @@
             } else {
                 realtimeMarker = L.marker(latLng).addTo(map);
             }
-            map.setView(latLng, 18);
+            map.setView(latLng, 18); // Asegúrate de que el mapa se centre en la nueva ubicación
         }
         
         function handleLocationError(error) {
