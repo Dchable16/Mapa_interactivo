@@ -770,7 +770,8 @@
         const useLocationBtn = document.getElementById('useLocationBtn');
         let isRealtimeLocationActive = false;
         let lastAccuracy = null;
-        let initialLocationReceived = false; // Nueva variable para controlar el zoom inicial
+        let initialLocationReceived = false;
+        let previousLatLng = null; // Variable para almacenar la ubicación anterior
         
         realtimeLocationBtn.addEventListener('click', () => {
             if (isRealtimeLocationActive) {
@@ -795,7 +796,8 @@
             if (navigator.geolocation) {
                 realtimeLocationBtn.style.backgroundColor = 'lightgreen';
                 isRealtimeLocationActive = true;
-                initialLocationReceived = false; // Restablecer la variable
+                initialLocationReceived = false;
+                previousLatLng = null; // Restablecer la ubicación anterior
         
                 navigator.geolocation.getCurrentPosition(
                     initialPosition => {
@@ -843,17 +845,29 @@
         
         function updateRealtimeLocation(position) {
             const accuracy = position.coords.accuracy;
+            const currentLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+        
             if (accuracy <= 100) {
-                const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
-                if (realtimeMarker) {
-                    realtimeMarker.setLatLng(latLng);
-                } else {
-                    realtimeMarker = L.marker(latLng).addTo(map);
+                if (previousLatLng) {
+                    const distance = currentLatLng.distanceTo(previousLatLng); // Calcular la distancia en metros
+                    if (distance < 5) { // Umbral de distancia (5 metros)
+                        console.log("Ubicación no ha cambiado significativamente.");
+                        return; // No actualizar si la distancia es menor que el umbral
+                    }
                 }
-                if (!initialLocationReceived) { // Ajustar el zoom solo la primera vez
-                    map.setView(latLng, 18);
+        
+                if (realtimeMarker) {
+                    realtimeMarker.setLatLng(currentLatLng);
+                } else {
+                    realtimeMarker = L.marker(currentLatLng).addTo(map);
+                }
+        
+                if (!initialLocationReceived) {
+                    map.setView(currentLatLng, 18);
                     initialLocationReceived = true;
                 }
+        
+                previousLatLng = currentLatLng; // Actualizar la ubicación anterior
             } else {
                 console.log(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
             }
