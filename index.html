@@ -818,14 +818,7 @@
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
         
-        // Localización en tiempo real
-        let watchId = null;
-        let realtimeMarker = null;
-        const realtimeLocationBtn = document.getElementById('realtime-location-button');
-        const useLocationBtn = document.getElementById('useLocationBtn');
-        let isRealtimeLocationActive = false;
-        let lastAccuracy = null;
-
+        
         realtimeLocationBtn.addEventListener('click', () => {
             if (isRealtimeLocationActive) {
                 stopRealtimeLocation();
