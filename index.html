@@ -135,6 +135,7 @@
     </button>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
     <script>
+        
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
         
@@ -158,25 +159,6 @@
                 map.setView(currentMarker.getLatLng(), map.getZoom()); // Centrar el mapa en el marcador
             } else {
                 alert("No hay ningún marcador en el mapa para centrar.");
-            }
-        });
-
-        realtimeLocationBtn.addEventListener('click', () => {
-            if (isRealtimeLocationActive) {
-                stopRealtimeLocation();
-            } else {
-                startRealtimeLocation();
-            }
-        });
-        
-        useLocationBtn.addEventListener('click', () => {
-            if (realtimeMarker) {
-                const latLng = realtimeMarker.getLatLng();
-                document.getElementById('lat').value = latLng.lat;
-                document.getElementById('lon').value = latLng.lng;
-                stopRealtimeLocation();
-            } else {
-                alert("La localización en tiempo real no está activa.");
             }
         });
 
@@ -835,6 +817,98 @@
         loadLayer('Colonias M. Hidalgo', 'Col');
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
+        
+        // Localización en tiempo real
+        let watchId = null;
+        let realtimeMarker = null;
+        const realtimeLocationBtn = document.getElementById('realtime-location-button');
+        const useLocationBtn = document.getElementById('useLocationBtn');
+        let isRealtimeLocationActive = false;
+        let lastAccuracy = null;
+
+        realtimeLocationBtn.addEventListener('click', () => {
+            if (isRealtimeLocationActive) {
+                stopRealtimeLocation();
+            } else {
+                startRealtimeLocation();
+            }
+        });
+
+        useLocationBtn.addEventListener('click', () => {
+            if (realtimeMarker) {
+                const latLng = realtimeMarker.getLatLng();
+                document.getElementById('lat').value = latLng.lat;
+                document.getElementById('lon').value = latLng.lng;
+                stopRealtimeLocation();
+            } else {
+                alert("La localización en tiempo real no está activa.");
+            }
+        });
+
+        function startRealtimeLocation() {
+            if (navigator.geolocation) {
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen'; // Cambiar color del botón
+                isRealtimeLocationActive = true;
+                
+                watchId = navigator.geolocation.watchPosition(
+                    position => {
+                        updateRealtimeLocation(position);
+                        lastAccuracy = position.coords.accuracy;
+                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
+                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
+                    },
+                    error => {
+                        handleLocationError(error);
+                        stopRealtimeLocation();
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
+                );
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
+        }
+
+        function stopRealtimeLocation() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (realtimeMarker) {
+                map.removeLayer(realtimeMarker);
+                realtimeMarker = null;
+            }
+            realtimeLocationBtn.style.backgroundColor = 'white'; // Restaurar color del botón
+            isRealtimeLocationActive = false;
+            console.log("Localización desactivada.");
+            alert("Localización desactivada.");
+        }
+
+        function updateRealtimeLocation(position) {
+            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+            if (realtimeMarker) {
+                realtimeMarker.setLatLng(latLng);
+            } else {
+                realtimeMarker = L.marker(latLng).addTo(map);
+            }
+            map.setView(latLng, 18);
+        }
+
+        function handleLocationError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Permiso de geolocalización denegado.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Información de ubicación no disponible.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Tiempo de espera agotado.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Ocurrió un error desconocido.");
+                    break;
+            }
+        }
         
     </script>
 </body>
