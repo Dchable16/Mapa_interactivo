@@ -439,7 +439,7 @@
                                 layer.on('click', function () {
                                     let popupContent = "<b>Atributos:</b><br>";
                                     for (const key in feature.properties) {
-                                        popupContent += `${key}: ${feature.properties[key]}<br>";
+                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
                                     }
                                     layer.bindPopup(popupContent).openPopup();
                                 });
