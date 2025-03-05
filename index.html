@@ -161,6 +161,25 @@
             }
         });
 
+        realtimeLocationBtn.addEventListener('click', () => {
+            if (isRealtimeLocationActive) {
+                stopRealtimeLocation();
+            } else {
+                startRealtimeLocation();
+            }
+        });
+        
+        useLocationBtn.addEventListener('click', () => {
+            if (realtimeMarker) {
+                const latLng = realtimeMarker.getLatLng();
+                document.getElementById('lat').value = latLng.lat;
+                document.getElementById('lon').value = latLng.lng;
+                stopRealtimeLocation();
+            } else {
+                alert("La localización en tiempo real no está activa.");
+            }
+        });
+
         // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
@@ -182,6 +201,14 @@
         let radius400m = null;
         let radius800m = null;
         let differenceLayer = null;
+        
+        // Variables para la localización en tiempo real
+        let watchId = null;
+        let realtimeMarker = null;
+        const realtimeLocationBtn = document.getElementById('realtime-location-button');
+        const useLocationBtn = document.getElementById('useLocationBtn');
+        let isRealtimeLocationActive = false;
+        let lastAccuracy = null;
 
         // Grupos de capas para los radios y la diferencia
         const radius400Layer = L.layerGroup().addTo(map);
@@ -467,6 +494,71 @@
             }
         }
 
+        function startRealtimeLocation() {
+            if (navigator.geolocation) {
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
+                isRealtimeLocationActive = true;
+        
+                watchId = navigator.geolocation.watchPosition(
+                    position => {
+                        updateRealtimeLocation(position);
+                        lastAccuracy = position.coords.accuracy;
+                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
+                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
+                    },
+                    error => {
+                        handleLocationError(error);
+                        stopRealtimeLocation();
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
+                );
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
+        }
+        
+        function stopRealtimeLocation() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (realtimeMarker) {
+                map.removeLayer(realtimeMarker);
+                realtimeMarker = null;
+            }
+            realtimeLocationBtn.style.backgroundColor = 'white';
+            isRealtimeLocationActive = false;
+            console.log("Localización desactivada.");
+            alert("Localización desactivada.");
+        }
+        
+        function updateRealtimeLocation(position) {
+            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+            if (realtimeMarker) {
+                realtimeMarker.setLatLng(latLng);
+            } else {
+                realtimeMarker = L.marker(latLng).addTo(map);
+            }
+            map.setView(latLng, 18);
+        }
+        
+        function handleLocationError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Permiso de geolocalización denegado.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Información de ubicación no disponible.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Tiempo de espera agotado.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Ocurrió un error desconocido.");
+                    break;
+            }
+        }
+
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
@@ -744,75 +836,6 @@
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
         
-        let isTrackingLocation = false;
-        let watchId;
-        
-        document.getElementById('realtime-location-button').addEventListener('click', function() {
-            if (isTrackingLocation) {
-                stopLocationTracking();
-            } else {
-                startLocationTracking();
-            }
-        });
-        
-        function startLocationTracking() {
-            if (navigator.geolocation) {
-                watchId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 5000
-                });
-                isTrackingLocation = true;
-                document.getElementById('realtime-location-button').style.backgroundColor = 'green'; // Cambiar color
-                alert("Localización activada");
-            } else {
-                alert("GPS no disponible.");
-            }
-        }
-        
-        function stopLocationTracking() {
-            navigator.geolocation.clearWatch(watchId);
-            isTrackingLocation = false;
-            document.getElementById('realtime-location-button').style.backgroundColor = 'white'; // Cambiar color
-            alert("Localización desactivada");
-        }
-        
-        function updateLocation(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            document.getElementById('lat').value = lat;
-            document.getElementById('lon').value = lon;
-        }
-        
-        function handleLocationError(error) {
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("Permiso de localización denegado.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("Posición no disponible.");
-                    break;
-                case error.TIMEOUT:
-                    alert("Tiempo de espera de localización excedido.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("Error desconocido.");
-                    break;
-            }
-        }
-        
-        function useCurrentLocation() {
-            if (isTrackingLocation) {
-                stopLocationTracking();
-            }
-            const lat = document.getElementById('lat').value;
-            const lon = document.getElementById('lon').value;
-            if (lat && lon) {
-                addMarker(); // Llamar a la función para agregar el marcador
-            } else {
-                alert("No se puede usar la localización. Asegúrese de que la localización esté activada.");
-            }
-        }
     </script>
 </body>
 </html>
