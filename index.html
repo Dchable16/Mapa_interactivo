@@ -744,6 +744,7 @@
         loadLayer('Colonias M. Hidalgo', 'Col');
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
+
         // Localización en tiempo real
         let watchId = null;
         let realtimeMarker = null;
@@ -751,7 +752,7 @@
         const useLocationBtn = document.getElementById('useLocationBtn');
         let isRealtimeLocationActive = false;
         let lastAccuracy = null;
-
+        
         realtimeLocationBtn.addEventListener('click', () => {
             if (isRealtimeLocationActive) {
                 stopRealtimeLocation();
@@ -759,7 +760,7 @@
                 startRealtimeLocation();
             }
         });
-
+        
         useLocationBtn.addEventListener('click', () => {
             if (realtimeMarker) {
                 const latLng = realtimeMarker.getLatLng();
@@ -770,30 +771,45 @@
                 alert("La localización en tiempo real no está activa.");
             }
         });
-
+        
         function startRealtimeLocation() {
             if (navigator.geolocation) {
-                realtimeLocationBtn.style.backgroundColor = 'lightgreen'; // Cambiar color del botón
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
                 isRealtimeLocationActive = true;
-                
-                watchId = navigator.geolocation.watchPosition(
-                    position => {
-                        updateRealtimeLocation(position);
-                        lastAccuracy = position.coords.accuracy;
-                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
-                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
+        
+                // Obtener ubicación inicial con getCurrentPosition
+                navigator.geolocation.getCurrentPosition(
+                    initialPosition => {
+                        updateRealtimeLocation(initialPosition);
+                        lastAccuracy = initialPosition.coords.accuracy;
+                        console.log(`Precisión inicial: ${lastAccuracy} metros`);
+                        alert(`Localización activada. Precisión inicial: ${lastAccuracy} metros`);
+        
+                        // Iniciar watchPosition después de obtener la ubicación inicial
+                        watchId = navigator.geolocation.watchPosition(
+                            position => {
+                                updateRealtimeLocation(position);
+                                lastAccuracy = position.coords.accuracy;
+                                console.log(`Precisión de la localización: ${lastAccuracy} metros`);
+                            },
+                            error => {
+                                handleLocationError(error);
+                                stopRealtimeLocation();
+                            },
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // maximumAge: 0
+                        );
                     },
                     error => {
                         handleLocationError(error);
                         stopRealtimeLocation();
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
+                    { enableHighAccuracy: true, timeout: 10000 }
                 );
             } else {
                 alert("La geolocalización no es compatible con este navegador.");
             }
         }
-
+        
         function stopRealtimeLocation() {
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
@@ -803,22 +819,28 @@
                 map.removeLayer(realtimeMarker);
                 realtimeMarker = null;
             }
-            realtimeLocationBtn.style.backgroundColor = 'white'; // Restaurar color del botón
+            realtimeLocationBtn.style.backgroundColor = 'white';
             isRealtimeLocationActive = false;
             console.log("Localización desactivada.");
             alert("Localización desactivada.");
         }
-
+        
         function updateRealtimeLocation(position) {
-            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
-            if (realtimeMarker) {
-                realtimeMarker.setLatLng(latLng);
+            const accuracy = position.coords.accuracy;
+            if (accuracy <= 100) { // Umbral de precisión (100 metros)
+                const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+                if (realtimeMarker) {
+                    realtimeMarker.setLatLng(latLng);
+                } else {
+                    realtimeMarker = L.marker(latLng).addTo(map);
+                }
+                map.setView(latLng, 18);
             } else {
-                realtimeMarker = L.marker(latLng).addTo(map);
+                console.log(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
+                alert(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
             }
-            map.setView(latLng, 18);
         }
-
+        
         function handleLocationError(error) {
             switch (error.code) {
                 case error.PERMISSION_DENIED:
