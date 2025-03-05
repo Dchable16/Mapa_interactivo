@@ -478,6 +478,7 @@
                 })
             };
         }
+        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
             if (loadedLayers.has(layerName)) {
@@ -708,8 +709,7 @@
             // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
         }
-       
-        
+               
         // Cargar capas GeoJSON desde archivos bajo demanda
         loadLayer('Ageb CDMX', 'Ageb');
         loadLayer('Ageb Edo. Mex.', 'Ageb');
