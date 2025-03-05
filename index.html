@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Configuración de la política de seguridad de contenido -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://github.com https://raw.githubusercontent.com maps.googleapis.com *.gstatic.com mapstreet.com tile.openstreetmap.org mt1.google.com mt0.google.com *.khms.googleapis.com;">
     
+    <!-- Configuración de caracteres y vista -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Mapa interactivo Tiendas 3B</title>
-    <link rel="icon" href="favicon.png"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="icon" href="favicon.png"> <!-- Icono de la página -->
     
+    <!-- Estilo de Leaflet para el mapa -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    
+    <!-- Script de Turf.js para operaciones geoespaciales -->
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     
     <style>
@@ -75,19 +81,24 @@
 </head>
 <body>
     <div class="header-container">
-        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> </div>
+        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
+        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Logotipo -->
+    </div>
     
     <div class="form-container">
         <div class="form-row">
             <div class="form-column">
                 <label for="lat">Latitud:</label>
-                <input type="text" id="lat" value="19.4326"> </div>
+                <input type="text" id="lat" value="19.4326"> <!-- Campo de entrada para latitud -->
+            </div>
             <div class="form-column">
                 <label for="lon">Longitud:</label>
-                <input type="text" id="lon" value="-99.1332"> </div>
+                <input type="text" id="lon" value="-99.1332"> <!-- Campo de entrada para longitud -->
+            </div>
             <div class="form-column">
                 <label for="markerName">Nombre del Marcador:</label>
-                <input type="text" id="markerName" value="Marcador Manual"> </div>
+                <input type="text" id="markerName" value="Marcador Manual"> <!-- Campo de entrada para el nombre del marcador -->
+            </div>
         </div>
         
         <div class="button-container">
@@ -98,29 +109,29 @@
             <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
-            <button id="useLocationBtn">Usar Localización</button>
+            <button onclick="useCurrentLocation()">Usar Localización</button>
         </div>
     </div>
     
-    <div id="map" style="position: relative;"> <div id="zoom-level" title="Nivel del Zoom" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-            <span id="zoom-value">12</span> </div>
+    <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
+        <!-- Div para mostrar el nivel de zoom -->
+        <div id="zoom-level" title="Nivel del Zoom" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+            <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
+        </div>
 
+        <!-- Crea botón para centrar marcador -->
         <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3" fill="#3c4043" />
                 <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
             </svg>
         </button>
-        
-        <button id="realtime-location-button" title="Localización en tiempo real" style="position: absolute; bottom: 110px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
-                <circle cx="12" cy="12" r="3" fill="#3c4043" />
-            </svg>
-        </button>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <script>
+    <button id="location-button" title="Localización en Tiempo Real" style="position: absolute; top: 10px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+        <img src="localization-icon.png" alt="Localización" style="width: 30px; height: 30px;">
+    </button>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script> <!-- Script de Leaflet para el mapa -->
+    <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
         
@@ -134,8 +145,8 @@
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
             position: 'bottomleft', // Posición del control
-            metric: true,             // Mostrar escala métrica
-            imperial: false           // No mostrar escala imperial
+            metric: true,           // Mostrar escala métrica
+            imperial: false         // No mostrar escala imperial
         }).addTo(map);
 
         // Función para centrar el mapa en el marcador
@@ -192,35 +203,35 @@
                 alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
                 return;
             }
-            
+        
             const lat = parseFloat(document.getElementById('lat').value);
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
-            
+        
             console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Log para verificar coordenadas
-            
+        
             // Validar coordenadas
             if (isNaN(lat) || isNaN(lon)) {
                 alert("Por favor ingrese coordenadas válidas.");
                 return;
             }
-            
+        
             if (lat < -90 || lat > 90) {
                 alert("La latitud debe estar entre -90 y 90 grados.");
                 return;
             }
-            
+        
             if (lon < -180 || lon > 180) {
                 alert("La longitud debe estar entre -180 y 180 grados.");
                 return;
             }
-            
+        
             try {
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
                 }).addTo(map); // Eliminar la parte de bindPopup()
-                
+        
                 // Crear la etiqueta del marcador
                 currentMarkerLabel = L.divIcon({
                     className: 'marker-label',
@@ -229,7 +240,7 @@
                     iconAnchor: [50, 15]
                 });
                 L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
-                
+        
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
             } catch (error) {
                 console.error("Error al agregar el marcador:", error);
@@ -242,7 +253,7 @@
                 map.removeLayer(currentMarker); // Eliminar el marcador del mapa
                 const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
                 currentMarker = null; // Limpiar la variable del marcador
-                
+        
                 // Eliminar la etiqueta del marcador si existe
                 if (currentMarkerLabel) {
                     map.eachLayer(function(layer) {
@@ -252,7 +263,7 @@
                     });
                     currentMarkerLabel = null; // Limpiar la variable de la etiqueta
                 }
-                
+        
                 // Limpiar las capas de radios y restablecer las banderas
                 radius400Layer.clearLayers(); // Limpiar las capas de radios
                 radius800Layer.clearLayers();
@@ -266,7 +277,7 @@
                 bufferDataExtracted = false; // Reiniciar la bandera de extracción de buffer
                 differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
                 differenceCreated = false; // Reiniciar la bandera de diferencia
-                
+        
                 // Limpiar los campos de entrada
                 document.getElementById('lat').value = ''; // Limpiar el campo de latitud
                 document.getElementById('lon').value = ''; // Limpiar el campo de longitud
@@ -334,18 +345,18 @@
                 alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
                 return;
             }
-            
+        
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const point = turf.point([latLng.lng, latLng.lat]);
                 let selectedLayer = null;
-                
+        
                 if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
                     selectedLayer = agebCDMXLayer.toGeoJSON();
                 } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
                     selectedLayer = agebEdoMexLayer.toGeoJSON();
                 }
-                
+        
                 if (selectedLayer) {
                     const buffer = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                     const featuresWithinBuffer = turf.featureCollection(selectedLayer.features.map(feature => {
@@ -355,19 +366,19 @@
                             const extractedArea = Math.floor(turf.area(intersection));
                             const extractionPercentage = (extractedArea / originalArea) * 100;
                             const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
-                            
+        
                             intersection.properties.originalArea = originalArea;
                             intersection.properties.extractedArea = extractedArea;
                             intersection.properties.extractionPercentage = extractionPercentage;
                             intersection.properties.populationTotal = Math.floor(populationTotal);
-                            
+        
                             return intersection;
                         }
                         return null;
                     }).filter(feature => feature !== null));
-                    
+        
                     bufferLayerGroup.clearLayers();
-                    
+        
                     L.geoJSON(featuresWithinBuffer, {
                         style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
@@ -388,360 +399,415 @@
                 alert("Primero debe agregar un marcador.");
             }
         }
-
+        
         // Función para extraer información de las capas Ageb - Diferencia
         function extractDifferenceData() {
             if (differenceDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
                 return;
             }
-            
+        
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
                 const point = turf.point([latLng.lng, latLng.lat]);
                 let selectedLayer = null;
-                
+        
                 if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
                     selectedLayer = agebCDMXLayer.toGeoJSON();
                 } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
                     selectedLayer = agebEdoMexLayer.toGeoJSON();
                 }
-                
+        
                 if (selectedLayer) {
                     const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                     const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
                     const difference = turf.difference(circle800, circle400);
-                    
-                    if (difference) {
-                        const featuresWithinDifference = turf.featureCollection(selectedLayer.features.map(feature => {
-                            const intersection = turf.intersect(feature, difference);
-                            if (intersection) {
-                                const originalArea = Math.floor(turf.area(feature));
-                                const extractedArea = Math.floor(turf.area(intersection));
-                                const extractionPercentage = (extractedArea / originalArea) * 100;
-                                const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
-                                
-                                intersection.properties.originalArea = originalArea;
-                                intersection.properties.extractedArea = extractedArea;
-                                intersection.properties.extractionPercentage = extractionPercentage;
-                                intersection.properties.populationTotal = Math.floor(populationTotal);
-                                
-                                return intersection;
-                            }
-                            return null;
-                        }).filter(feature => feature !== null));
-                        
-                        differenceExtractionLayerGroup.clearLayers();
-                        
-                        L.geoJSON(featuresWithinDifference, {
-                            style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('click', function () {
-                                    let popupContent = "<b>Atributos:</b><br>";
-                                    for (const key in feature.properties) {
-                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
-                                    }
-                                    layer.bindPopup(popupContent).openPopup();
-                                });
-                            }
-                        }).addTo(differenceExtractionLayerGroup);
-                        differenceDataExtracted = true;
-                    } else {
-                        alert("No se pudo calcular la diferencia entre los círculos.");
-                    }
+        
+                    const featuresWithinDifference = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, difference);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea) * 100;
+                            const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    differenceExtractionLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinDifference, {
+                        style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
+                        onEachFeature: function (feature, layer) {
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(differenceExtractionLayerGroup);
+                    differenceDataExtracted = true;
                 } else {
                     alert("El marcador no está dentro de ninguna capa AGEB.");
                 }
             } else {
-                alert("Primero debe agregar un marcador.");
+                alert("Asegúrese de que el marcador esté creado.");
             }
         }
 
-        // Cargar capas GeoJSON desde archivos locales
-        function loadGeoJsonLayer(filePath, layerGroup, layerName, style, onEachFeatureCallback) {
-            fetch(filePath)
-                .then(response => response.json())
-                .then(data => {
-                    if (layerName === 'usoSuelo') {
-                        data.features = data.features.map(feature => {
-                            if (feature.geometry.type === 'Polygon') {
-                                feature.geometry.coordinates = feature.geometry.coordinates.map(polygon => polygon.map(ring => ring.map(coord => [parseFloat(coord[0].toFixed(5)), parseFloat(coord[1].toFixed(5))])));
-                            } else if (feature.geometry.type === 'MultiPolygon') {
-                                feature.geometry.coordinates = feature.geometry.coordinates.map(polygons => polygons.map(polygon => polygon.map(ring => ring.map(coord => [parseFloat(coord[0].toFixed(5)), parseFloat(coord[1].toFixed(5))]))));
-                            }
-                            return feature;
-                        });
-                    }
-                    
-                    const layer = L.geoJSON(data, { style: style, onEachFeature: onEachFeatureCallback });
-                    layerGroup[layerName] = layer;
-                    loadedLayers.add(layerName);
-                    
-                    if (layerName === 'agebCDMX' || layerName === 'agebEdoMex') {
-                        layer.addTo(map);
-                    }
-                    
-                    updateLayerControl();
+        // Crear un icono personalizado usando el logotipo
+        const customIcon = L.icon({
+            iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
+            iconSize: [20, 20], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
+        });
+
+         // Función para simplificar geometrías
+        function simplifyGeoJSON(data, tolerance) {
+            return {
+                type: "FeatureCollection",
+                features: data.features.map(feature => {
+                    return turf.simplify(feature, { tolerance: tolerance, highQuality: true });
                 })
-                .catch(error => console.error(`Error loading ${layerName} layer:`, error));
+            };
         }
         
-        // Estilos para las capas GeoJSON
-        const agebStyle = { color: 'gray', weight: 1, fillOpacity: 0.2 };
-        const usoSueloStyle = { color: 'green', weight: 1, fillOpacity: 0.2 };
-        const alcaldiasStyle = { color: 'purple', weight: 2, fillOpacity: 0 };
-        const municipiosStyle = { color: 'blue', weight: 2, fillOpacity: 0 };
-        const poligonosStyle = { color: 'orange', weight: 2, fillOpacity: 0 };
-        const coloniasStyle = { color: 'brown', weight: 1, fillOpacity: 0.2 };
-        const competenciasStyle = { color: 'red', weight: 1, fillOpacity: 0.2 };
-
-        // Cargar capas GeoJSON al inicio
-        loadGeoJsonLayer('ageb_cdmx.geojson', geoJsonLayersAgeb, 'agebCDMX', agebStyle);
-        loadGeoJsonLayer('ageb_edomex.geojson', geoJsonLayersAgeb, 'agebEdoMex', agebStyle);
-        loadGeoJsonLayer('uso_suelo.geojson', geoJsonLayersUsoSuelo, 'usoSuelo', usoSueloStyle);
-        loadGeoJsonLayer('alcaldias.geojson', geoJsonLayersAlcaldias, 'alcaldias', alcaldiasStyle);
-        loadGeoJsonLayer('municipios.geojson', geoJsonLayersMunicipios, 'municipios', municipiosStyle);
-        loadGeoJsonLayer('poligonos.geojson', geoJsonLayersPoligonos, 'poligonos', poligonosStyle);
-        loadGeoJsonLayer('colonias.geojson', geoJsonLayersColonias, 'colonias', coloniasStyle);
-        loadGeoJsonLayer('competencias.geojson', geoJsonLayersCompetencias, 'competencias', competenciasStyle);
-
-        // Control de capas dinámico
-        function updateLayerControl() {
-            if (layerControlContainer._map) {
-                layerControlContainer.remove(map);
+        // Función para cargar capas GeoJSON desde archivos
+        function loadGeoJSON(url, layerName, type, callback) {
+            if (loadedLayers.has(layerName)) {
+                console.log(`La capa ${layerName} ya ha sido cargada.`);
+                if (callback) callback();
+                return;
             }
-            
-            layerControlContainer.onAdd = function (map) {
+        
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    return response.json();
+                })
+                .then(data => {
+                    // Simplificar geometrías si es una capa de uso de suelo
+                    if (type === 'UsoSuelo') {
+                        data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
+                    }
+                    const colorMap = {
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municipios': 'rgb(255, 255, 0)',
+                        'Alcaldias': 'rgb(0, 255, 127)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                    };
+                    const geoJsonLayer = L.geoJSON(data, {
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
+                        style: (feature) => {
+                            if (type === 'UsoSuelo') {
+                                return {
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.3, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
+                                };
+                            } else {
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
+                            }
+                        },
+                        onEachFeature: (feature, layer) => {
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
+                            }
+                            layer.on('click', () => {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
+                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    }
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    });
+        
+                    // Agregar la capa a los grupos correspondientes
+                    switch (type) {
+                        case 'Ageb':
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'Alcaldias':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Municipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Competencias':
+                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            break;
+                    }
+                    loadedLayers.add(layerName);
+                    updateLayerControls(); // Asegúrate de que esto se llame aquí
+                    if (callback) callback();
+                })
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
+        }
+
+        // Función para cargar capas bajo demanda
+        function loadLayer(layerName, type) {
+            const layerUrls = {
+                'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
+                'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson',
+                'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson',
+                'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson',
+                'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson',
+                'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson',
+                'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson',
+                'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson',
+                'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson',
+                'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson',
+                'Alcaldías CDMX': 'Alcaldias_Ciudad_de_México.geojson',
+                'Municipios Edo. Mex.': 'Municip_Estado_de_Mexico.geojson',
+                'Poligono Región Vallejo': 'Region_Vallejo.geojson',
+                'Poligono Azcapotzalco': 'Poligono_Azcapotzalco.geojson',
+                'Poligono Benito Juárez': 'Poligono_Benito_Juarez.geojson',
+                'Poligono Cuauhtémoc': 'Poligono_Cuauhtemoc.geojson',
+                'Poligono Ecatepec': 'Poligono_Ecatepec.geojson',
+                'Poligono M. Hidalgo': 'Poligono_Miguel_Hidalgo.geojson',
+                'Poligono Nezahualcoyotl': 'Poligono_Nezahualcoyotl.geojson',
+                'Colonias Azcapotzalco': 'Col_Azcapotzalco.geojson',
+                'Colonias Benito Juárez': 'Col_Benito_Juarez.geojson',
+                'Colonias Cuauhtemoc': 'Col_Cuauhtemoc.geojson',
+                'Colonias Ecatepec': 'Col_Ecatepec.geojson',
+                'Colonias M. Hidalgo': 'Col_Miguel_Hidalgo.geojson',
+                'Colonias Nezahualcoyotl': 'Col_Nezahualcoyotl.geojson',
+                'Tiendas 3B': 'Tiendas_3B.geojson'
+            };
+            if (layerUrls[layerName]) {
+                loadGeoJSON(layerUrls[layerName], layerName, type);
+            } else {
+                console.error('URL de capa no encontrada para:', layerName);
+            }
+        }
+
+        function updateLayerControls() {
+            // Eliminar el controlador de capas existente
+            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
+                map.removeControl(layerControlContainer);
+            }
+
+            // Crear un nuevo controlador de capas
+            layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
+                div.style.display = 'flex'; // Usar flexbox
+                div.style.flexDirection = 'column'; // Colocar en columna
+                div.style.alignItems = 'flex-center'; // Alinear a la derecha
+                div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
+                div.style.height = '100%';
+
                 div.innerHTML = `
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="osmLayer" checked>
-                        <label for="osmLayer">OpenStreetMap</label>
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
                     </div>
-                    
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="googleRoadLayer">
-                        <label for="googleRoadLayer">Google Road</label>
-                    </div>
-                    
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="googleHybridLayer">
-                        <label for="googleHybridLayer">Google Hybrid</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="agebLayer" checked>
-                        <label for="agebLayer">AGEB</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="usoSueloLayer">
-                        <label for="usoSueloLayer">Uso de Suelo</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="alcaldiasLayer">
-                        <label for="alcaldiasLayer">Alcaldías</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="municipiosLayer">
-                        <label for="municipiosLayer">Municipios</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="poligonosLayer">
-                        <label for="poligonosLayer">Polígonos</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="coloniasLayer">
-                        <label for="coloniasLayer">Colonias</label>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <input type="checkbox" id="competenciasLayer">
-                        <label for="competenciasLayer">Competencias</label>
-                    </div>
+                    <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
                 `;
-                
-                div.querySelector('#osmLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        map.addLayer(osmLayer);
-                    } else {
-                        map.removeLayer(osmLayer);
-                    }
+
+                // Crear un controlador base para las capas
+                const baseMaps = {
+                    "OpenStreetMap": osmLayer,
+                    "Google Road": googleRoadLayer,
+                    "Google Hybrid": googleHybridLayer
+                };
+
+                const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+                layerControlBase.addTo(map);
+                div.appendChild(layerControlBase.getContainer());
+
+                // Crear un controlador para las capas GeoJSON
+                const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
+                geoJsonLayerControl.addTo(map);
+                div.appendChild(geoJsonLayerControl.getContainer());
+
+                // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
+                const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+                layerControlUsoSuelo.addTo(map);
+                div.appendChild(layerControlUsoSuelo.getContainer());
+
+                const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+                layerControlAlcaldias.addTo(map);
+                div.appendChild(layerControlAlcaldias.getContainer());
+
+                const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+                layerControlPoligonos.addTo(map);
+                div.appendChild(layerControlPoligonos.getContainer());
+
+                const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+                layerControlColonias.addTo(map);
+                div.appendChild(layerControlColonias.getContainer());
+
+                const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+                layerControlCompetencias.addTo(map);
+                div.appendChild(layerControlCompetencias.getContainer());
+
+                // Crear un controlador para las capas de radios y diferencia
+                const radiusLayers = {
+                    "Radio 400m": radius400Layer,
+                    "Radio 800m": radius800Layer,
+                    "Diferencia Radios": differenceLayerGroup,
+                    "Buffer Ageb": bufferLayerGroup,
+                    "Diferencia Ageb": differenceExtractionLayerGroup
+                };
+
+                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+                radiusLayerControl.addTo(map);
+                div.appendChild(radiusLayerControl.getContainer());
+
+                // Estilos iniciales para el contenedor contraído
+                div.style.width = '25px';
+                div.style.height = '25px';
+                div.style.overflow = 'hidden';
+                div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
+
+                // Agregar eventos para desplegar y replegar el controlador
+                div.addEventListener('mouseover', function() {
+                    div.style.width = '280px';
+                    div.style.height = 'auto';
+                    div.style.overflow = 'auto';
                 });
-                
-                div.querySelector('#googleRoadLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        map.addLayer(googleRoadLayer);
-                    } else {
-                        map.removeLayer(googleRoadLayer);
-                    }
-                });
-                
-                div.querySelector('#googleHybridLayer').addEventListener('change', function(){
-                    if (this.checked) {
-                        map.addLayer(googleHybridLayer);
-                    } else {
-                        map.removeLayer(googleHybridLayer);
+
+                div.addEventListener('mouseout', function(event) {
+                    if (!div.contains(event.relatedTarget)) {
+                        div.style.width = '25px';
+                        div.style.height = '25px';
+                        div.style.overflow = 'hidden';
                     }
                 });
 
-                div.querySelector('#agebLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersAgeb.agebCDMX) map.addLayer(geoJsonLayersAgeb.agebCDMX);
-                        if (geoJsonLayersAgeb.agebEdoMex) map.addLayer(geoJsonLayersAgeb.agebEdoMex);
-                    } else {
-                        if (geoJsonLayersAgeb.agebCDMX) map.removeLayer(geoJsonLayersAgeb.agebCDMX);
-                        if (geoJsonLayersAgeb.agebEdoMex) map.removeLayer(geoJsonLayersAgeb.agebEdoMex);
-                    }
-                });
-
-                div.querySelector('#usoSueloLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersUsoSuelo.usoSuelo) map.addLayer(geoJsonLayersUsoSuelo.usoSuelo);
-                    } else {
-                        if (geoJsonLayersUsoSuelo.usoSuelo) map.removeLayer(geoJsonLayersUsoSuelo.usoSuelo);
-                    }
-                });
-
-                div.querySelector('#alcaldiasLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersAlcaldias.alcaldias) map.addLayer(geoJsonLayersAlcaldias.alcaldias);
-                    } else {
-                        if (geoJsonLayersAlcaldias.alcaldias) map.removeLayer(geoJsonLayersAlcaldias.alcaldias);
-                    }
-                });
-
-                div.querySelector('#municipiosLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersMunicipios.municipios) map.addLayer(geoJsonLayersMunicipios.municipios);
-                    } else {
-                        if (geoJsonLayersMunicipios.municipios) map.removeLayer(geoJsonLayersMunicipios.municipios);
-                    }
-                });
-
-                div.querySelector('#poligonosLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersPoligonos.poligonos) map.addLayer(geoJsonLayersPoligonos.poligonos);
-                    } else {
-                        if (geoJsonLayersPoligonos.poligonos) map.removeLayer(geoJsonLayersPoligonos.poligonos);
-                    }
-                });
-
-                div.querySelector('#coloniasLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersColonias.colonias) map.addLayer(geoJsonLayersColonias.colonias);
-                    } else {
-                        if (geoJsonLayersColonias.colonias) map.removeLayer(geoJsonLayersColonias.colonias);
-                    }
-                });
-
-                div.querySelector('#competenciasLayer').addEventListener('change', function() {
-                    if (this.checked) {
-                        if (geoJsonLayersCompetencias.competencias) map.addLayer(geoJsonLayersCompetencias.competencias);
-                    } else {
-                        if (geoJsonLayersCompetencias.competencias) map.removeLayer(geoJsonLayersCompetencias.competencias);
-                    }
-                });
-                
                 return div;
             };
-            
+
+            // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
         }
-
-        // Localización en tiempo real
-        let watchId = null;
-        let realtimeMarker = null;
-        const realtimeLocationBtn = document.getElementById('realtime-location-button');
-        const useLocationBtn = document.getElementById('useLocationBtn');
-        let isRealtimeLocationActive = false;
-        let lastAccuracy = null;
-
-        realtimeLocationBtn.addEventListener('click', () => {
-            if (isRealtimeLocationActive) {
-                stopRealtimeLocation();
+               
+        // Cargar capas GeoJSON desde archivos bajo demanda
+        loadLayer('Ageb CDMX', 'Ageb');
+        loadLayer('Ageb Edo. Mex.', 'Ageb');
+        loadLayer('Uso de suelo Centro Barrio', 'UsoSuelo');
+        loadLayer('Uso de suelo Equipamento', 'UsoSuelo');
+        loadLayer('Uso de suelo Habitacional Comercio', 'UsoSuelo');
+        loadLayer('Uso de suelo Planta Baja', 'UsoSuelo');
+        loadLayer('Uso de suelo Entrada', 'UsoSuelo');
+        loadLayer('Uso de suelo Mixto', 'UsoSuelo');
+        loadLayer('Uso de suelo Oficinas', 'UsoSuelo');
+        loadLayer('Uso de suelo Plurifamiliar', 'UsoSuelo');
+        loadLayer('Alcaldías CDMX', 'Alcaldias');
+        loadLayer('Municipios Edo. Mex.', 'Municipios');
+        loadLayer('Poligono Región Vallejo', 'Poligono');
+        loadLayer('Poligono Azcapotzalco', 'Poligono');
+        loadLayer('Poligono Benito Juárez', 'Poligono');
+        loadLayer('Poligono Cuauhtémoc', 'Poligono');
+        loadLayer('Poligono Ecatepec', 'Poligono');
+        loadLayer('Poligono M. Hidalgo', 'Poligono');
+        loadLayer('Poligono Nezahualcoyotl', 'Poligono');
+        loadLayer('Colonias Azcapotzalco', 'Col');
+        loadLayer('Colonias Benito Juárez', 'Col');
+        loadLayer('Colonias Cuauhtemoc', 'Col');
+        loadLayer('Colonias Ecatepec', 'Col');
+        loadLayer('Colonias M. Hidalgo', 'Col');
+        loadLayer('Colonias Nezahualcoyotl', 'Col');
+        loadLayer('Tiendas 3B', 'Competencias'); 
+        
+        let isTrackingLocation = false;
+        let watchId;
+        
+        document.getElementById('location-button').addEventListener('click', function() {
+            if (isTrackingLocation) {
+                stopLocationTracking();
             } else {
-                startRealtimeLocation();
+                startLocationTracking();
             }
         });
-
-        useLocationBtn.addEventListener('click', () => {
-            if (realtimeMarker) {
-                const latLng = realtimeMarker.getLatLng();
-                document.getElementById('lat').value = latLng.lat;
-                document.getElementById('lon').value = latLng.lng;
-                stopRealtimeLocation();
-            } else {
-                alert("La localización en tiempo real no está activa.");
-            }
-        });
-
-        function startRealtimeLocation() {
+        
+        function startLocationTracking() {
             if (navigator.geolocation) {
-                realtimeLocationBtn.style.backgroundColor = 'lightgreen'; // Cambiar color del botón
-                isRealtimeLocationActive = true;
-                
-                watchId = navigator.geolocation.watchPosition(
-                    position => {
-                        updateRealtimeLocation(position);
-                        lastAccuracy = position.coords.accuracy;
-                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
-                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
-                    },
-                    error => {
-                        handleLocationError(error);
-                        stopRealtimeLocation();
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
-                );
+                watchId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 5000
+                });
+                isTrackingLocation = true;
+                document.getElementById('location-button').style.backgroundColor = 'green'; // Cambiar color
+                alert("Localización activada");
             } else {
-                alert("La geolocalización no es compatible con este navegador.");
+                alert("GPS no disponible.");
             }
         }
-
-        function stopRealtimeLocation() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            if (realtimeMarker) {
-                map.removeLayer(realtimeMarker);
-                realtimeMarker = null;
-            }
-            realtimeLocationBtn.style.backgroundColor = 'white'; // Restaurar color del botón
-            isRealtimeLocationActive = false;
-            console.log("Localización desactivada.");
-            alert("Localización desactivada.");
+        
+        function stopLocationTracking() {
+            navigator.geolocation.clearWatch(watchId);
+            isTrackingLocation = false;
+            document.getElementById('location-button').style.backgroundColor = 'white'; // Cambiar color
+            alert("Localización desactivada");
         }
-
-        function updateRealtimeLocation(position) {
-            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
-            if (realtimeMarker) {
-                realtimeMarker.setLatLng(latLng);
-            } else {
-                realtimeMarker = L.marker(latLng).addTo(map);
-            }
-            map.setView(latLng, 18);
+        
+        function updateLocation(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            document.getElementById('lat').value = lat;
+            document.getElementById('lon').value = lon;
         }
-
+        
         function handleLocationError(error) {
             switch (error.code) {
                 case error.PERMISSION_DENIED:
-                    alert("Permiso de geolocalización denegado.");
+                    alert("Permiso de localización denegado.");
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    alert("Información de ubicación no disponible.");
+                    alert("Posición no disponible.");
                     break;
                 case error.TIMEOUT:
-                    alert("Tiempo de espera agotado.");
+                    alert("Tiempo de espera de localización excedido.");
                     break;
                 case error.UNKNOWN_ERROR:
-                    alert("Ocurrió un error desconocido.");
+                    alert("Error desconocido.");
                     break;
+            }
+        }
+        
+        function useCurrentLocation() {
+            if (isTrackingLocation) {
+                stopLocationTracking();
+            }
+            const lat = document.getElementById('lat').value;
+            const lon = document.getElementById('lon').value;
+            if (lat && lon) {
+                addMarker(); // Llamar a la función para agregar el marcador
+            } else {
+                alert("No se puede usar la localización. Asegúrese de que la localización esté activada.");
             }
         }
     </script>
