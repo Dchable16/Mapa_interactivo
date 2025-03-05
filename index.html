@@ -478,6 +478,99 @@
                 })
             };
         }
+        // Función para cargar capas GeoJSON desde archivos
+        function loadGeoJSON(url, layerName, type, callback) {
+            if (loadedLayers.has(layerName)) {
+                console.log(`La capa ${layerName} ya ha sido cargada.`);
+                if (callback) callback();
+                return;
+            }
+        
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    return response.json();
+                })
+                .then(data => {
+                    // Simplificar geometrías si es una capa de uso de suelo
+                    if (type === 'UsoSuelo') {
+                        data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
+                    }
+                    const colorMap = {
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municipios': 'rgb(255, 255, 0)',
+                        'Alcaldias': 'rgb(0, 255, 127)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                    };
+                    const geoJsonLayer = L.geoJSON(data, {
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
+                        style: (feature) => {
+                            if (type === 'UsoSuelo') {
+                                return {
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.3, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
+                                };
+                            } else {
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
+                            }
+                        },
+                        onEachFeature: (feature, layer) => {
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
+                            }
+                            layer.on('click', () => {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
+                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    }
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    });
+        
+                    // Agregar la capa a los grupos correspondientes
+                    switch (type) {
+                        case 'Ageb':
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'Alcaldias':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Municipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Competencias':
+                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            break;
+                    }
+                    loadedLayers.add(layerName);
+                    updateLayerControls(); // Asegúrate de que esto se llame aquí
+                    if (callback) callback();
+                })
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
+        }
 
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
@@ -604,102 +697,7 @@
             // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
         }
-
-         // Función para cargar capas GeoJSON desde archivos
-        function loadGeoJSON(url, layerName, type, callback) {
-            if (loadedLayers.has(layerName)) {
-                console.log(`La capa ${layerName} ya ha sido cargada.`);
-                if (callback) callback();
-                return;
-            }
-        
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
-                    return response.json();
-                })
-                .then(data => {
-                    // Simplificar geometrías si es una capa de uso de suelo
-                    if (type === 'UsoSuelo') {
-                        data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
-                    }
-                    const colorMap = {
-                        'UsoSuelo': 'rgb(128, 0, 128)',
-                        'Poligono': 'rgb(255, 127, 80)',
-                        'Col': 'rgb(0, 150, 136)',
-                        'Region_Vallejo': 'rgb(204, 85, 0)',
-                        'Municipios': 'rgb(255, 255, 0)',
-                        'Alcaldias': 'rgb(0, 255, 127)',
-                        'Competencias': 'rgb(204, 85, 0)',
-                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
-                    };
-                    const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
-                        style: (feature) => {
-                            if (type === 'UsoSuelo') {
-                                return {
-                                    color: 'rgb(128, 0, 128)', // Color del borde
-                                    weight: 0.3, // Grosor del borde más delgado
-                                    fillOpacity: 0 // Sin fondo
-                                };
-                            } else {
-                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
-                            }
-                        },
-                        onEachFeature: (feature, layer) => {
-                            if (type === 'Poligono') {
-                                const area = Math.floor(turf.area(feature));
-                                feature.properties['Área polígono'] = area;
-                            }
-                            layer.on('click', () => {
-                                let popupContent = "<b>Atributos:</b><br>";
-                                for (const key in feature.properties) {
-                                    if (key !== 'liga_ciuda') { // Omitir este atributo
-                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
-                                    }
-                                }
-                                layer.bindPopup(popupContent).openPopup();
-                            });
-                        }
-                    });
-        
-                    // Agregar la capa a los grupos correspondientes
-                    switch (type) {
-                        case 'Ageb':
-                            if (url === 'Ageb_urb_CDMX.geojson') {
-                                agebCDMXLayer = geoJsonLayer;
-                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
-                                agebEdoMexLayer = geoJsonLayer;
-                            }
-                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                            break;
-                        case 'UsoSuelo':
-                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                            break;
-                        case 'Alcaldias':
-                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Municipios':
-                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Poligono':
-                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
-                            break;
-                        case 'Col':
-                            geoJsonLayersColonias[layerName] = geoJsonLayer;
-                            break;
-                        case 'Competencias':
-                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
-                            break;
-                    }
-                    loadedLayers.add(layerName);
-                    updateLayerControls(); // Asegúrate de que esto se llame aquí
-                    if (callback) callback();
-                })
-                .catch(err => console.error('Error al cargar GeoJSON:', err));
-        }
-        
-
+       
         
         // Cargar capas GeoJSON desde archivos bajo demanda
         loadLayer('Ageb CDMX', 'Ageb');
