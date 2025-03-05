@@ -109,6 +109,7 @@
             <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
             <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
             <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
+            <button id="useLocationBtn">Usar Localización</button>
         </div>
     </div>
     
@@ -123,6 +124,12 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3" fill="#3c4043" />
                 <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
+            </svg>
+        </button>
+        <button id="realtime-location-button" title="Localización en tiempo real" style="position: absolute; bottom: 110px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" fill="#3c4043" />
             </svg>
         </button>
     </div>
@@ -479,125 +486,100 @@
             };
         }
         
-        // Objeto de caché para almacenar datos GeoJSON
-        const geoJsonCache = {};
-        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
-            // Verificar si la capa ya ha sido cargada
             if (loadedLayers.has(layerName)) {
                 console.log(`La capa ${layerName} ya ha sido cargada.`);
                 if (callback) callback();
                 return;
             }
         
-            // Verificar si los datos ya están en la caché
-            if (geoJsonCache[url]) {
-                console.log(`Cargando desde caché: ${layerName}`);
-                const data = geoJsonCache[url];
-                processGeoJSONData(data, layerName, type); // Procesar los datos directamente desde la caché
-                if (callback) callback();
-                return;
-            }
-        
-            // Si no está en caché, realizar la solicitud
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
                     return response.json();
                 })
                 .then(data => {
-                    // Almacenar los datos en la caché
-                    geoJsonCache[url] = data;
-        
                     // Simplificar geometrías si es una capa de uso de suelo
                     if (type === 'UsoSuelo') {
                         data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
                     }
+                    const colorMap = {
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municipios': 'rgb(255, 255, 0)',
+                        'Alcaldias': 'rgb(0, 255, 127)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                    };
+                    const geoJsonLayer = L.geoJSON(data, {
+                        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
+                        style: (feature) => {
+                            if (type === 'UsoSuelo') {
+                                return {
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.3, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
+                                };
+                            } else {
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
+                            }
+                        },
+                        onEachFeature: (feature, layer) => {
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
+                            }
+                            layer.on('click', () => {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
+                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    }
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    });
         
-                    // Procesar los datos
-                    processGeoJSONData(data, layerName, type);
+                    // Agregar la capa a los grupos correspondientes
+                    switch (type) {
+                        case 'Ageb':
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'Alcaldias':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Municipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Competencias':
+                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            break;
+                    }
+                    loadedLayers.add(layerName);
+                    updateLayerControls(); // Asegúrate de que esto se llame aquí
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-        
-        // Función para procesar los datos GeoJSON y agregarlos al mapa
-        function processGeoJSONData(data, layerName, type) {
-            const colorMap = {
-                'UsoSuelo': 'rgb(128, 0, 128)',
-                'Poligono': 'rgb(255, 127, 80)',
-                'Col': 'rgb(0, 150, 136)',
-                'Region_Vallejo': 'rgb(204, 85, 0)',
-                'Municipios': 'rgb(255, 255, 0)',
-                'Alcaldias': 'rgb(0, 255, 127)',
-                'Competencias': 'rgb(204, 85, 0)',
-                'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
-            };
-        
-            const geoJsonLayer = L.geoJSON(data, {
-                pointToLayer: (feature, latlng) => L.marker(latlng, { icon: customIcon }),
-                style: (feature) => {
-                    if (type === 'UsoSuelo') {
-                        return {
-                            color: 'rgb(128, 0, 128)', // Color del borde
-                            weight: 0.3, // Grosor del borde más delgado
-                            fillOpacity: 0 // Sin fondo
-                        };
-                    } else {
-                        return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
-                    }
-                },
-                onEachFeature: (feature, layer) => {
-                    if (type === 'Poligono') {
-                        const area = Math.floor(turf.area(feature));
-                        feature.properties['Área polígono'] = area;
-                    }
-                    layer.on('click', () => {
-                        let popupContent = "<b>Atributos:</b><br>";
-                        for (const key in feature.properties) {
-                            if (key !== 'liga_ciuda') { // Omitir este atributo
-                                popupContent += `${key}: ${feature.properties[key]}<br>`;
-                            }
-                        }
-                        layer.bindPopup(popupContent).openPopup();
-                    });
-                }
-            });
-        
-            // Agregar la capa a los grupos correspondientes
-            switch (type) {
-                case 'Ageb':
-                    if (url === 'Ageb_urb_CDMX.geojson') {
-                        agebCDMXLayer = geoJsonLayer;
-                    } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
-                        agebEdoMexLayer = geoJsonLayer;
-                    }
-                    geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                    break;
-                case 'UsoSuelo':
-                    geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
-                    break;
-                case 'Alcaldias':
-                    geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                    break;
-                case 'Municipios':
-                    geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
-                    break;
-                case 'Poligono':
-                    geoJsonLayersPoligonos[layerName] = geoJsonLayer;
-                    break;
-                case 'Col':
-                    geoJsonLayersColonias[layerName] = geoJsonLayer;
-                    break;
-                case 'Competencias':
-                    geoJsonLayersCompetencias[layerName] = geoJsonLayer;
-                    break;
-            }
-            loadedLayers.add(layerName);
-            updateLayerControls(); // Asegúrate de que esto se llame aquí
-        }
-        
+
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
@@ -762,6 +744,120 @@
         loadLayer('Colonias M. Hidalgo', 'Col');
         loadLayer('Colonias Nezahualcoyotl', 'Col');
         loadLayer('Tiendas 3B', 'Competencias'); 
+
+        // Localización en tiempo real
+        let watchId = null;
+        let realtimeMarker = null;
+        const realtimeLocationBtn = document.getElementById('realtime-location-button');
+        const useLocationBtn = document.getElementById('useLocationBtn');
+        let isRealtimeLocationActive = false;
+        let lastAccuracy = null;
+        let initialLocationReceived = false; // Nueva variable para controlar el zoom inicial
+        
+        realtimeLocationBtn.addEventListener('click', () => {
+            if (isRealtimeLocationActive) {
+                stopRealtimeLocation();
+            } else {
+                startRealtimeLocation();
+            }
+        });
+        
+        useLocationBtn.addEventListener('click', () => {
+            if (realtimeMarker) {
+                const latLng = realtimeMarker.getLatLng();
+                document.getElementById('lat').value = latLng.lat;
+                document.getElementById('lon').value = latLng.lng;
+                stopRealtimeLocation();
+            } else {
+                alert("La localización en tiempo real no está activa.");
+            }
+        });
+        
+        function startRealtimeLocation() {
+            if (navigator.geolocation) {
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
+                isRealtimeLocationActive = true;
+                initialLocationReceived = false; // Restablecer la variable
+        
+                navigator.geolocation.getCurrentPosition(
+                    initialPosition => {
+                        updateRealtimeLocation(initialPosition);
+                        lastAccuracy = initialPosition.coords.accuracy;
+                        console.log(`Precisión inicial: ${lastAccuracy} metros`);
+        
+                        watchId = navigator.geolocation.watchPosition(
+                            position => {
+                                updateRealtimeLocation(position);
+                                lastAccuracy = position.coords.accuracy;
+                                console.log(`Precisión de la localización: ${lastAccuracy} metros`);
+                            },
+                            error => {
+                                handleLocationError(error);
+                                stopRealtimeLocation();
+                            },
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                        );
+                    },
+                    error => {
+                        handleLocationError(error);
+                        stopRealtimeLocation();
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
+        }
+        
+        function stopRealtimeLocation() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (realtimeMarker) {
+                map.removeLayer(realtimeMarker);
+                realtimeMarker = null;
+            }
+            realtimeLocationBtn.style.backgroundColor = 'white';
+            isRealtimeLocationActive = false;
+            console.log("Localización desactivada.");
+        }
+        
+        function updateRealtimeLocation(position) {
+            const accuracy = position.coords.accuracy;
+            if (accuracy <= 100) {
+                const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+                if (realtimeMarker) {
+                    realtimeMarker.setLatLng(latLng);
+                } else {
+                    realtimeMarker = L.marker(latLng).addTo(map);
+                }
+                if (!initialLocationReceived) { // Ajustar el zoom solo la primera vez
+                    map.setView(latLng, 18);
+                    initialLocationReceived = true;
+                }
+            } else {
+                console.log(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
+            }
+        }
+        
+        function handleLocationError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Permiso de geolocalización denegado.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Información de ubicación no disponible.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Tiempo de espera agotado.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Ocurrió un error desconocido.");
+                    break;
+            }
+        }
+        
     </script>
 </body>
 </html>
