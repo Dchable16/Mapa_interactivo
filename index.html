@@ -618,6 +618,11 @@
             // Crear un nuevo controlador de capas
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
+                div.style.display = 'flex'; // Usar flexbox
+                div.style.flexDirection = 'column'; // Colocar en columna
+                div.style.alignItems = 'flex-end'; // Alinear a la derecha
+                div.style.height = '100%';
+
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
                         <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
