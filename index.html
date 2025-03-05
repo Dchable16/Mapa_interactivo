@@ -576,10 +576,15 @@
                 map.removeControl(layerControlContainer);
             }
 
-            // Crear un nuevo controlador de capas
+            // Crear un contenedor para el controlador
+            const layerControlContainer = L.control({ position: 'topright' });
+            
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
-                div.innerHTML = '<h4>Controles de Capas</h4>';
+                div.innerHTML = `
+                    <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000;"></i>
+                    <h4>Controles de Capas</h4>
+                `;
 
                 // Crear un controlador base para las capas
                 const baseMaps = {
