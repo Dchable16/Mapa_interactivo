@@ -850,7 +850,7 @@
             if (accuracy <= 100) {
                 if (previousLatLng) {
                     const distance = currentLatLng.distanceTo(previousLatLng); // Calcular la distancia en metros
-                    if (distance < 5) { // Umbral de distancia (5 metros)
+                    if (distance < 2) { // Umbral de distancia (5 metros)
                         console.log("Ubicación no ha cambiado significativamente.");
                         return; // No actualizar si la distancia es menor que el umbral
                     }
