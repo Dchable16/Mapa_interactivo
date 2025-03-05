@@ -581,12 +581,11 @@
                 const div = L.DomUtil.create('div', 'layer-control-container');
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: center; height: 50px;">
-                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000;"></i>
+                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; margin: auto;"></i>
                     </div>
-                    <h4>Controles de Capas</h4>
+                    <h4 style="text-align: center; margin: 0;">Controles de Capas</h4>
                 `;
-                
-        
+                        
                 // Crear un controlador base para las capas
                 const baseMaps = {
                     "OpenStreetMap": osmLayer,
