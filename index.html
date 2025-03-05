@@ -484,10 +484,13 @@
                 watchId = navigator.geolocation.watchPosition(
                     position => {
                         updateRealtimeLocation(position);
-                        lastAccuracy = position.coords.accuracy;
-                        console.log(`Precisión de la localización: ${lastAccuracy} metros`);
-                        alert(`Localización activada. Precisión: ${lastAccuracy} metros`);
                     },
+                    error => {
+                        handleLocationError(error);
+                        stopRealtimeLocation();
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
                     error => {
                         handleLocationError(error);
                         stopRealtimeLocation();
