@@ -575,7 +575,10 @@
             if (layerControlContainer && map.hasLayer(layerControlContainer)) {
                 map.removeControl(layerControlContainer);
             }
-        
+                
+                // Crear un contenedor para el controlador
+                const layerControlContainer = L.control({ position: 'topright' });
+            
                 layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
                 div.style.width = '25px'; // Ajusta el ancho del contenedor
@@ -702,83 +705,6 @@
             }
         }
         
-       // Crear un contenedor para el controlador
-        const layerControlContainer = L.control({ position: 'topright' });
-                       
-            // Crear un controlador base para las capas
-            const baseMaps = {
-                "OpenStreetMap": osmLayer,
-                "Google Road": googleRoadLayer,
-                "Google Hybrid": googleHybridLayer
-            };
-        
-            const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
-            layerControlBase.addTo(map);
-            div.appendChild(layerControlBase.getContainer());
-        
-            // Crear un controlador para las capas GeoJSON
-            const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
-            geoJsonLayerControl.addTo(map);
-            div.appendChild(geoJsonLayerControl.getContainer());
-        
-            // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
-            const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
-            layerControlUsoSuelo.addTo(map);
-            div.appendChild(layerControlUsoSuelo.getContainer());
-        
-            const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
-            layerControlAlcaldias.addTo(map);
-            div.appendChild(layerControlAlcaldias.getContainer());
-        
-            const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
-            layerControlPoligonos.addTo(map);
-            div.appendChild(layerControlPoligonos.getContainer());
-        
-            const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
-            layerControlColonias.addTo(map);
-            div.appendChild(layerControlColonias.getContainer());
-        
-            const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
-            layerControlCompetencias.addTo(map);
-            div.appendChild(layerControlCompetencias.getContainer());
-        
-            // Crear un controlador para las capas de radios y diferencia
-            const radiusLayers = {
-                "Radio 400m": radius400Layer,
-                "Radio 800m": radius800Layer,
-                "Diferencia Radios": differenceLayerGroup,
-                "Buffer Ageb": bufferLayerGroup,
-                "Diferencia Ageb": differenceExtractionLayerGroup
-            };
-        
-            const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
-            radiusLayerControl.addTo(map);
-            div.appendChild(radiusLayerControl.getContainer());
-        
-            // Estilos iniciales para el contenedor contraído
-            div.style.width = '30px';
-            div.style.height = '30px';
-            div.style.overflow = 'hidden';
-            div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
-        
-            // Agregar eventos para desplegar y replegar el controlador
-            div.addEventListener('mouseover', function() {
-                div.style.width = '300px';
-                div.style.height = 'auto';
-                div.style.overflow = 'auto';
-            });
-        
-            div.addEventListener('mouseout', function(event) {
-                if (!div.contains(event.relatedTarget)) {
-                    div.style.width = '30px';
-                    div.style.height = '30px';
-                    div.style.overflow = 'hidden';
-                }
-            });
-        
-            return div;
-        };
-
         // Cargar capas GeoJSON desde archivos bajo demanda
         loadLayer('Ageb CDMX', 'Ageb');
         loadLayer('Ageb Edo. Mex.', 'Ageb');
