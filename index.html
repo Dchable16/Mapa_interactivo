@@ -941,34 +941,13 @@
             loadingIndicator.style.display = 'block';
         
             const categories = {
-                'hospital': {
-                    query: 'hospital',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h-1.382A3.997 3.997 0 0 0 13 4H11a3.997 3.997 0 0 0-3.618 4H6c-1.104 0-2 .896-2 2v10c0 1.104.896 2 2 2h12c1.104 0 2-.896 2-2V10c0-1.104-.896-2-2-2z"/><path d="M12 11v4M10 13h4"/></svg>`
-                },
-                'marketplace': {
-                    query: 'marketplace',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="green" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
-                },
-                '3B': {
-                    query: 'Tiendas 3B',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="blue" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
-                },
-                'neto': {
-                    query: 'Tiendas Neto',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="orange" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-6m0-2v.01"/></svg>`
-                },
-                'school': {
-                    query: 'school',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="purple" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M12 21v-9"/><path d="M21 7.5l-9 4.5-9-4.5"/></svg>`
-                },
-                'church': {
-                    query: 'church',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="brown" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4.5 20.29l.71.71 1.01L12 18l6.79 3.3l.71-1.01z"/><path d="M12 18V9"/></svg>`
-                },
-                'bodega aurrera': {
-                    query: 'Bodega Aurrera',
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="yellow" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8"/></svg>`
-                }
+                'hospital': { query: 'hospital', icon: 'hospital.png' },
+                'marketplace': { query: 'marketplace', icon: 'supermarket.png' },
+                '3B': { query: 'Tiendas 3B', icon: 'store3b.png' },
+                'neto': { query: 'Tiendas Neto', icon: 'storeneto.png' },
+                'school': { query: 'school', icon: 'school.png' },
+                'church': { query: 'church', icon: 'church.png' },
+                'bodega aurrera': { query: 'Bodega Aurrera', icon: 'bodega.png' }
             };
         
             let promises = [];
@@ -997,11 +976,11 @@
                 results.filter(result => result).forEach(result => {
                     if (result && result.features) {
                         result.features.forEach(feature => {
-                            const icon = L.divIcon({
-                                html: categories[result.category].icon,
-                                iconSize: [32, 32],
-                                iconAnchor: [16, 32],
-                                popupAnchor: [0, -32]
+                            const icon = L.icon({
+                                iconUrl: `icons/${categories[result.category].icon}`, // Ruta a la foto
+                                iconSize: [32, 32], // Tamaño del icono
+                                iconAnchor: [16, 32], // Punto de anclaje del icono
+                                popupAnchor: [0, -32] // Punto de anclaje del popup
                             });
         
                             const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], { icon });
