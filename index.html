@@ -949,19 +949,19 @@
             }
         });
         
-        function findNearbyPOIs(latlng) {
+       function findNearbyPOIs(latlng) {
             poiMarkers.clearLayers();
-            mostrarIndicadorCarga(); // Mostrar el indicador de carga al inicio
+            loadingIndicator.style.display = 'block';
         
-            const categories = {
-                'hospital': { query: 'hospital', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
-                'marketplace': { query: 'marketplace', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
-                '3B': { query: 'Tiendas 3B', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
-                'neto': { query: 'Tiendas Neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
-                'school': { query: 'school', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
-                'church': { query: 'church', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
-                'bodega aurrera': { query: 'Bodega Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
-            };
+        const categories = {
+                        'hospital': { query: 'hospital', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
+                        'marketplace': { query: 'marketplace', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
+                        '3B': { query: 'Tiendas 3B', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
+                        'neto': { query: 'Tiendas Neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
+                        'school': { query: 'school', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
+                        'church': { query: 'church', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
+                        'bodega aurrera': { query: 'Bodega Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
+                    };		
         
             let promises = [];
         
@@ -990,8 +990,8 @@
                     if (result && result.features) {
                         result.features.forEach(feature => {
                             const icon = L.icon({
-                                iconUrl: categories[result.category].icon,
-                                iconSize: [25, 25],
+                                iconUrl: categories[result.category].icon, // URL de GitHub
+                                iconSize: [32, 32],
                                 iconAnchor: [16, 32],
                                 popupAnchor: [0, -32]
                             });
@@ -1002,11 +1002,11 @@
                         });
                     }
                 });
-                ocultarIndicadorCarga(); // Ocultar el indicador de carga después de recibir los resultados
+                loadingIndicator.style.display = 'none';
             }).catch(error => {
                 console.error("Error general al buscar puntos de interés:", error);
                 alert("Ocurrió un error al buscar puntos de interés cercanos.");
-                ocultarIndicadorCarga(); // Ocultar el indicador de carga en caso de error
+                loadingIndicator.style.display = 'none';
             });
         }
         
