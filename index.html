@@ -77,6 +77,31 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
         }
+        #competencias-button {
+            position: absolute;
+            bottom: 160px;
+            left: 10px;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 8px;
+        }
+        
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -126,6 +151,13 @@
                 <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
             </svg>
         </button>
+        <button id="competencias-button" title="Competencias comerciales">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+        </button>
+        <div class="loading-indicator" id="loading-indicator">Buscando puntos de interés...</div>
         <button id="realtime-location-button" title="Localización en tiempo real" style="position: absolute; bottom: 110px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
@@ -888,6 +920,46 @@
                     alert("Ocurrió un error desconocido.");
                     break;
             }
+        }
+        const competenciasButton = document.getElementById('competencias-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        let poiMarkers = L.markerClusterGroup().addTo(map); // Agrupar marcadores
+        
+        competenciasButton.addEventListener('click', () => {
+            if (currentMarker) {
+                findNearbyPOIs(currentMarker.getLatLng());
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        });
+        
+        function findNearbyPOIs(latlng) {
+            poiMarkers.clearLayers(); // Limpiar marcadores anteriores
+            loadingIndicator.style.display = 'block';
+            const categories = ['hospital', 'marketplace', '3B', 'neto', 'school', 'church', 'bodega aurrera'];
+            let promises = [];
+            categories.forEach(category => {
+                const query = category === '3B' ? 'Tiendas 3B' : category === 'neto' ? 'Tiendas Neto' : category === 'bodega aurrera' ? 'Bodega Aurrera' : category;
+                const url = `https://nominatim.openstreetmap.org/search?q=<span class="math-inline">\{query\}&format\=geojson&viewbox\=</span>{latlng.lng - 0.01},<span class="math-inline">\{latlng\.lat \- 0\.01\},</span>{latlng.lng + 0.01},${latlng.lat + 0.01}&bounded=1&limit=10`;
+                promises.push(fetch(url).then(response => response.json()));
+            });
+        
+            Promise.all(promises).then(results => {
+                results.forEach(result => {
+                    if (result.features) {
+                        result.features.forEach(feature => {
+                            const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
+                            marker.bindPopup(`<b>${feature.properties.display_name}</b><br>Dirección: ${feature.properties.display_name}<br>Coordenadas: ${feature.geometry.coordinates[1]}, ${feature.geometry.coordinates[0]}`);
+                            poiMarkers.addLayer(marker);
+                        });
+                    }
+                });
+                loadingIndicator.style.display = 'none';
+            }).catch(error => {
+                console.error("Error al buscar puntos de interés:", error);
+                alert("No se pudieron encontrar puntos de interés cercanos.");
+                loadingIndicator.style.display = 'none';
+            });
         }
         
     </script>
