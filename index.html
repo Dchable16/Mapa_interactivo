@@ -941,13 +941,13 @@
             loadingIndicator.style.display = 'block';
         
             const categories = {
-                'hospital': { query: 'hospital', icon: 'hospital.png' },
-                'marketplace': { query: 'marketplace', icon: 'supermarket.png' },
-                '3B': { query: 'Tiendas 3B', icon: 'store3b.png' },
-                'neto': { query: 'Tiendas Neto', icon: 'storeneto.png' },
-                'school': { query: 'school', icon: 'school.png' },
-                'church': { query: 'church', icon: 'church.png' },
-                'bodega aurrera': { query: 'Bodega Aurrera', icon: 'bodega.png' }
+                'hospital': { query: 'hospital', icon: 'URL_RAW_HOSPITAL' },
+                'marketplace': { query: 'marketplace', icon: 'URL_RAW_SUPERMARKET' },
+                '3B': { query: 'Tiendas 3B', icon: 'URL_RAW_STORE3B' },
+                'neto': { query: 'Tiendas Neto', icon: 'URL_RAW_STORENETO' },
+                'school': { query: 'school', icon: 'URL_RAW_SCHOOL' },
+                'church': { query: 'church', icon: 'URL_RAW_CHURCH' },
+                'bodega aurrera': { query: 'Bodega Aurrera', icon: 'URL_RAW_BODEGA' }
             };
         
             let promises = [];
@@ -977,10 +977,10 @@
                     if (result && result.features) {
                         result.features.forEach(feature => {
                             const icon = L.icon({
-                                iconUrl: `icons/${categories[result.category].icon}`, // Ruta a la foto
-                                iconSize: [32, 32], // Tamaño del icono
-                                iconAnchor: [16, 32], // Punto de anclaje del icono
-                                popupAnchor: [0, -32] // Punto de anclaje del popup
+                                iconUrl: categories[result.category].icon, // URL de GitHub
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 32],
+                                popupAnchor: [0, -32]
                             });
         
                             const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], { icon });
