@@ -954,7 +954,7 @@
         
             Object.entries(categories).forEach(([category, data]) => {
                 const encodedQuery = encodeURIComponent(data.query);
-                const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
+                const viewbox = `${latlng.lng - 0.02},${latlng.lat - 0.02},${latlng.lng + 0.02},${latlng.lat + 0.02}`;
                 const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
         
                 promises.push(fetch(url)
