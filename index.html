@@ -953,36 +953,42 @@
             poiMarkers.clearLayers();
             loadingIndicator.style.display = 'block';
         
-        const categories = {
-                        'hospital': { query: 'hospital', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
-                        'marketplace': { query: 'marketplace', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
-                        '3B': { query: 'Tiendas 3B', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
-                        'neto': { query: 'Tiendas Neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
-                        'school': { query: 'school', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
-                        'church': { query: 'church', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
-                        'bodega aurrera': { query: 'Bodega Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
-                    };		
+            const categories = {
+                'hospital': { query: 'hospital', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
+                'marketplace': { query: 'marketplace', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
+                '3B': { query: 'Tiendas 3B or 3B or Tienda 3b', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
+                'neto': { query: 'Tiendas Neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
+                'school': { query: 'school', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
+                'church': { query: 'church', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
+                'bodega aurrera': { query: 'Bodega Aurrera or Bodega Aurrera Express or Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
+            };
         
             let promises = [];
+            let delay = 500; // Retraso inicial de 500 ms (0.5 segundos)
         
             Object.entries(categories).forEach(([category, data]) => {
                 const encodedQuery = encodeURIComponent(data.query);
                 const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
                 const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
         
-                promises.push(fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Error en la solicitud: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => ({ ...data, category }))
-                    .catch(error => {
-                        console.error("Error al buscar puntos de interés:", error);
-                        alert("No se pudieron encontrar algunos puntos de interés cercanos.");
-                        return null;
-                    }));
+                promises.push(new Promise((resolve) => {
+                    setTimeout(() => { // Agregar retraso antes de la solicitud
+                        fetch(url)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`Error en la solicitud: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => resolve({ ...data, category }))
+                            .catch(error => {
+                                console.error("Error al buscar puntos de interés:", error);
+                                alert("No se pudieron encontrar algunos puntos de interés cercanos.");
+                                resolve(null);
+                            });
+                    }, delay);
+                    delay += 500; // Incrementar el retraso para la siguiente solicitud
+                }));
             });
         
             Promise.all(promises).then(results => {
@@ -990,8 +996,8 @@
                     if (result && result.features) {
                         result.features.forEach(feature => {
                             const icon = L.icon({
-                                iconUrl: categories[result.category].icon, // URL de GitHub
-                                iconSize: [32, 32],
+                                iconUrl: categories[result.category].icon,
+                                iconSize: [25, 25],
                                 iconAnchor: [16, 32],
                                 popupAnchor: [0, -32]
                             });
