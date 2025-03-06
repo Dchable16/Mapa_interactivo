@@ -941,20 +941,20 @@
             loadingIndicator.style.display = 'block';
         
             const categories = {
-                'hospital': { query: 'hospital', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
-                'marketplace': { query: 'marketplace', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
-                '3B': { query: 'Tiendas 3B', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
-                'neto': { query: 'Tiendas Neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
-                'school': { query: 'school', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
-                'church': { query: 'church', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
-                'bodega aurrera': { query: 'Bodega Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
+                'hospital': { query: 'Hospital OR Hospitales OR Clínica', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
+                'marketplace': { query: 'Mercado OR Mercados', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
+                '3B': { query: '3B OR Tiendas 3B OR Tienda 3B', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
+                'neto': { query: 'Neto OR Tienda Neto OR Tiendas Neto', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
+                'school': { query: 'Escuela OR Universidad OR Primaria OR Preparatoria OR Kinder OR Preescolar', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
+                'church': { query: 'Iglesia OR Capilla OR Parroquia OR Templo', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
+                'bodega aurrera': { query: 'Bodega Aurrera OR Bodega Aurrera Express OR B.Aurrera Express OR BA express', icon: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
             };
         
             let promises = [];
         
             Object.entries(categories).forEach(([category, data]) => {
                 const encodedQuery = encodeURIComponent(data.query);
-                const viewbox = `${latlng.lng - 0.02},${latlng.lat - 0.02},${latlng.lng + 0.02},${latlng.lat + 0.02}`;
+                const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
                 const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
         
                 promises.push(fetch(url)
