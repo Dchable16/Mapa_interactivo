@@ -939,17 +939,35 @@
         function findNearbyPOIs(latlng) {
             poiMarkers.clearLayers(); // Limpiar marcadores anteriores
             loadingIndicator.style.display = 'block';
+        
             const categories = ['hospital', 'marketplace', '3B', 'neto', 'school', 'church', 'bodega aurrera'];
             let promises = [];
+        
             categories.forEach(category => {
                 const query = category === '3B' ? 'Tiendas 3B' : category === 'neto' ? 'Tiendas Neto' : category === 'bodega aurrera' ? 'Bodega Aurrera' : category;
-                const url = `https://nominatim.openstreetmap.org/search?q=<span class="math-inline">\{query\}&format\=geojson&viewbox\=</span>{latlng.lng - 0.01},<span class="math-inline">\{latlng\.lat \- 0\.01\},</span>{latlng.lng + 0.01},${latlng.lat + 0.01}&bounded=1&limit=10`;
-                promises.push(fetch(url).then(response => response.json()));
+                const encodedQuery = encodeURIComponent(query);
+                const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
+        
+                console.log("URL de Nominatim:", url); // Para depuración
+        
+                promises.push(fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error en la solicitud: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                        console.error("Error al buscar puntos de interés:", error);
+                        alert("No se pudieron encontrar algunos puntos de interés cercanos.");
+                        return null; // Devolver null para filtrar en Promise.all
+                    }));
             });
         
             Promise.all(promises).then(results => {
-                results.forEach(result => {
-                    if (result.features) {
+                results.filter(result => result).forEach(result => { // Filtrar resultados nulos
+                    if (result && result.features) {
                         result.features.forEach(feature => {
                             const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
                             marker.bindPopup(`<b>${feature.properties.display_name}</b><br>Dirección: ${feature.properties.display_name}<br>Coordenadas: ${feature.geometry.coordinates[1]}, ${feature.geometry.coordinates[0]}`);
@@ -959,8 +977,8 @@
                 });
                 loadingIndicator.style.display = 'none';
             }).catch(error => {
-                console.error("Error al buscar puntos de interés:", error);
-                alert("No se pudieron encontrar puntos de interés cercanos.");
+                console.error("Error general al buscar puntos de interés:", error);
+                alert("Ocurrió un error al buscar puntos de interés cercanos.");
                 loadingIndicator.style.display = 'none';
             });
         }
