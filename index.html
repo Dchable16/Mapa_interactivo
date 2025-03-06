@@ -937,19 +937,46 @@
         });
         
         function findNearbyPOIs(latlng) {
-            poiMarkers.clearLayers(); // Limpiar marcadores anteriores
+            poiMarkers.clearLayers();
             loadingIndicator.style.display = 'block';
         
-            const categories = ['hospital', 'marketplace', '3B', 'neto', 'school', 'church', 'bodega aurrera'];
+            const categories = {
+                'hospital': {
+                    query: 'hospital',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h-1.382A3.997 3.997 0 0 0 13 4H11a3.997 3.997 0 0 0-3.618 4H6c-1.104 0-2 .896-2 2v10c0 1.104.896 2 2 2h12c1.104 0 2-.896 2-2V10c0-1.104-.896-2-2-2z"/><path d="M12 11v4M10 13h4"/></svg>`
+                },
+                'marketplace': {
+                    query: 'marketplace',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="green" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
+                },
+                '3B': {
+                    query: 'Tiendas 3B',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="blue" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
+                },
+                'neto': {
+                    query: 'Tiendas Neto',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="orange" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-6m0-2v.01"/></svg>`
+                },
+                'school': {
+                    query: 'school',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="purple" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M12 21v-9"/><path d="M21 7.5l-9 4.5-9-4.5"/></svg>`
+                },
+                'church': {
+                    query: 'church',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="brown" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4.5 20.29l.71.71 1.01L12 18l6.79 3.3l.71-1.01z"/><path d="M12 18V9"/></svg>`
+                },
+                'bodega aurrera': {
+                    query: 'Bodega Aurrera',
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="yellow" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8"/></svg>`
+                }
+            };
+        
             let promises = [];
         
-            categories.forEach(category => {
-                const query = category === '3B' ? 'Tiendas 3B' : category === 'neto' ? 'Tiendas Neto' : category === 'bodega aurrera' ? 'Bodega Aurrera' : category;
-                const encodedQuery = encodeURIComponent(query);
+            Object.entries(categories).forEach(([category, data]) => {
+                const encodedQuery = encodeURIComponent(data.query);
                 const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
                 const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
-        
-                console.log("URL de Nominatim:", url); // Para depuración
         
                 promises.push(fetch(url)
                     .then(response => {
@@ -958,18 +985,26 @@
                         }
                         return response.json();
                     })
+                    .then(data => ({ ...data, category }))
                     .catch(error => {
                         console.error("Error al buscar puntos de interés:", error);
                         alert("No se pudieron encontrar algunos puntos de interés cercanos.");
-                        return null; // Devolver null para filtrar en Promise.all
+                        return null;
                     }));
             });
         
             Promise.all(promises).then(results => {
-                results.filter(result => result).forEach(result => { // Filtrar resultados nulos
+                results.filter(result => result).forEach(result => {
                     if (result && result.features) {
                         result.features.forEach(feature => {
-                            const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
+                            const icon = L.divIcon({
+                                html: categories[result.category].icon,
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 32],
+                                popupAnchor: [0, -32]
+                            });
+        
+                            const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], { icon });
                             marker.bindPopup(`<b>${feature.properties.display_name}</b><br>Dirección: ${feature.properties.display_name}<br>Coordenadas: ${feature.geometry.coordinates[1]}, ${feature.geometry.coordinates[0]}`);
                             poiMarkers.addLayer(marker);
                         });
