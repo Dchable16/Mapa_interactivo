@@ -29,57 +29,32 @@
         #side-form.active {
             display: block;
         }
+        #form-toggle-btn, #close-form-btn, #center-button, #realtime-location-button, #competencias-button {
+            background-color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #333;
+            cursor: pointer;
+            padding: 10px;
+            transition: color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         #form-toggle-btn {
             position: fixed;
             left: 10px;
             top: 50%;
             transform: translateY(-50%);
-            background-color: white;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            color: #333;
-            cursor: pointer;
-            padding: 10px;
-            transition: color 0.3s ease;
             z-index: 1001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
         }
         #close-form-btn {
-            background-color: white;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            color: #333;
-            cursor: pointer;
-            padding: 10px;
-            transition: color 0.3s ease;
             margin-top: 8px;
             border-radius: 4px;
             width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        #center-button, #realtime-location-button, #competencias-button {
-            position: absolute;
-            z-index: 1000;
-            background-color: white;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            color: #333;
-            cursor: pointer;
-            padding: 10px;
-            transition: color 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
         }
         #center-button { bottom: 60px; left: 10px; }
         #realtime-location-button { bottom: 106px; left: 10px; }
@@ -107,12 +82,12 @@
         .button-container button:hover { background-color: #0056b3; }
         .logo { display: block; margin: 0 auto 8px; width: 50px; }
         .centered-title { text-align: center; margin: 8px 0; font-size: 1em; }
-    
+
         /* Estilos de hover para los botones */
         #form-toggle-btn:hover, #center-button:hover, #realtime-location-button:hover, #competencias-button:hover, #close-form-btn:hover {
             color: #555;
         }
-    
+
         /* Efecto de onda al hacer clic */
         #form-toggle-btn::after, #center-button::after, #realtime-location-button::after, #competencias-button::after, #close-form-btn::after {
             content: '';
@@ -128,10 +103,21 @@
             opacity: 0;
             transition: transform 0.5s ease, opacity 0.5s ease;
         }
-    
+
         #form-toggle-btn:active::after, #center-button:active::after, #realtime-location-button:active::after, #competencias-button:active::after, #close-form-btn:active::after {
             transform: scale(2);
             opacity: 1;
+        }
+
+        /* Estilos para los iconos SVG dentro de los botones */
+        #form-toggle-btn svg, #center-button svg, #realtime-location-button svg, #competencias-button svg {
+            width: 24px; /* Ajusta el tamaño del icono */
+            height: 24px;
+            fill: none;
+            stroke: #3c4043; /* Color del icono */
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
     </style>
 </head>
