@@ -124,37 +124,33 @@
     </style>
 </head>
 <body>
-    <div class="header-container">
-        <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1> <!-- Título centrado -->
-        <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Logotipo -->
-    </div>
-    
-    <div class="form-container">
-        <div class="form-row">
-            <div class="form-column">
-                <label for="lat">Latitud:</label>
-                <input type="text" id="lat" value="19.4326"> <!-- Campo de entrada para latitud -->
-            </div>
-            <div class="form-column">
-                <label for="lon">Longitud:</label>
-                <input type="text" id="lon" value="-99.1332"> <!-- Campo de entrada para longitud -->
-            </div>
-            <div class="form-column">
-                <label for="markerName">Nombre del Marcador:</label>
-                <input type="text" id="markerName" value="Marcador Manual"> <!-- Campo de entrada para el nombre del marcador -->
-            </div>
-        </div>
-        
-        <div class="button-container">
-            <button onclick="addMarker()">Agregar Marcador</button>
-            <button onclick="removeMarker()">Eliminar Marcador</button>
-            <button onclick="addRadius(400)">Agregar Radio 400m</button>
-            <button onclick="addRadius(800)">Agregar Radio 800m</button>
-            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
-            <button id="useLocationBtn">Usar Localización</button>
-        </div>
+    <button id="form-toggle-btn">
+        <img src="https://cdn-icons-png.flaticon.com/512/60/60817.png" alt="Abrir formulario">
+    </button>
+    <div id="side-form">
+        <h2>Información del Lugar</h2>
+        <label for="lat">Latitud:</label>
+        <input type="text" id="lat" name="lat" value="">
+        <label for="lon">Longitud:</label>
+        <input type="text" id="lon" name="lon" value="">
+        <label for="tipo">Tipo de Lugar:</label>
+        <select id="tipo" name="tipo">
+            <option value=""></option>
+            <option value="casa">Casa</option>
+            <option value="departamento">Departamento</option>
+            <option value="terreno">Terreno</option>
+            <option value="local">Local</option>
+        </select>
+        <label for="ciudad">Ciudad:</label>
+        <input type="text" id="ciudad" name="ciudad" value="">
+        <label for="colonia">Colonia:</label>
+        <input type="text" id="colonia" name="colonia" value="">
+        <label for="cp">Código Postal:</label>
+        <input type="text" id="cp" name="cp" value="">
+        <button id="realtime-location-button">Mi ubicación</button>
+        <button id="useLocationBtn">Usar ubicación</button>
+        <button id="competencias-button">Buscar Competencias</button>
+        <button id="close-form-btn">Cerrar</button>
     </div>
     
     <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
