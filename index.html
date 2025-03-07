@@ -153,7 +153,8 @@
         <button id="close-form-btn">Cerrar</button>
     </div>
     
-    <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
+    <div id="map"></div>
+    <div id="loading-indicator">Cargando...</div>
         <!-- Div para mostrar el nivel de zoom -->
         <div id="zoom-level" title="Nivel del Zoom" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
             <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
@@ -188,6 +189,18 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
+        
+        const formToggleBtn = document.getElementById('form-toggle-btn');
+        const sideForm = document.getElementById('side-form');
+        const closeFormBtn = document.getElementById('close-form-btn');
+
+        formToggleBtn.addEventListener('click', () => {
+            sideForm.classList.toggle('open');
+        });
+
+        closeFormBtn.addEventListener('click', () => {
+            sideForm.classList.remove('open');
+        });
         
         // Inicializar el contenedor de control de capas
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
