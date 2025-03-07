@@ -16,13 +16,13 @@
         #side-form {
             position: absolute;
             top: 75px;
-            left: -280px; /* Ajuste del ancho inicial */
-            width: 280px; /* Ajuste del ancho */
+            left: -280px;
+            width: 280px;
             height: auto;
             background-color: #f8f8f8;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
             transition: left 0.3s ease-in-out;
-            padding: 10px; /* Reducción del padding */
+            padding: 10px;
             z-index: 401;
             border-radius: 8px;
         }
@@ -33,12 +33,12 @@
             left: 10px;
             background-color: #e0e0e0;
             border: none;
-            padding: 6px; /* Reducción del padding */
+            padding: 6px;
             cursor: pointer;
             z-index: 402;
             border-radius: 50%;
-            width: 36px; /* Ajuste del ancho */
-            height: 36px; /* Ajuste del alto */
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -46,9 +46,9 @@
         #close-form-btn {
             background-color: #e0e0e0;
             border: none;
-            padding: 6px; /* Reducción del padding */
+            padding: 6px;
             cursor: pointer;
-            margin-top: 8px; /* Reducción del margen */
+            margin-top: 8px;
             border-radius: 4px;
             width: 100%;
         }
@@ -58,23 +58,23 @@
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 50%;
-            width: 36px; /* Ajuste del ancho */
-            height: 36px; /* Ajuste del alto */
+            width: 36px;
+            height: 36px;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            padding: 6px; /* Reducción del padding */
+            padding: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         #center-button { bottom: 60px; left: 10px; }
-        #realtime-location-button { bottom: 106px; left: 10px; } /* Ajuste de la posición */
-        #competencias-button { bottom: 152px; left: 10px; } /* Ajuste de la posición */
+        #realtime-location-button { bottom: 106px; left: 10px; }
+        #competencias-button { bottom: 152px; left: 10px; }
         #zoom-level {
             background-color: rgb(255, 255, 255);
             color: black;
             border-radius: 2px;
-            padding: 7px; /* Reducción del padding */
+            padding: 7px;
             cursor: default;
             text-align: center;
             font-weight: bold;
@@ -84,23 +84,22 @@
             z-index: 1000;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
-        .form-container { padding: 8px; } /* Reducción del padding */
+        .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
-        .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; } /* Reducción del margen y tamaño de la fuente */
-        .form-row input { padding: 4px; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; } /* Reducción del padding, margen y tamaño de la fuente */
-        .button-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 8px; } /* Reducción del gap y margen */
-        .button-container button { padding: 6px; border: none; border-radius: 4px; background-color: #007bff; color: white; cursor: pointer; font-size: 0.85em; } /* Reducción del padding y tamaño de la fuente */
+        .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
+        .form-row input { padding: 4px; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+        .button-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 8px; }
+        .button-container button { padding: 6px; border: none; border-radius: 4px; background-color: #007bff; color: white; cursor: pointer; font-size: 0.85em; }
         .button-container button:hover { background-color: #0056b3; }
-        .logo { display: block; margin: 0 auto 8px; width: 50px; } /* Reducción del margen y ancho */
-        .centered-title { text-align: center; margin: 8px 0; font-size: 1em; } /* Reducción del margen y tamaño de la fuente */
+        .logo { display: block; margin: 0 auto 8px; width: 50px; }
+        .centered-title { text-align: center; margin: 8px 0; font-size: 1em; }
     </style>
 </head>
 <body>
      <button id="form-toggle-btn" title="Abrir/Cerrar formulario" aria-label="Abrir/Cerrar formulario">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-            <line x1="15" y1="3" x2="15" y2="21"></line>
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.4 1.4 0 0 1-1.4 1.4H6a1.4 1.4 0 0 1-1.4-1.4 5 5 0 0 1 1.9-3.8 8 8 0 0 0 1.2-2.1L7 8c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.2 1.6 0 0 1 0 2.2l-1.4 1.4c-.6.6-1.6.6-2.2 0l-1-1a1.4 1.4 0 0 1 0-2L14 3.6c.6-.6 1.6-.6 2.2 0l1 1a1.4 1.4 0 0 1 0 2L17 8c.6.6.6 1.6 0 2.2l-1.4 1.4c-.6.6-1.6.6-2.2 0l-1-1a1.4 1.4 0 0 1 0-2l1.6 1.6z"></path>
         </svg>
     </button>
     <div id="side-form">
@@ -159,7 +158,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script>
-       
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
