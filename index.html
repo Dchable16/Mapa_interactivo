@@ -28,10 +28,30 @@
         .layer-control-container { background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 1000; }
         #competencias-button { position: absolute; bottom: 160px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 8px; }
         #loading-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.7); color: white; padding: 20px; border-radius: 5px; display: none; z-index: 1000; }
-        #side-form { position: absolute; top: 0; left: -65%; width: 60%; height: 100%; background-color: rgb(248, 248, 255); box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); transition: left 0.3s ease-in-out; padding: 20px; z-index: 401; }
+        #side-form { position: absolute; top: 0; left: -65%; width: 350px; height: 100%; background-color: rgb(248, 248, 255); box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); transition: left 0.3s ease-in-out; padding: 20px; z-index: 401; }
         #side-form.open { left: 0; }
         #form-toggle-btn { position: absolute; top: 175px; left: 10px; background-color: #f0f0f0; border: none; padding: 10px; cursor: pointer; z-index: 402; }
         #close-form-btn { background-color: #f0f0f0; border: none; padding: 10px; cursor: pointer; margin-top: 10px; }
+        #center-button, #realtime-location-button{
+            position: absolute;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 8px;
+        }
+        #center-button{
+            bottom: 60px;
+            left: 10px;
+        }
+        #realtime-location-button{
+            bottom: 110px;
+            left: 10px;
+        }
     </style>
 </head>
 <body>
