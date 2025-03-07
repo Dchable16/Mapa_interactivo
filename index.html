@@ -157,11 +157,12 @@
         </div>
     </div>
     
-    <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
+    <div id="map"> <!-- Contenedor para el mapa -->
         <!-- Div para mostrar el nivel de zoom -->
         <div id="zoom-level" title="Nivel del Zoom" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
             <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
         </div>
+    </div>
 
         <!-- Crea botón para centrar marcador -->
         <button id="center-button" title="Centrar en el marcador" style="position: absolute; bottom: 60px; left: 10px; z-index: 1000; background-color: white; border: 1px solid #ccc; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); padding: 5px;">
@@ -192,6 +193,12 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
+        
+        // Función para alternar el formulario
+        function toggleForm() {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.toggle('active'); // Alternar la clase para mostrar/ocultar el formulario
+        }
         
         // Inicializar el contenedor de control de capas
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
