@@ -8,7 +8,7 @@
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <style>
+     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
@@ -16,40 +16,40 @@
         #side-form {
             position: absolute;
             top: 75px;
-            left: -300px; /* Reducido el ancho inicial */
-            width: 300px; /* Reducido el ancho */
+            left: -280px; /* Ajuste del ancho inicial */
+            width: 280px; /* Ajuste del ancho */
             height: auto;
-            background-color: #f8f8f8; /* Color de fondo más claro */
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Sombra más sutil */
+            background-color: #f8f8f8;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
             transition: left 0.3s ease-in-out;
-            padding: 15px; /* Reducido el relleno */
+            padding: 10px; /* Reducción del padding */
             z-index: 401;
-            border-radius: 8px; /* Bordes redondeados */
+            border-radius: 8px;
         }
         #side-form.active { left: 0; }
         #form-toggle-btn {
             position: absolute;
             top: 175px;
             left: 10px;
-            background-color: #e0e0e0; /* Color de fondo más claro */
+            background-color: #e0e0e0;
             border: none;
-            padding: 8px; /* Reducido el relleno */
+            padding: 6px; /* Reducción del padding */
             cursor: pointer;
             z-index: 402;
-            border-radius: 50%; /* Botón circular */
-            width: 40px;
-            height: 40px;
+            border-radius: 50%;
+            width: 36px; /* Ajuste del ancho */
+            height: 36px; /* Ajuste del alto */
             display: flex;
             align-items: center;
             justify-content: center;
         }
         #close-form-btn {
-            background-color: #e0e0e0; /* Color de fondo más claro */
+            background-color: #e0e0e0;
             border: none;
-            padding: 8px; /* Reducido el relleno */
+            padding: 6px; /* Reducción del padding */
             cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
+            margin-top: 8px; /* Reducción del margen */
+            border-radius: 4px;
             width: 100%;
         }
         #center-button, #realtime-location-button, #competencias-button {
@@ -58,23 +58,23 @@
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 36px; /* Ajuste del ancho */
+            height: 36px; /* Ajuste del alto */
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            padding: 8px;
+            padding: 6px; /* Reducción del padding */
             display: flex;
             align-items: center;
             justify-content: center;
         }
         #center-button { bottom: 60px; left: 10px; }
-        #realtime-location-button { bottom: 110px; left: 10px; }
-        #competencias-button { bottom: 160px; left: 10px; }
+        #realtime-location-button { bottom: 106px; left: 10px; } /* Ajuste de la posición */
+        #competencias-button { bottom: 152px; left: 10px; } /* Ajuste de la posición */
         #zoom-level {
             background-color: rgb(255, 255, 255);
             color: black;
             border-radius: 2px;
-            padding: 8.5px;
+            padding: 7px; /* Reducción del padding */
             cursor: default;
             text-align: center;
             font-weight: bold;
@@ -84,15 +84,15 @@
             z-index: 1000;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
-        .form-container { padding: 10px; }
+        .form-container { padding: 8px; } /* Reducción del padding */
         .form-row { display: flex; flex-direction: column; }
-        .form-row label { font-weight: bold; margin-bottom: 5px; }
-        .form-row input { padding: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .button-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 10px; }
-        .button-container button { padding: 8px; border: none; border-radius: 4px; background-color: #007bff; color: white; cursor: pointer; }
+        .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; } /* Reducción del margen y tamaño de la fuente */
+        .form-row input { padding: 4px; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; } /* Reducción del padding, margen y tamaño de la fuente */
+        .button-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 8px; } /* Reducción del gap y margen */
+        .button-container button { padding: 6px; border: none; border-radius: 4px; background-color: #007bff; color: white; cursor: pointer; font-size: 0.85em; } /* Reducción del padding y tamaño de la fuente */
         .button-container button:hover { background-color: #0056b3; }
-        .logo { display: block; margin: 0 auto 10px; width: 60px; }
-        .centered-title { text-align: center; margin: 10px 0; font-size: 1.2em; }
+        .logo { display: block; margin: 0 auto 8px; width: 50px; } /* Reducción del margen y ancho */
+        .centered-title { text-align: center; margin: 8px 0; font-size: 1em; } /* Reducción del margen y tamaño de la fuente */
     </style>
 </head>
 <body>
