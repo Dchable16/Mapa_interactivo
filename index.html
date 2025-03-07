@@ -104,6 +104,50 @@
             display: none; /* O block cuando se esté cargando */
             z-index: 1000; /* Asegurar que esté encima de otros elementos */
         }
+        /* Estilos generales */
+        html, body { height: 100%; margin: 0; }
+        #map { height: 100%; }
+        
+        /* Estilo del formulario lateral */
+        .form-container {
+            position: fixed;
+            left: -300px; /* Oculto por defecto */
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background-color: rgb(248, 248, 255);
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            transition: left 0.3s ease; /* Transición suave */
+            z-index: 1000;
+        }
+        
+        /* Estilo para el botón de cerrar */
+        .close-btn {
+            background-color: rgb(230, 25, 25);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        
+        /* Estilo para el ícono de desplegar */
+        #toggle-form-btn {
+            position: fixed;
+            left: 10px;
+            top: 20px;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
         }
     </style>
 </head>
@@ -113,35 +157,37 @@
         <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo"> <!-- Logotipo -->
     </div>
     
-    <div class="form-container">
-        <div class="form-row">
-            <div class="form-column">
-                <label for="lat">Latitud:</label>
-                <input type="text" id="lat" value="19.4326"> <!-- Campo de entrada para latitud -->
-            </div>
-            <div class="form-column">
-                <label for="lon">Longitud:</label>
-                <input type="text" id="lon" value="-99.1332"> <!-- Campo de entrada para longitud -->
-            </div>
-            <div class="form-column">
-                <label for="markerName">Nombre del Marcador:</label>
-                <input type="text" id="markerName" value="Marcador Manual"> <!-- Campo de entrada para el nombre del marcador -->
-            </div>
+<div class="form-container" id="form-container">
+    <button class="close-btn" onclick="toggleForm()">Cerrar</button>
+    <h2>Formulario</h2>
+    <div class="form-row">
+        <div class="form-column">
+            <label for="lat">Latitud:</label>
+            <input type="text" id="lat" value="19.4326"> <!-- Campo de entrada para latitud -->
         </div>
-        
-        <div class="button-container">
-            <button onclick="addMarker()">Agregar Marcador</button>
-            <button onclick="removeMarker()">Eliminar Marcador</button>
-            <button onclick="addRadius(400)">Agregar Radio 400m</button>
-            <button onclick="addRadius(800)">Agregar Radio 800m</button>
-            <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
-            <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
-            <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
-            <button id="useLocationBtn">Usar Localización</button>
+        <div class="form-column">
+            <label for="lon">Longitud:</label>
+            <input type="text" id="lon" value="-99.1332"> <!-- Campo de entrada para longitud -->
+        </div>
+        <div class="form-column">
+            <label for="markerName">Nombre del Marcador:</label>
+            <input type="text" id="markerName" value="Marcador Manual"> <!-- Campo de entrada para el nombre del marcador -->
         </div>
     </div>
+    <div class="button-container">
+        <button onclick="addMarker()">Agregar Marcador</button>
+        <button onclick="removeMarker()">Eliminar Marcador</button>
+        <button onclick="addRadius(400)">Agregar Radio 400m</button>
+        <button onclick="addRadius(800)">Agregar Radio 800m</button>
+        <button onclick="calculateDifference()">Calcular Diferencia entre Radios</button>
+        <button onclick="extractBufferData()">Extraer Información Ageb - Radio 400m</button>
+        <button onclick="extractDifferenceData()">Extraer Información Ageb - Radio 800m</button>
+        <button id="useLocationBtn">Usar Localización</button>
+    </div>
+</div>
     
-    <div id="map" style="position: relative;"> <!-- Contenedor para el mapa -->
+    <div id="map"></div> <!-- Contenedor para el mapa -->
+    <div id="toggle-form-btn" onclick="toggleForm()">☰</div>
         <!-- Div para mostrar el nivel de zoom -->
         <div id="zoom-level" title="Nivel del Zoom" style="background-color: rgb(255, 255, 255); color: black; border-radius: 2px; padding: 8.5px; cursor: default; text-align: center; font-weight: bold; position: absolute; top: 75px; left: 11.5px; z-index: 1000; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
             <span id="zoom-value">12</span> <!-- Solo mostrar el valor del zoom -->
@@ -1016,7 +1062,14 @@
                 loadingIndicator.style.display = 'none';
             });
         }
-        
+        function toggleForm() {
+            const formContainer = document.getElementById('form-container');
+            if (formContainer.style.left === '0px') {
+                formContainer.style.left = '-300px'; // Ocultar
+            } else {
+                formContainer.style.left = '0px'; // Mostrar
+            }
+        }
     </script>
 </body>
 </html>
