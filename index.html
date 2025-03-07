@@ -33,8 +33,9 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
             position: fixed; 
             left: -300px; /* Oculto por defecto */
-            top: 0; 
-            height: 100%; 
+            top: 50%; 
+            transform: translateY(-50%); /* Centrar verticalmente */
+            height: auto; 
             width: 300px; 
             transition: left 0.3s ease; 
             z-index: 1001; /* Asegurarse de que esté por encima del mapa */
@@ -102,6 +103,20 @@
             border-radius: 5px;
             display: none; /* O block cuando se esté cargando */
             z-index: 1000; /* Asegurar que esté encima de otros elementos */
+        }
+        #competencias-button {
+            position: absolute;
+            bottom: 160px;
+            left: 10px;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 8px;
         }
     </style>
 </head>
