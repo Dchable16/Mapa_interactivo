@@ -1,20 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Configuración de la política de seguridad de contenido -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org;">
     
-    <!-- Configuración de caracteres y vista -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Mapa interactivo Tiendas 3B</title>
     <link rel="icon" href="favicon.png"> <!-- Icono de la página -->
     
-    <!-- Estilo de Leaflet para el mapa -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
-    
-    <!-- Script de Turf.js para operaciones geoespaciales -->
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     
     <style>
@@ -31,8 +26,48 @@
         .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
         
         /* Estilos para el contenedor del formulario */
-        .form-container { background-color: rgb(248, 248, 255); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 600px; }
-        
+        .form-container { 
+            background-color: rgb(248, 248, 255); 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+            position: fixed; 
+            left: -300px; /* Oculto por defecto */
+            top: 0; 
+            height: 100%; 
+            width: 300px; 
+            transition: left 0.3s ease; 
+            z-index: 1001; /* Asegurarse de que esté por encima del mapa */
+        }
+
+        .form-container.active {
+            left: 0; /* Despliega el formulario */
+        }
+
+        .toggle-button {
+            position: fixed;
+            left: 10px;
+            top: 50%; /* Centrar verticalmente */
+            transform: translateY(-50%); /* Ajustar centrado */
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 1001; /* Asegurarse de que esté por encima del mapa */
+        }
+
+        .close-button {
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
         /* Estilos para las etiquetas del formulario */
         .form-container label { color: rgb(0, 187, 45); font-weight: bold; }
         
@@ -69,14 +104,7 @@
             .form-container input, .form-container button { padding: 5px; font-size: 15px; }
             .logo { width: 120px; }
         }
-
-        .layer-control-container {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
-        }
+    
         #competencias-button {
             position: absolute;
             bottom: 160px;
@@ -90,19 +118,6 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             padding: 8px;
-        }
-        
-            #loading-indicator {
-            position: fixed; /* O absolute, dependiendo de la estructura de tu página */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* Centrar el indicador */
-            background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            display: none; /* O block cuando se esté cargando */
-            z-index: 1000; /* Asegurar que esté encima de otros elementos */
         }
         }
     </style>
