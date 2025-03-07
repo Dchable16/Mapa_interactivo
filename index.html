@@ -14,7 +14,7 @@
         .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
         .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
         #side-form {
-            display: none;
+            display: none; /* Ocultar por defecto */
             background-color: #f8f8f8;
             padding: 10px;
             border-radius: 8px;
@@ -29,36 +29,49 @@
         #side-form.active {
             display: block;
         }
-        #form-toggle-btn, #close-form-btn, #center-button, #realtime-location-button, #competencias-button {
-            background-color: white;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            color: #333;
-            cursor: pointer;
-            padding: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
         #form-toggle-btn {
             position: fixed;
             left: 10px;
             top: 50%;
             transform: translateY(-50%);
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
             z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         #close-form-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
             margin-top: 8px;
             border-radius: 4px;
             width: 100%;
         }
-        #center-button { bottom: 60px; left: 10px; width: 36px; height: 36px; }
-        #realtime-location-button { bottom: 106px; left: 10px; width: 36px; height: 36px; }
-        #competencias-button { bottom: 152px; left: 10px; width: 36px; height: 36px; }
+        #center-button, #realtime-location-button, #competencias-button {
+            position: absolute;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #center-button { bottom: 60px; left: 10px; }
+        #realtime-location-button { bottom: 106px; left: 10px; }
+        #competencias-button { bottom: 152px; left: 10px; }
         #zoom-level {
             background-color: rgb(255, 255, 255);
             color: black;
@@ -82,54 +95,6 @@
         .button-container button:hover { background-color: #0056b3; }
         .logo { display: block; margin: 0 auto 8px; width: 50px; }
         .centered-title { text-align: center; margin: 8px 0; font-size: 1em; }
-        #form-toggle-btn:hover,
-        #form-toggle-btn:hover svg,
-        #center-button:hover,
-        #center-button:hover svg,
-        #realtime-location-button:hover,
-        #realtime-location-button:hover svg,
-        #competencias-button:hover,
-        #competencias-button:hover svg,
-        #close-form-btn:hover {
-            color: #111;
-        }
-        #form-toggle-btn::before,
-        #center-button::before,
-        #realtime-location-button::before,
-        #competencias-button::before,
-        #close-form-btn::before {
-            content: '';
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 50%;
-            left: 50%;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            transition: transform 0.5s ease, opacity 0.5s ease;
-            z-index: 1; /* Asegura que la onda esté detrás del icono */
-        }
-        #form-toggle-btn:active::before,
-        #center-button:active::before,
-        #realtime-location-button:active::before,
-        #competencias-button:active::before,
-        #close-form-btn:active::before {
-            transform: translate(-50%, -50%) scale(2);
-            opacity: 1;
-        }
-        #form-toggle-btn svg,
-        #center-button svg,
-        #realtime-location-button svg,
-        #competencias-button svg {
-            width: 24px;
-            height: 24px;
-            fill: #333; /* Relleno del icono */
-            stroke: none;
-            z-index: 2; /* Asegura que el icono esté encima de la onda */
-        }
     </style>
 </head>
 <body>
