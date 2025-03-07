@@ -30,43 +30,25 @@
         /* Estilo para la etiqueta del marcador */
         .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
         
-        /* Estilos para los campos de entrada del formulario */
-        .form-container input { margin-bottom: 10px; padding: 5px; border: 1px solid rgb(0, 187, 45); border-radius: 5px; width: calc(100% - 12px); }
-        
-        /* Estilos para los botones del formulario */
-        .form-container button { background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        .form-container button:hover { background-color: rgb(200, 25, 25); } /* Estilo al pasar el mouse */
-        
-        /* Estilo para el contenedor de botones */
-        .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        
-        /* Estilo para el logotipo */
-        .logo { display: block; margin: 0 auto 20px; width: 40px; }
-        
-        /* Estilo para centrar el título */
-        .centered-title { text-align: center; margin: 20px 0; }
-        
-        /* Estilo para las filas del formulario */
-        .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .form-column { display: flex; flex-direction: column; }
-        
         /* Estilo para el formulario lateral */
         .form-container {
+            display: none; /* Ocultar por defecto */
             background-color: rgb(248, 248, 255);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: fixed;
-            left: -300px; /* Oculto por defecto */
-            top: 0;
-            height: 100%;
+            left: 10px; /* Ajustar posición */
+            top: 50%; /* Centrar verticalmente */
+            transform: translateY(-50%); /* Centrar verticalmente */
             width: 300px;
-            transition: left 0.3s ease;
             z-index: 1001; /* Asegurarse de que esté por encima del mapa */
         }
+        
         .form-container.active {
-            left: 0; /* Despliega el formulario */
+            display: block; /* Mostrar el formulario cuando esté activo */
         }
+
         .toggle-button {
             position: fixed;
             left: 10px;
@@ -79,6 +61,7 @@
             cursor: pointer;
             z-index: 1001; /* Asegurarse de que esté por encima del mapa */
         }
+
         .close-button {
             background-color: red;
             color: white;
@@ -88,21 +71,28 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        #competencias-button {
-            position: absolute;
-            bottom: 160px;
-            left: 10px;
-            z-index: 1000;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            padding: 8px;
-        }
+
+        /* Estilos para los campos de entrada del formulario */
+        .form-container input { margin-bottom: 10px; padding: 5px; border: 1px solid rgb(0, 187, 45); border-radius: 5px; width: calc(100% - 12px); }
+
+        /* Estilos para los botones del formulario */
+        .form-container button { background-color: rgb(230, 25, 25); color: white; border: none; border-radius: 5px; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; }
+        .form-container button:hover { background-color: rgb(200, 25, 25); } /* Estilo al pasar el mouse */
         
+        /* Estilo para el logotipo */
+        .logo { display: block; margin: 0 auto 20px; width: 40px; }
+        
+        /* Estilo para centrar el título */
+        .centered-title { text-align: center; margin: 20px 0; }
+        
+        /* Estilo para las filas del formulario */
+        .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .form-column { display: flex; flex-direction: column; }
+        
+        /* Estilo para el contenedor de botones */
+        .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        
+        /* Estilo para el contenedor de carga */
         #loading-indicator {
             position: fixed; /* O absolute, dependiendo de la estructura de tu página */
             top: 50%;
@@ -126,6 +116,8 @@
     
     <div class="form-container" id="formContainer">
         <button class="close-button" onclick="toggleForm()">Cerrar</button>
+        <img src="logo.png" alt="Logo de la Empresa" class="logo">
+        <h2 class="centered-title">Nombre de la Empresa</h2>
         <div class="form-row">
             <div class="form-column">
                 <label for="lat">Latitud:</label>
@@ -192,9 +184,6 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
         
-        // Inicializar el contenedor de control de capas
-        const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
-
         // Función para alternar el formulario
         function toggleForm() {
             const formContainer = document.getElementById('formContainer');
