@@ -52,7 +52,8 @@
         .toggle-button {
             position: fixed;
             left: 10px;
-            top: 20px;
+            top: 50%; /* Centrar verticalmente */
+            transform: translateY(-50%); /* Ajustar centrado */
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 50%;
@@ -188,7 +189,7 @@
         function toggleForm() {
             const formContainer = document.getElementById('formContainer');
             formContainer.classList.toggle('active'); // Alternar la clase para mostrar/ocultar el formulario
-        }
+        }    
 
         map.on('zoomend', function() {
             document.getElementById('zoom-value').textContent = map.getZoom();
