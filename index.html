@@ -9,36 +9,39 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
      <style>
+        <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
         .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
         #side-form {
-            position: absolute;
-            top: 75px;
-            left: -280px;
-            width: 280px;
-            height: auto;
+            display: none; /* Ocultar por defecto */
             background-color: #f8f8f8;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-            transition: left 0.3s ease-in-out;
             padding: 10px;
-            z-index: 401;
             border-radius: 8px;
-        }
-        #side-form.active { left: 0; }
-        #form-toggle-btn {
-            position: absolute;
-            top: 175px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            position: fixed;
             left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            z-index: 1001;
+        }
+        #side-form.active {
+            display: block;
+        }
+        #form-toggle-btn {
+            position: fixed;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             background-color: #e0e0e0;
             border: none;
-            padding: 6px;
-            cursor: pointer;
-            z-index: 402;
             border-radius: 50%;
             width: 36px;
             height: 36px;
+            cursor: pointer;
+            z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,10 +99,9 @@
     </style>
 </head>
 <body>
-     <button id="form-toggle-btn" title="Abrir/Cerrar formulario" aria-label="Abrir/Cerrar formulario">
+    <button id="form-toggle-btn" title="Abrir/Cerrar formulario" aria-label="Abrir/Cerrar formulario">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.4 1.4 0 0 1-1.4 1.4H6a1.4 1.4 0 0 1-1.4-1.4 5 5 0 0 1 1.9-3.8 8 8 0 0 0 1.2-2.1L7 8c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.2 1.6 0 0 1 0 2.2l-1.4 1.4c-.6.6-1.6.6-2.2 0l-1-1a1.4 1.4 0 0 1 0-2L14 3.6c.6-.6 1.6-.6 2.2 0l1 1a1.4 1.4 0 0 1 0 2L17 8c.6.6.6 1.6 0 2.2l-1.4 1.4c-.6.6-1.6.6-2.2 0l-1-1a1.4 1.4 0 0 1 0-2l1.6 1.6z"></path>
+            <path d="M3 12h18h18M3 18h18" />
         </svg>
     </button>
     <div id="side-form">
