@@ -320,7 +320,7 @@
                 differenceCreated = false; // Reiniciar la bandera de diferencia
 
                  // Limpiar las capas de competencias
-                for (const layerName in geoJsonLayersCompetencias) {
+                for (let layerName in geoJsonLayersCompetencias) {
                     map.removeLayer(geoJsonLayersCompetencias[layerName]); // Eliminar cada capa de competencias
                 }
                 geoJsonLayersCompetencias = {}; // Reiniciar el conjunto de capas de competencias
