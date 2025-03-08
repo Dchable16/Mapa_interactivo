@@ -122,8 +122,7 @@
             <div class="button-container">
                 <button onclick="addMarker()">Agregar Marcador</button>
                 <button onclick="removeMarker()">Eliminar Marcador</button>
-                <button onclick="addRadius(400)">Radio 400m</button>
-                <button onclick="addRadius(800)">Radio 800m</button>
+                <button onclick="createRadiosAndDifference()">Crear Radios y Diferencia</button>
                 <button onclick="calculateDifference()">Diferencia Radios</button>
                 <button onclick="extractBufferData()">Info Ageb 400m</button>
                 <button onclick="extractDifferenceData()">Info Ageb 800m</button>
@@ -381,6 +380,21 @@
             } else {
                 alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
+        }
+
+        function createRadiosAndDifference() {
+            if (!currentMarker) {
+                alert("Primero debe agregar un marcador.");
+                return;
+            }
+        
+            // Crear radio de 400m
+            addRadius(400);
+            // Crear radio de 800m
+            addRadius(800);
+            
+            // Calcular la diferencia entre los radios
+            calculateDifference(); // No es necesario validar si ambos radios están creados
         }
 
         // Función para extraer información de las capas Ageb - Buffer
