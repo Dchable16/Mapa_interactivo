@@ -319,11 +319,11 @@
                 differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
                 differenceCreated = false; // Reiniciar la bandera de diferencia
 
-                 // Limpiar los marcadores de competencias
-                for (const layer in geoJsonLayersCompetencias) {
-                    map.removeLayer(geoJsonLayersCompetencias[layer]); // Eliminar cada capa de competencias
+                 // Limpiar las capas de competencias
+                for (const layerName in geoJsonLayersCompetencias) {
+                    map.removeLayer(geoJsonLayersCompetencias[layerName]); // Eliminar cada capa de competencias
                 }
-                geoJsonLayersCompetencias = {}; // Reiniciar el objeto de competencias
+                geoJsonLayersCompetencias = {}; // Reiniciar el conjunto de capas de competencias
                 
                 // Limpiar los campos de entrada
                 document.getElementById('lat').value = ''; // Limpiar el campo de latitud
