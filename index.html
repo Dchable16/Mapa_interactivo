@@ -319,7 +319,8 @@
                 differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
                 differenceCreated = false; // Reiniciar la bandera de diferencia
 
-                 // Limpiar las capas de competencias
+                console.log("Capas de competencias antes de eliminar:", geoJsonLayersCompetencias);
+                // Limpiar las capas de competencias
                 for (var layerName in geoJsonLayersCompetencias) {
                     map.removeLayer(geoJsonLayersCompetencias[layerName]); // Eliminar cada capa de competencias
                 }
