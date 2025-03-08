@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e3137829c27b3693865a338826f26d6da05b43b61b4fe4d8e1e3ce1fce3e209a
-size 2746
+{
+"type": "FeatureCollection",
+"name": "Tiendas_Bodega_Aurrera",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.144829, 19.406732, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.143477, 19.466422, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.179093, 19.489678, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.139962, 19.422146, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.183767, 19.44589, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.160785, 19.433757, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "BA", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.187371, 19.404135, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": null, "description": "Bodega Aurrera, Flores Magón", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.140668, 19.450539, 0.0 ] } }
+]
+}
