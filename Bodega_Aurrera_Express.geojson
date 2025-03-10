@@ -1,6 +1,6 @@
 {
 "type": "FeatureCollection",
-"name": "Tiendas_Bodega_Aurrera_Express",
+"name": "Bodega_Aurrera_Express",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "Name": null, "description": "BAE", "timestamp": null, "begin": null, "end": null, "altitudeMode": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -99.193108, 19.4817, 0.0 ] } },
