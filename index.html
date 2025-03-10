@@ -667,6 +667,7 @@
         
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function(feature, latlng) {
+                            console.log("layerName:", feature.properties.layerName);
                             let icono = iconosPersonalizados[feature.properties.layerName];
                             if (!icono) {
                                 // Usar icono predeterminado si no se encuentra
