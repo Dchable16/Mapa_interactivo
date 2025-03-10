@@ -541,6 +541,64 @@
             popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
 
+        // Definición de iconos personalizados para las capas
+        const iconosPersonalizados = {
+            'Bodega Aurrera': L.icon({
+                iconUrl: 'url_del_icono_bodega_aurrera.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Bodega Aurrera Express': L.icon({
+                iconUrl: 'url_del_icono_bodega_aurrera_express.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Chedraui Supercito': L.icon({
+                iconUrl: 'url_del_icono_chedraui.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Iglesias': L.icon({
+                iconUrl: 'url_del_icono_iglesias.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Mercados': L.icon({
+                iconUrl: 'url_del_icono_mercados.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Preescolar': L.icon({
+                iconUrl: 'url_del_icono_preescolar.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Primarias': L.icon({
+                iconUrl: 'url_del_icono_primarias.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Tiendas 3B': L.icon({
+                iconUrl: 'url_del_icono_tiendas_3b.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Tiendas Neto': L.icon({
+                iconUrl: 'url_del_icono_tiendas_neto.png', // Reemplaza con la URL del icono
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            })
+        };
+
          // Función para simplificar geometrías
         function simplifyGeoJSON(data, tolerance) {
             return {
