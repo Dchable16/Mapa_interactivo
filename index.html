@@ -65,7 +65,7 @@
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 50%;
-            width: 36px;
+            width: 36tpx;
             height: 36px;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -73,10 +73,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            left: 15px; /* Ajustar la posición horizontal */
         }
-        #center-button { bottom: 60px; left: 10px; }
-        #realtime-location-button { bottom: 106px; left: 10px; }
-        #competencias-button { bottom: 152px; left: 10px; }
+        
+        #center-button { bottom: 60px; top: calc(50% + 46px); }
+        #realtime-location-button { bottom: 106px; top: calc(50% + 0px); }
+        #competencias-button { bottom: 152px; top: calc(50% - 46px); }
         #zoom-level {
             background-color: rgb(255, 255, 255);
             color: black;
