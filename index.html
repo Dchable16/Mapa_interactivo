@@ -666,9 +666,17 @@
                     };
         
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: (feature, latlng) => {
-                            // Seleccionar el icono correspondiente según el layerName
-                            const icono = iconosPersonalizados[feature.properties.layerName] || customIcon; // Usa el icono por defecto si no se encuentra
+                        pointToLayer: function(feature, latlng) {
+                            let icono = iconosPersonalizados[feature.properties.layerName];
+                            if (!icono) {
+                                // Usar icono predeterminado si no se encuentra
+                                icono = L.icon({
+                                    iconUrl: 'ruta/al/icono/predeterminado.png', // Reemplaza con tu icono predeterminado
+                                    iconSize: [25, 25],
+                                    iconAnchor: [12, 25],
+                                    popupAnchor: [0, -28]
+                                });
+                            }
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
