@@ -557,9 +557,9 @@
             // Encabezados para AGEB 400m
             if (ageb400Data.length > 0) {
                 csvContent += "AGEB 400m\n";
-                csvContent += "POB1,Área_original,Área_Extraida,Porcentaje_Area,Población_Total\n";
+                csvContent += Object.keys(ageb400Data[0]).join(",") + "\n";
                 ageb400Data.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                    csvContent += Object.values(item).map(value => `"${value}"`).join(",") + "\n";
                 });
                 csvContent += "\n";
             }
@@ -567,9 +567,9 @@
             // Encabezados para AGEB 800m
             if (ageb800Data.length > 0) {
                 csvContent += "AGEB 800m\n";
-                csvContent += "POB1,Área_original,Área_Extraida,Porcentaje_Area,Población_Total\n";
+                csvContent += Object.keys(ageb800Data[0]).join(",") + "\n";
                 ageb800Data.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                    csvContent += Object.values(item).map(value => `"${value}"`).join(",") + "\n";
                 });
             }
         
