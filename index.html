@@ -666,8 +666,18 @@
         
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function(feature, latlng) {
-                            console.log("layerName:", feature.properties.layerName);
-                            let icono = iconosPersonalizados[feature.properties.layerName];
+                            let icono = null;
+                
+                            if (type === 'Competencias') {
+                                // Usar 'name' del GeoJSON para capas de competencias
+                                icono = iconosPersonalizados[data.name];
+                                console.log("Competencia name:", data.name); //Para depurar
+                            } else {
+                                // Usar 'layerName' de feature.properties para otras capas
+                                icono = iconosPersonalizados[feature.properties.layerName];
+                                console.log("layerName:", feature.properties.layerName); //Para depurar
+                            }
+                
                             if (!icono) {
                                 // Usar icono predeterminado si no se encuentra
                                 icono = L.icon({
