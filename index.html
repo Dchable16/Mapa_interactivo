@@ -700,7 +700,17 @@
                 'Colonias Ecatepec': 'Col_Ecatepec.geojson',
                 'Colonias M. Hidalgo': 'Col_Miguel_Hidalgo.geojson',
                 'Colonias Nezahualcoyotl': 'Col_Nezahualcoyotl.geojson',
-                'Tiendas 3B': 'Tiendas_3B.geojson'
+                'Bodega Aurrera': 'Bodega_Aurrera.gejson'
+                'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson'
+                'Chedraui Supercito': 'Chedraui_Supercito.geojson'
+                'Iglesias': 'Iglesias.geojson'
+                'Mercados': 'Mercados.geojson'
+                'Preescolar': 'Preescolar.geojson'
+                'Primarias': 'Primarias.geojson'
+                'Tiendas 3B': 'Tiendas_3B.geojson'    
+                'Tiendas Neto': 'Tiendas_Neto.geojson'
+            
+                
             };
             if (layerUrls[layerName]) {
                 loadGeoJSON(layerUrls[layerName], layerName, type);
@@ -835,15 +845,16 @@
         loadLayer('Colonias Ecatepec', 'Col');
         loadLayer('Colonias M. Hidalgo', 'Col');
         loadLayer('Colonias Nezahualcoyotl', 'Col');
-        loadLayer('Tiendas 3B', 'Competencias'); 
+        loadLayer('Bodega_Aurrera', 'Competencias');
+        loadLayer('Bodega_Aurrera_Express', 'Competencias'); 
+        loadLayer('Chedraui_Supercito', 'Competencias'); 
         loadLayer('Iglesias', 'Competencias'); 
         loadLayer('Mercados', 'Competencias'); 
         loadLayer('Preescolar', 'Competencias'); 
         loadLayer('Primarias', 'Competencias'); 
-        loadLayer('Bodega_Aurrera', 'Competencias');
-        loadLayer('Bodega_Aurrera_Express', 'Competencias'); 
+        loadLayer('Tiendas 3B', 'Competencias'); 
         loadLayer('Tiendas_Neto', 'Competencias'); 
-        loadLayer('Chedraui_Supercito', 'Competencias'); 
+        
         
 
         // Localización en tiempo real
