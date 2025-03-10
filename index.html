@@ -546,22 +546,6 @@
             }
         }
         
-        function generateReport() {
-            if (ageb400Data.length === 0 && ageb800Data.length === 0) {
-                alert("No hay datos para generar el reporte.");
-                return;
-            }
-        
-            let csvContent = "data:text/csv;charset=utf-8,";
-        
-            // Encabezados para AGEB 400m
-            if (ageb400Data.length > 0) {
-                csvContent += "AGEB 400m\n";
-                csvContent += Object.keys(ageb400Data[0]).join(",") + "\n";
-                ageb400Data.forEach(item => {
-                    csvContent += Object.values(item).map(value => `"${value}"`).join(",") + "\n";
-                });
-                csvContent += "\n";
             function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
                 alert("No hay datos para generar el reporte.");
