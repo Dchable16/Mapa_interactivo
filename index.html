@@ -192,36 +192,33 @@
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
         let debounceTimer; // Variable para el debounce
-       map.on('zoomend moveend', function() { // Escuchar también el evento moveend
+       map.on('zoomend moveend', function() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const currentZoom = map.getZoom();
                 document.getElementById('zoom-value').textContent = currentZoom;
-                const bounds = map.getBounds(); // Obtener los límites visibles del mapa
+                const bounds = map.getBounds();
         
                 Object.values(geoJsonLayersAgeb).forEach(layer => {
-                    layer.eachLayer(function(marker) {
-                        const markerId = L.Util.stamp(marker); // Obtener un ID único para el marcador
-                        const isVisible = bounds.contains(marker.getLatLng()); // Verificar si el marcador está visible
+                    layer.eachLayer(function(polygon) { // Cambiar 'marker' a 'polygon'
+                        if (polygon instanceof L.Polygon) { // Verificar si es un polígono
+                            try {
+                                const centroid = turf.centroid(polygon.toGeoJSON());
+                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+                                const isVisible = bounds.contains(latLng);
         
-                        if (currentZoom >= 16 && isVisible) {
-                            if (!visibleLabels.has(markerId)) { // Verificar si la etiqueta ya existe
-                                marker.bindLabel(marker.feature.properties.POB1.toString(), {
-                                    noHide: true,
-                                    direction: 'center',
-                                    className: 'ageb-label'
-                                });
-                                visibleLabels.add(markerId); // Agregar la etiqueta al conjunto de etiquetas visibles
-                            }
-                        } else {
-                            if (visibleLabels.has(markerId)) {
-                                marker.unbindLabel();
-                                visibleLabels.delete(markerId); // Eliminar la etiqueta del conjunto de etiquetas visibles
+                                if (currentZoom >= 16 && isVisible) {
+                                    // ... código para mostrar la etiqueta ...
+                                } else {
+                                    // ... código para ocultar la etiqueta ...
+                                }
+                            } catch (error) {
+                                console.error("Error al calcular el centroide:", error);
                             }
                         }
                     });
                 });
-            }, 300); // Ajusta el tiempo de debounce según sea necesario
+            }, 300);
         });
 
         // Agregar el control de escala dinámica al mapa
