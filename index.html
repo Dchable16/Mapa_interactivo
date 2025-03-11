@@ -93,7 +93,42 @@
         }
 
         function loadLayer(layerName, type) {
-            const layerUrls = { /* ... (tu objeto layerUrls) ... */ };
+            const layerUrls = {
+                'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
+                'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson',
+                'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson',
+                'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson',
+                'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson',
+                'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson',
+                'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson',
+                'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson',
+                'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson',
+                'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson',
+                'Alcaldías CDMX': 'Alcaldias_Ciudad_de_México.geojson',
+                'Municipios Edo. Mex.': 'Municip_Estado_de_Mexico.geojson',
+                'Poligono Región Vallejo': 'Region_Vallejo.geojson',
+                'Poligono Azcapotzalco': 'Poligono_Azcapotzalco.geojson',
+                'Poligono Benito Juárez': 'Poligono_Benito_Juarez.geojson',
+                'Poligono Cuauhtémoc': 'Poligono_Cuauhtemoc.geojson',
+                'Poligono Ecatepec': 'Poligono_Ecatepec.geojson',
+                'Poligono M. Hidalgo': 'Poligono_Miguel_Hidalgo.geojson',
+                'Poligono Nezahualcoyotl': 'Poligono_Nezahualcoyotl.geojson',
+                'Colonias Azcapotzalco': 'Col_Azcapotzalco.geojson',
+                'Colonias Benito Juárez': 'Col_Benito_Juarez.geojson',
+                'Colonias Cuauhtemoc': 'Col_Cuauhtemoc.geojson',
+                'Colonias Ecatepec': 'Col_Ecatepec.geojson',
+                'Colonias M. Hidalgo': 'Col_Miguel_Hidalgo.geojson',
+                'Colonias Nezahualcoyotl': 'Col_Nezahualcoyotl.geojson',
+                'Bodega Aurrera': 'Bodega_Aurrera.geojson',
+                'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson',
+                'Chedraui Supercito': 'Chedraui_Supercito.geojson',
+                ''Iglesias': 'Iglesias.geojson',
+                'Mercados': 'Mercados.geojson',
+                'Preescolar': 'Preescolar.geojson',
+                'Primarias': 'Primarias.geojson',
+                'Tiendas 3B': 'Tiendas_3B.geojson',
+                'Tiendas Neto': 'Tiendas_Neto.geojson'
+            };
             if (layerUrls[layerName]) loadGeoJSON(layerUrls[layerName], layerName, type);
             else console.error('URL de capa no encontrada para:', layerName);
         }
@@ -216,7 +251,7 @@
                 '3B': { query: 'Tienda 3B', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
                 'neto': { query: 'Tienda neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
                 'school': { query: 'Escuela', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
-                'church': { query: 'Iglesia', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
+                'church': { query: 'Iglesia', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e1111262a54df5f1a9361/Iglesia.png' },
                 'bodega aurrera': { query: 'Bodega Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
             };
 
@@ -226,8 +261,8 @@
 
             Object.entries(categories).forEach(([category, data]) => {
                 const encodedQuery = encodeURIComponent(data.query);
-                const viewbox = `<span class="math-inline">\{latlng\.lng \- 0\.01\},</span>{latlng.lat - 0.01},<span class="math-inline">\{latlng\.lng \+ 0\.01\},</span>{latlng.lat + 0.01}`;
-                const url = `https://nominatim.openstreetmap.org/search?q=<span class="math-inline">\{encodedQuery\}&format\=geojson&viewbox\=</span>{viewbox}&bounded=1&limit=10`;
+                const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
 
                 promises.push(new Promise((resolve) => {
                     setTimeout(() => {
@@ -266,7 +301,8 @@
 
         // Cargar capas GeoJSON iniciales
         const initialLayers = [
-            { name: 'Ageb CDMX', type: 'Ageb' },{ name: 'Ageb Edo. Mex.', type: 'Ageb' },
+            { name: 'Ageb CDMX', type: 'Ageb' },
+            { name: 'Ageb Edo. Mex.', type: 'Ageb' },
             { name: 'Uso de suelo Centro Barrio', type: 'UsoSuelo' },
             { name: 'Uso de suelo Equipamento', type: 'UsoSuelo' },
             { name: 'Uso de suelo Habitacional Comercio', type: 'UsoSuelo' },
