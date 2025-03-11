@@ -184,30 +184,10 @@
         // Inicializar el contenedor de control de capas
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
-        let debounceTimer; // Variable para el debounce
-        map.on('zoomend', function() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const currentZoom = map.getZoom();
-                document.getElementById('zoom-value').textContent = currentZoom;
-        
-                // Mostrar u ocultar etiquetas según el nivel de zoom
-                if (currentZoom < 16) {
-                    // Ocultar etiquetas
-                    Object.values(geoJsonLayersAgeb).forEach(layer => {
-                        layer.eachLayer(function(marker) {
-                            marker.closeTooltip(); // Cerrar tooltip si está abierto
-                        });
-                    });
-                } else {
-                    // Mostrar etiquetas solo si el nivel de zoom es suficiente
-                    Object.values(geoJsonLayersAgeb).forEach(layer => {
-                        layer.eachLayer(function(marker) {
-                            marker.openTooltip(); // Abrir tooltip
-                        });
-                    });
-                }
-            }, 300); // Ajusta el tiempo de debounce según sea necesario
+        map.on('zoomend moveend', function() {
+          console.log("Evento zoomend moveend disparado"); // Log de depuración
+          document.getElementById('zoom-value').textContent = map.getZoom();
+          renderLabels(map, geoJsonLayersAgeb); // Asegúrate de que geoJsonLayersAgeb esté definido y contenga los polígonos
         });
 
         // Agregar el control de escala dinámica al mapa
