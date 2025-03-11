@@ -447,6 +447,9 @@
                             const extractedArea = Math.floor(turf.area(intersection));
                             const extractionPercentage = (extractedArea / originalArea) * 100;
                             const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
+
+                            // Mantener el atributo POB1 original
+                            intersection.properties.POB1 = feature.properties.POB1;
         
                             intersection.properties.originalArea = originalArea;
                             intersection.properties.extractedArea = extractedArea;
@@ -512,6 +515,9 @@
                             const extractedArea = Math.floor(turf.area(intersection));
                             const extractionPercentage = (extractedArea / originalArea) * 100;
                             const populationTotal = (extractionPercentage / 100) * feature.properties.POB1;
+
+                            // Mantener el atributo POB1 original
+                            intersection.properties.POB1 = feature.properties.POB1;
         
                             intersection.properties.originalArea = originalArea;
                             intersection.properties.extractedArea = extractedArea;
