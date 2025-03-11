@@ -558,7 +558,7 @@
             // Encabezados para AGEB 400m
             if (ageb400Data.length > 0) {
                 csvContent += "AGEB 400m\n";
-                csvContent += "POB1,Área_original,Área_Extraida,Porcentaje_Area,Población_Total\n";
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
                 ageb400Data.forEach(item => {
                     csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
                 });
