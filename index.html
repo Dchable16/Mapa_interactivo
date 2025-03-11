@@ -133,6 +133,7 @@
                 <button onclick="createRadiosAndDifference()">Crear Radios</button>
                 <button onclick="extractAgebData()">Extraer Datos Ageb</button>
                 <button id="useLocationBtn">Usar Localización</button>
+                <button id="download-report-btn">Descargar Reporte AGEB</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
@@ -416,6 +417,9 @@
             extractDifferenceData();
         }
 
+        let ageb400Data = [];
+        let ageb800Data = [];
+        
         // Función para extraer información de las capas Ageb - Buffer
         function extractBufferData() {
             if (bufferDataExtracted) {
@@ -459,6 +463,7 @@
                     L.geoJSON(featuresWithinBuffer, {
                         style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
+                            ageb400Data.push(feature.properties); // Almacenar atributos
                             layer.on('click', function () {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
@@ -523,6 +528,7 @@
                     L.geoJSON(featuresWithinDifference, {
                         style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
+                            ageb800Data.push(feature.properties); // Almacenar atributos
                             layer.on('click', function () {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
@@ -540,6 +546,45 @@
                 alert("Asegúrese de que el marcador esté creado.");
             }
         }
+        
+        function generateReport() {
+            if (ageb400Data.length === 0 && ageb800Data.length === 0) {
+                alert("No hay datos para generar el reporte.");
+                return;
+            }
+        
+            let csvContent = "data:text/csv;charset=utf-8,";
+        
+            // Encabezados para AGEB 400m
+            if (ageb400Data.length > 0) {
+                csvContent += "AGEB 400m\n";
+                csvContent += "POB1,Área_original,Área_Extraida,Porcentaje_Area,Población_Total\n";
+                ageb400Data.forEach(item => {
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                });
+                csvContent += "\n";
+            }
+        
+            // Encabezados para AGEB 800m
+            if (ageb800Data.length > 0) {
+                csvContent += "AGEB 800m\n";
+                csvContent += "POB1,Área_original,Área_Extraida,Porcentaje_Area,Población_Total\n";
+                ageb800Data.forEach(item => {
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                });
+            }
+        
+            // Crear un enlace de descarga
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "reporte_ageb.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+        
+        // Agregar un botón de descarga
+        document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
@@ -1151,6 +1196,8 @@
                 loadingIndicator.style.display = 'none';
             });
         }
+        
+        document.getElementById('download-report-btn').addEventListener('click', generateReport);
         
     </script>
 </body>
