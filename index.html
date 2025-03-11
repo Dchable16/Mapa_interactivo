@@ -1,77 +1,631 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Mapa Interactivo</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa interactivo Tiendas 3B</title>
+    <link rel="icon" href="favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <style>
-        #map { height: 500px; width: 100%; }
-        #loading-indicator { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+   <style>
+        html, body { height: 100%; margin: 0; }
+        #map { width: 100%; height: 100%; }
+        .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
+        .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
+        #side-form {
+            display: none; /* Ocultar por defecto */
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            z-index: 1001;
+        }
+        #side-form.active {
+            display: block;
+        }
+        #form-toggle-btn {
+            position: fixed;
+            left: 0; /* Asegurarnos de que esté en el margen izquierdo */
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 0 70% 70% 0; /* Redondear solo las esquinas derechas */
+            width: 40px; /* Ajustar el ancho */
+            height: 65px; /* Ajustar la altura */
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0; /* Eliminar el padding */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            background-color: white; /* Color de fondo */
+            
+        }
+        
+        #form-toggle-btn i { /* Estilo para el icono dentro del botón */
+            font-size: 24px; /* Ajustar el tamaño del icono */
+        }
+        #close-form-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            border-radius: 4px;
+            width: 100%;
+        }
+        #center-button, #realtime-location-button, #competencias-button {
+            position: absolute;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #center-button { bottom: 60px; left: 10px; }
+        #realtime-location-button { bottom: 106px; left: 10px; }
+        #competencias-button { bottom: 152px; left: 10px; }
+        #zoom-level {
+            background-color: rgb(255, 255, 255);
+            color: black;
+            border-radius: 2px;
+            padding: 7px;
+            cursor: default;
+            text-align: center;
+            font-weight: bold;
+            position: absolute;
+            top: 75px;
+            left: 12px;
+            z-index: 1000;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            width: 15.5px;
+            height: 15.5px;
+        }
+       .ageb-label {
+            background: transparent; /* Fondo transparente */
+            border: none; /* Sin borde */
+            padding: 0; /* Sin relleno */
+            font-size: 12px; /* Ajusta el tamaño de la fuente si es necesario */
+            font-weight: bold; /* Opcional: texto en negrita */
+        }
+        .form-container { padding: 8px; }
+        .form-row { display: flex; flex-direction: column; }
+        .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
+        .form-row input { padding: 4px; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+        .button-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 8px; }
+        .button-container button { padding: 6px; border: none; border-radius: 4px; background-color: red; color: white; cursor: pointer; font-size: 0.85em; }
+        .button-container button:hover { background-color: #d60420; }
+        .logo { display: block; margin: 0 auto 8px; width: 50px; }
+        .centered-title { text-align: center; margin: 8px 0; font-size: 1em; }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <button id="download-report-btn">Descargar Reporte</button>
-    <button id="realtime-location-button">Localización en Tiempo Real</button>
-    <button id="useLocationBtn">Usar Localización</button>
-    <button id="competencias-button">Competencias</button>
-    <button id="calculate-btn">Calcular</button>
-    <div id="loading-indicator">Cargando...</div>
-    Latitud: <input type="text" id="lat"><br>
-    Longitud: <input type="text" id="lon">
-
+    <button id="form-toggle-btn" title="Abrir/Cerrar formulario" aria-label="Abrir/Cerrar formulario">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12h18h18M3 18h18" />
+        </svg>
+    </button>
+    <div id="side-form">
+        <div class="header-container">
+            <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
+            <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+        </div>
+        <div class="form-container">
+            <div class="form-row">
+                <label for="lat">Latitud:</label>
+                <input type="text" id="lat" value="19.4326">
+                <label for="lon">Longitud:</label>
+                <input type="text" id="lon" value="-99.1332">
+                <label for="markerName">Nombre del Marcador:</label>
+                <input type="text" id="markerName" value="Marcador Manual">
+            </div>
+            <div class="button-container">
+                <button onclick="addMarker()">Agregar Marcador</button>
+                <button onclick="removeMarker()">Eliminar Marcador</button>
+                <button onclick="createRadiosAndDifference()">Crear Radios</button>
+                <button onclick="extractAgebData()">Extraer Datos Ageb</button>
+                <button id="useLocationBtn">Usar Localización</button>
+                <button id="download-report-btn">Descarga Reporte</button>
+            </div>
+        </div>
+        <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
+    </div>
+    <div id="map" style="position: relative;">
+        <div id="zoom-level" title="Nivel del Zoom">
+            <span id="zoom-value">12</span>
+        </div>
+        <button id="center-button" title="Centrar en el marcador" aria-label="Centrar en el marcador">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" fill="#3c4043" />
+                <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
+            </svg>
+        </button>
+        <button id="competencias-button" title="Competencias comerciales" aria-label="Competencias comerciales">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+        </button>
+        <div class="loading-indicator" id="loading-indicator">Buscando puntos de interés...</div>
+        <button id="realtime-location-button" title="Localización en tiempo real" aria-label="Localización en tiempo real">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" fill="#3c4043" />
+            </svg>
+        </button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script>
-        // --- Módulo: Variables Globales y Configuración Inicial ---
-        const map = L.map('map').setView([19.4326, -99.1332], 13);
-        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const googleRoadLayer = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] });
-        const googleHybridLayer = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', { subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] });
-        let currentMarker = null;
-        let ageb400Data = [];
-        let ageb800Data = [];
-        const geoJsonCache = {};
-        const loadedLayers = new Set();
+        // Inicializar el mapa centrado en las coordenadas especificadas
+        const map = L.map("map").setView([19.4326, -99.1332], 12);
+
+        const formToggleBtn = document.getElementById('form-toggle-btn');
+        const sideForm = document.getElementById('side-form');
+        const closeFormBtn = document.getElementById('close-form-btn');
+
+        formToggleBtn.addEventListener('click', () => {
+            sideForm.classList.toggle('active');
+        });
+
+        closeFormBtn.addEventListener('click', () => {
+            sideForm.classList.remove('active');
+        });
+
+        // Inicializar el contenedor de control de capas
+        const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
+
+        let debounceTimer; // Variable para el debounce
+        map.on('zoomend', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const currentZoom = map.getZoom();
+                document.getElementById('zoom-value').textContent = currentZoom;
+        
+                // Mostrar u ocultar etiquetas según el nivel de zoom
+                if (currentZoom < 16) {
+                    // Ocultar etiquetas
+                    Object.values(geoJsonLayersAgeb).forEach(layer => {
+                        layer.eachLayer(function(marker) {
+                            marker.closeTooltip(); // Cerrar tooltip si está abierto
+                        });
+                    });
+                } else {
+                    // Mostrar etiquetas solo si el nivel de zoom es suficiente
+                    Object.values(geoJsonLayersAgeb).forEach(layer => {
+                        layer.eachLayer(function(marker) {
+                            marker.openTooltip(); // Abrir tooltip
+                        });
+                    });
+                }
+            }, 300); // Ajusta el tiempo de debounce según sea necesario
+        });
+
+        // Agregar el control de escala dinámica al mapa
+        L.control.scale({
+            position: 'bottomleft', // Posición del control
+            metric: true,        // Mostrar escala métrica
+            imperial: false        // No mostrar escala imperial
+        }).addTo(map);
+
+        // Función para centrar el mapa en el marcador
+        document.getElementById('center-button').addEventListener('click', function() {
+            if (currentMarker) {
+                map.setView(currentMarker.getLatLng(), map.getZoom()); // Centrar el mapa en el marcador
+            } else {
+                alert("No hay ningún marcador en el mapa para centrar.");
+            }
+        });        
+
+        // Capas base del mapa
+        const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        }).addTo(map); // Añadir capa de OpenStreetMap al mapa
+
+        const googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { attribution: "Google" });
+        const googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { attribution: "Google" });
+
+        // Definición de capas GeoJSON
         const geoJsonLayersAgeb = {};
         const geoJsonLayersUsoSuelo = {};
         const geoJsonLayersAlcaldias = {};
         const geoJsonLayersPoligonos = {};
         const geoJsonLayersColonias = {};
         const geoJsonLayersCompetencias = {};
-        let agebCDMXLayer = null;
-        let agebEdoMexLayer = null;
+        
+        // Variables para el marcador y los radios
+        let currentMarker = null;
+        let radius400m = null;
+        let radius800m = null;
+        let differenceLayer = null;
+
+        // Grupos de capas para los radios y la diferencia
         const radius400Layer = L.layerGroup().addTo(map);
         const radius800Layer = L.layerGroup().addTo(map);
         const differenceLayerGroup = L.layerGroup().addTo(map);
         const bufferLayerGroup = L.layerGroup().addTo(map);
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
-        const layerControlContainer = L.control({ position: 'topright' });
 
-        // --- Módulo: Generación de Reportes ---
+        // Banderas para controlar la creación de elementos
+        let radius400Created = false;
+        let radius800Created = false;
+        let differenceCreated = false;
+        let bufferDataExtracted = false;
+        let differenceDataExtracted = false;
+
+        // Conjunto para rastrear capas ya cargadas
+        const loadedLayers = new Set();
+
+        // Función para agregar un marcador en el mapa
+        function addMarker() {
+            if (currentMarker) {
+                alert("Ya existe un marcador en el mapa. Elimínelo antes de agregar uno nuevo.");
+                return;
+            }
+        
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lon = parseFloat(document.getElementById('lon').value);
+            const markerName = document.getElementById('markerName').value;
+        
+            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Log para verificar coordenadas
+        
+            // Validar coordenadas
+            if (isNaN(lat) || isNaN(lon)) {
+                alert("Por favor ingrese coordenadas válidas.");
+                return;
+            }
+        
+            if (lat < -90 || lat > 90) {
+                alert("La latitud debe estar entre -90 y 90 grados.");
+                return;
+            }
+        
+            if (lon < -180 || lon > 180) {
+                alert("La longitud debe estar entre -180 y 180 grados.");
+                return;
+            }
+        
+            try {
+                // Crear el nuevo marcador amarillo sin el popup
+                currentMarker = L.marker([lat, lon], {
+                    icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
+                }).addTo(map); // Eliminar la parte de bindPopup()
+        
+                // Crear la etiqueta del marcador
+                currentMarkerLabel = L.divIcon({
+                    className: 'marker-label',
+                    html: markerName,
+                    iconSize: [100, 50],
+                    iconAnchor: [50, 15]
+                });
+                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
+        
+                map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
+            } catch (error) {
+                console.error("Error al agregar el marcador:", error);
+                alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
+            }
+        }
+        
+        function removeMarker() {
+            if (currentMarker) {
+                map.removeLayer(currentMarker); // Eliminar el marcador del mapa
+                const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
+                currentMarker = null; // Limpiar la variable del marcador
+                
+                // Limpiar los marcadores de puntos de interés
+                poiMarkers.clearLayers(); // Limpiar todos los marcadores de POIs
+                
+                // Eliminar la etiqueta del marcador si existe
+                if (currentMarkerLabel) {
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker && layer.getLatLng && layer.getLatLng().equals(latLng)) {
+                            map.removeLayer(layer); // Eliminar la etiqueta del mapa
+                        }
+                    });
+                    currentMarkerLabel = null; // Limpiar la variable de la etiqueta
+                }
+        
+                // Limpiar las capas de radios y restablecer las banderas
+                radius400Layer.clearLayers(); // Limpiar las capas de radios
+                radius800Layer.clearLayers();
+                radius400Created = false; // Reiniciar la bandera de creación de radio 400m
+                radius800Created = false; // Reiniciar la bandera de creación de radio 800m
+                
+                // Limpiar las capas de extracción y restablecer las banderas
+                bufferLayerGroup.clearLayers(); // Limpiar las capas de buffer
+                differenceExtractionLayerGroup.clearLayers(); // Limpiar las capas de extracción
+                differenceLayerGroup.clearLayers(); // Limpiar la capa de diferencia
+                bufferDataExtracted = false; // Reiniciar la bandera de extracción de buffer
+                differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
+                differenceCreated = false; // Reiniciar la bandera de diferencia
+        
+                // Limpiar los campos de entrada
+                document.getElementById('lat').value = ''; // Limpiar el campo de latitud
+                document.getElementById('lon').value = ''; // Limpiar el campo de longitud
+                document.getElementById('markerName').value = ''; // Limpiar el campo de nombre del marcador
+            } else {
+                alert("No hay ningún marcador para eliminar.");
+            }
+        }
+
+        // Función para agregar radios de 400m o 800m alrededor del marcador
+        function addRadius(radius) {
+            if (radius === 400 && radius400Created) {
+                alert("El radio de 400m ya ha sido creado.");
+                return; // Evitar agregar un nuevo radio si ya existe
+            }
+            if (radius === 800 && radius800Created) {
+                alert("El radio de 800m ya ha sido creado.");
+                return; // Evitar agregar un nuevo radio si ya existe
+            }
+
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
+                if (radius === 400) {
+                    radius400Layer.addLayer(circle); // Añadir el círculo de 400m al grupo de capas
+                    radius400m = circle; // Guardar el círculo en la variable
+                    radius400Created = true; // Marcar como creado
+                } else {
+                    radius800Layer.addLayer(circle); // Añadir el círculo de 800m al grupo de capas
+                    radius800m = circle; // Guardar el círculo en la variable
+                    radius800Created = true; // Marcar como creado
+                }
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        }
+        
+        // Función para calcular la diferencia entre dos círculos
+        function calculateDifference() {
+            if (differenceCreated) {
+                alert("La diferencia entre radios ya ha sido calculada.");
+                return; // Evitar calcular la diferencia si ya se ha hecho
+            }
+
+            if (currentMarker && radius400m && radius800m) {
+                const latLng = currentMarker.getLatLng();
+                const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+                const difference = turf.difference(circle800, circle400); // Calcular la diferencia entre los círculos
+                if (difference) {
+                    const geoJson = turf.featureCollection([difference]);
+                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
+                    differenceCreated = true; // Marcar como creado
+                } else {
+                    alert("No se pudo calcular la diferencia entre los círculos.");
+                }
+            } else {
+                alert("Asegúrese de que el marcador y ambos radios estén creados.");
+            }
+        }
+
+        function createRadiosAndDifference() {
+            if (!currentMarker) {
+                alert("Primero debe agregar un marcador.");
+                return;
+            }
+        
+            // Crear radio de 400m
+            addRadius(400);
+            // Crear radio de 800m
+            addRadius(800);
+            
+            // Calcular la diferencia entre los radios
+            calculateDifference();
+        }
+
+        function extractAgebData() {
+            if (!currentMarker) {
+                alert("Primero debe agregar un marcador.");
+                return;
+            }
+        
+            // Extraer información de Ageb con el radio de 400m
+            extractBufferData();
+        
+            // Extraer información de Ageb con el radio de 800m
+            extractDifferenceData();
+        }
+
+        let ageb400Data = [];
+        let ageb800Data = [];
+        
+        // Función para extraer información de las capas Ageb - Buffer
+        function extractBufferData() {
+            if (bufferDataExtracted) {
+                alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
+                return;
+            }
+        
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                const point = turf.point([latLng.lng, latLng.lat]);
+                let selectedLayer = null;
+        
+                if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebCDMXLayer.toGeoJSON();
+                } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebEdoMexLayer.toGeoJSON();
+                }
+        
+                if (selectedLayer) {
+                    const buffer = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                    const featuresWithinBuffer = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, buffer);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea);
+                            const populationTotal = (extractionPercentage * feature.properties.POB1);
+
+                            // Mantener el atributo POB1 original
+                            intersection.properties.POB1 = feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    bufferLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinBuffer, {
+                        style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
+                        onEachFeature: function (feature, layer) {
+                            // Crear etiqueta con el valor de POB1
+                            layer.bindTooltip(feature.properties.POB1.toString(), {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'ageb-label'
+                            }).openTooltip();
+                            ageb400Data.push(feature.properties); // Almacenar atributos
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(bufferLayerGroup);
+                    bufferDataExtracted = true;
+                } else {
+                    alert("El marcador no está dentro de ninguna capa AGEB.");
+                }
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        }
+        
+        // Función para extraer información de las capas Ageb - Diferencia
+        function extractDifferenceData() {
+            if (differenceDataExtracted) {
+                alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
+                return;
+            }
+        
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                const point = turf.point([latLng.lng, latLng.lat]);
+                let selectedLayer = null;
+        
+                if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebCDMXLayer.toGeoJSON();
+                } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebEdoMexLayer.toGeoJSON();
+                }
+        
+                if (selectedLayer) {
+                    const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                    const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+                    const difference = turf.difference(circle800, circle400);
+        
+                    const featuresWithinDifference = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, difference);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea);
+                            const populationTotal = (extractionPercentage * feature.properties.POB1);
+
+                            // Mantener el atributo POB1 original
+                            intersection.properties.POB1 = feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    differenceExtractionLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinDifference, {
+                        style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
+                        onEachFeature: function (feature, layer) {
+                            // Crear etiqueta con el valor de POB1
+                            layer.bindTooltip(feature.properties.POB1.toString(), {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'ageb-label'
+                            }).openTooltip();
+                            ageb800Data.push(feature.properties); // Almacenar atributos
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(differenceExtractionLayerGroup);
+                    differenceDataExtracted = true;
+                } else {
+                    alert("El marcador no está dentro de ninguna capa AGEB.");
+                }
+            } else {
+                alert("Asegúrese de que el marcador esté creado.");
+            }
+        }
+        
         function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
                 alert("No hay datos para generar el reporte.");
                 return;
             }
+        
             let csvContent = "data:text/csv;charset=utf-8,";
+        
+            // Encabezados para AGEB 400m
             if (ageb400Data.length > 0) {
                 csvContent += "AGEB 400m\n";
                 csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
                 ageb400Data.forEach(item => {
-                    csvContent += `<span class="math-inline">\{item\.POB1\},</span>{item.originalArea},<span class="math-inline">\{item\.extractedArea\},</span>{item.extractionPercentage},${item.populationTotal}\n`;
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
                 });
                 csvContent += "\n";
             }
+        
+            // Encabezados para AGEB 800m
             if (ageb800Data.length > 0) {
                 csvContent += "AGEB 800m\n";
                 csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
                 ageb800Data.forEach(item => {
-                    csvContent += `<span class="math-inline">\{item\.POB1\},</span>{item.originalArea},<span class="math-inline">\{item\.extractedArea\},</span>{item.extractionPercentage},${item.populationTotal}\n`;
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
                 });
             }
+        
+            // Crear un enlace de descarga
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -79,24 +633,76 @@
             document.body.appendChild(link);
             link.click();
         }
+        
+        // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-        // --- Módulo: Iconos Personalizados ---
+        // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
-            iconSize: [20, 20],
-            iconAnchor: [15, 30],
-            popupAnchor: [0, -30]
+            iconSize: [20, 20], // Tamaño del icono
+            iconAnchor: [15, 30], // Punto del icono que corresponde a la ubicación del marcador
+            popupAnchor: [0, -30] // Punto desde el que se abrirá el popup en relación al icono
         });
+
         const iconosPersonalizados = {
-            'Bodega_Aurrera': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Bodega_Aurrera_Express': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize:[20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Primarias': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Tiendas_3B': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Captura-removebg-preview.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Tiendas_Neto': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Tienda_neto.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] })
+            'Bodega_Aurrera': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Bodega_Aurrera_Express': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Chedraui_Supercito': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/532dbbc949250be6d8136bf1810083f1a2c97d36/Chedraui.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Iglesias': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Iglesia.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Mercados': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Mercado.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Preescolar': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Primarias': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Tiendas_3B': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Captura-removebg-preview.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            }),
+            'Tiendas_Neto': L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Tienda_neto.png',
+                iconSize: [20, 20],
+                iconAnchor: [10, 20],
+                popupAnchor: [0, -20]
+            })
         };
 
-        // --- Módulo: Simplificación de Geometrías ---
+         // Función para simplificar geometrías
         function simplifyGeoJSON(data, tolerance) {
             return {
                 type: "FeatureCollection",
@@ -105,320 +711,309 @@
                 })
             };
         }
-
-        // --- Módulo: Carga y Gestión de Capas GeoJSON ---
-        function mostrarIndicadorCarga() { document.getElementById('loading-indicator').style.display = 'block'; }
-        function ocultarIndicadorCarga() { document.getElementById('loading-indicator').style.display = 'none'; }
-
+        
+        //Función para mostrar carga
+        function mostrarIndicadorCarga() {
+            document.getElementById('loading-indicator').style.display = 'block';
+        }
+        
+        function ocultarIndicadorCarga() {
+            document.getElementById('loading-indicator').style.display = 'none';
+        }
+        
+        // Definición del objeto de caché
+        const geoJsonCache = {};
+        
+        // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
-            if (loadedLayers.has(layerName)) { console.log(`La capa ${layerName} ya ha sido cargada.`); if (callback) callback(); return; }
-            if (geoJsonCache[url]) { console.log(`Cargando desde caché: ${layerName}`); const data = geoJsonCache[url]; processGeoJSONData(data, layerName, type); if (callback) callback(); return; }
+            // Verificar si la capa ya ha sido cargada
+            if (loadedLayers.has(layerName)) {
+                console.log(`La capa ${layerName} ya ha sido cargada.`);
+                if (callback) callback();
+                return;
+            }
+        
+            // Verificar si los datos ya están en la caché
+            if (geoJsonCache[url]) {
+                console.log(`Cargando desde caché: ${layerName}`);
+                const data = geoJsonCache[url];
+                processGeoJSONData(data, layerName, type); // Procesar los datos desde la caché
+                if (callback) callback();
+                return;
+            }
+        
+            // Si no está en caché, realizar la solicitud
             fetch(url)
-                .then(response => { if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`); return response.json(); })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    return response.json();
+                })
                 .then(data => {
+                    // Almacenar los datos en la caché
                     geoJsonCache[url] = data;
-                    if (type === 'UsoSuelo') { data = simplifyGeoJSON(data, 0.0000005); }
-                    const colorMap = { 'UsoSuelo': 'rgb(128, 0, 128)', 'Poligono': 'rgb(255, 127, 80)', 'Col': 'rgb(0, 150, 136)', 'Region_Vallejo': 'rgb(204, 85, 0)', 'Municipios': 'rgb(255, 255, 0)', 'Alcaldias': 'rgb(0, 255, 127)', 'Competencias': 'rgb(204, 85, 0)', 'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)' };
+        
+                    // Simplificar geometrías si es una capa de uso de suelo
+                    if (type === 'UsoSuelo') {
+                        data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
+                    }
+        
+                    const colorMap = {
+                        'UsoSuelo': 'rgb(128, 0, 128)',
+                        'Poligono': 'rgb(255, 127, 80)',
+                        'Col': 'rgb(0, 150, 136)',
+                        'Region_Vallejo': 'rgb(204, 85, 0)',
+                        'Municipios': 'rgb(255, 255, 0)',
+                        'Alcaldias': 'rgb(0, 255, 127)',
+                        'Competencias': 'rgb(204, 85, 0)',
+                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                    };
+        
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function(feature, latlng) {
                             let icono = null;
-                            if (type === 'Competencias') { icono = iconosPersonalizados[data.name]; console.log("Competencia name:", data.name); } else { icono = iconosPersonalizados[feature.properties.layerName]; console.log("layerName:", feature.properties.layerName); }
-                            if (!icono) { icono = L.icon({ iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png', iconSize: [25, 25], iconAnchor: [12, 25], popupAnchor: [0, -28] }); }
+                
+                            if (type === 'Competencias') {
+                                // Usar 'name' del GeoJSON para capas de competencias
+                                icono = iconosPersonalizados[data.name];
+                                console.log("Competencia name:", data.name); //Para depurar
+                            } else {
+                                // Usar 'layerName' de feature.properties para otras capas
+                                icono = iconosPersonalizados[feature.properties.layerName];
+                                console.log("layerName:", feature.properties.layerName); //Para depurar
+                            }
+                
+                            if (!icono) {
+                                // Usar icono predeterminado si no se encuentra
+                                icono = L.icon({
+                                    iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png', // Reemplaza con tu icono predeterminado
+                                    iconSize: [25, 25],
+                                    iconAnchor: [12, 25],
+                                    popupAnchor: [0, -28]
+                                });
+                            }
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
-                            if (type === 'UsoSuelo') { return { color: 'rgb(128, 0, 128)', weight: 0.3, fillOpacity: 0 }; } else { return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; }
+                            if (type === 'UsoSuelo') {
+                                return {
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.3, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
+                                };
+                            } else {
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
+                            }
                         },
                         onEachFeature: (feature, layer) => {
-                            if (type === 'Poligono') { const area = Math.floor(turf.area(feature)); feature.properties['Área polígono'] = area; }
-                            if (type === 'Ageb') { layer.bindTooltip(feature.properties.POB1.toString(), { permanent: true, direction: 'center', className: 'ageb-label', offset: [0, 0], opacity: 1 }).openTooltip(); }
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
+                            }
+                            if (type === 'Ageb') { // Solo para capas AGEB
+                                // Crear etiqueta con el valor de POB1 sin forma ni fondo
+                                layer.bindTooltip(feature.properties.POB1.toString(), {
+                                    permanent: true,
+                                    direction: 'center',
+                                    className: 'ageb-label',
+                                    offset: [0, 0], // Sin desplazamiento
+                                    opacity: 1 // Opacidad completa
+                                }).openTooltip();
+                            }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
-                                for (const key in feature.properties) { if (key !== 'liga_ciuda') { popupContent += `${key}: ${feature.properties[key]}<br>`; } }
+                                for (const key in feature.properties) {
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
+                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    }
+                                }
                                 layer.bindPopup(popupContent).openPopup();
                             });
                         }
                     });
+        
+                    // Agregar la capa a los grupos correspondientes
                     switch (type) {
-                        case 'Ageb': if (url === 'Ageb_urb_CDMX.geojson') { agebCDMXLayer = geoJsonLayer; } else if (url === 'Ageb_urb_Edo_Mex.geojson') { agebEdoMexLayer = geoJsonLayer; } geoJsonLayersAgeb[layerName] = geoJsonLayer; break;
-                        case 'UsoSuelo': geoJsonLayersUsoSuelo[layerName] = geoJsonLayer; break;
-                        case 'Alcaldias': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
-                        case 'Municipios': geoJsonLayersAlcaldias[layerName] = geoJsonLayer; break;
-                        case 'Poligono': geoJsonLayersPoligonos[layerName] = geoJsonLayer; break;
-                        case 'Col': geoJsonLayersColonias[layerName] = geoJsonLayer; break;
-                        case 'Competencias': geoJsonLayersCompetencias[layerName] = geoJsonLayer; break;
+                        case 'Ageb':
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            break;
+                        case 'UsoSuelo':
+                            geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
+                            break;
+                        case 'Alcaldias':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Municipios':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Poligono':
+                            geoJsonLayersPoligonos[layerName] = geoJsonLayer;
+                            break;
+                        case 'Col':
+                            geoJsonLayersColonias[layerName] = geoJsonLayer;
+                            break;
+                        case 'Competencias':
+                            geoJsonLayersCompetencias[layerName] = geoJsonLayer;
+                            break;
                     }
                     loadedLayers.add(layerName);
-                    updateLayerControls();
+                    updateLayerControls(); // Asegúrate de que esto se llame aquí
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
+        // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
-                'Ageb CDMX': 'Ageb_urb_CDMX.geojson', 'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson', 'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson', 'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson', 'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson', 'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson', 'Region Vallejo': 'Region_Vallejo.geojson', 'Alcaldias': 'Alcaldias.geojson', 'Municipios': 'Municipios.geojson', 'Poligono': 'Poligigono.geojson', 'Colonias': 'Colonias.geojson', 'Competencias': 'Competencias.geojson'
+                'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
+                'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson',
+                'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson',
+                'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson',
+                'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson',
+                'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson',
+                'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson',
+                'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson',
+                'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson',
+                'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson',
+                'Alcaldías CDMX': 'Alcaldias_Ciudad_de_México.geojson',
+                'Municipios Edo. Mex.': 'Municip_Estado_de_Mexico.geojson',
+                'Poligono Región Vallejo': 'Region_Vallejo.geojson',
+                'Poligono Azcapotzalco': 'Poligono_Azcapotzalco.geojson',
+                'Poligono Benito Juárez': 'Poligono_Benito_Juarez.geojson',
+                'Poligono Cuauhtémoc': 'Poligono_Cuauhtemoc.geojson',
+                'Poligono Ecatepec': 'Poligono_Ecatepec.geojson',
+                'Poligono M. Hidalgo': 'Poligono_Miguel_Hidalgo.geojson',
+                'Poligono Nezahualcoyotl': 'Poligono_Nezahualcoyotl.geojson',
+                'Colonias Azcapotzalco': 'Col_Azcapotzalco.geojson',
+                'Colonias Benito Juárez': 'Col_Benito_Juarez.geojson',
+                'Colonias Cuauhtemoc': 'Col_Cuauhtemoc.geojson',
+                'Colonias Ecatepec': 'Col_Ecatepec.geojson',
+                'Colonias M. Hidalgo': 'Col_Miguel_Hidalgo.geojson',
+                'Colonias Nezahualcoyotl': 'Col_Nezahualcoyotl.geojson',
+                'Bodega Aurrera': 'Bodega_Aurrera.geojson',
+                'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson',
+                'Chedraui Supercito': 'Chedraui_Supercito.geojson',
+                'Iglesias': 'Iglesias.geojson',
+                'Mercados': 'Mercados.geojson',
+                'Preescolar': 'Preescolar.geojson',
+                'Primarias': 'Primarias.geojson',
+                'Tiendas 3B': 'Tiendas_3B.geojson',    
+                'Tiendas Neto': 'Tiendas_Neto.geojson'
+            
+                
             };
-            const url = layerUrls[layerName];
-            if (url) { loadGeoJSON(url, layerName, type); } else { console.error(`URL no encontrada para la capa: ${layerName}`); }
+            if (layerUrls[layerName]) {
+                loadGeoJSON(layerUrls[layerName], layerName, type);
+            } else {
+                console.error('URL de capa no encontrada para:', layerName);
+            }
         }
 
         function updateLayerControls() {
-            if (layerControlContainer._map) { layerControlContainer.remove(); }
-            const baseLayers = { "OpenStreetMap": osmLayer, "Google Road": googleRoadLayer, "Google Hybrid": googleHybridLayer };
-            const groupedOverlays = {
-                "AGEB": geoJsonLayersAgeb, "Uso de Suelo": geoJsonLayersUsoSuelo, "Alcaldias": geoJsonLayersAlcaldias, "Municipios": geoJsonLayersAlcaldias, "Polígonos": geoJsonLayersPoligonos, "Colonias": geoJsonLayersColonias, "Competencias": geoJsonLayersCompetencias, "Radios": { "Radio 400m": radius400Layer, "Radio 800m": radius800Layer }, "Extracción": { "Buffer": bufferLayerGroup, "Diferencia": differenceLayerGroup, "Extracción": differenceExtractionLayerGroup }
-            };
-            layerControlContainer.onAdd = function() {
-                const div = L.DomUtil.create('div', 'leaflet-control-layers');
-                const baseLayersDiv = L.DomUtil.create('div', 'leaflet-control-layers-base', div);
-                const overlaysDiv = L.DomUtil.create('div', 'leaflet-control-layers-overlays', div);
-                for (const name in baseLayers) {
-                    const layerId = L.Util.stamp(baseLayers[name]);
-                    baseLayersDiv.innerHTML += `<label><input type="radio" name="leaflet-base-layers" class="leaflet-control-layers-selector" value="${layerId}" <span class="math-inline">\{baseLayers\[name\] \=\=\= osmLayer ? 'checked' \: ''\}\><span\></span>{name}</span></label>`;
-                }
-                for (const groupName in groupedOverlays) {
-                    const groupDiv = L.DomUtil.create('div', 'leaflet-control-layers-group', overlaysDiv);
-                    groupDiv.innerHTML += `<strong>${groupName}</strong>`;
-                    const layers = groupedOverlays[groupName];
-                    if (layers instanceof L.LayerGroup) {
-                        const layerId = L.Util.stamp(layers);
-                        groupDiv.innerHTML += `<label><input type="checkbox" class="leaflet-control-layers-selector" value="${layerId}" <span class="math-inline">\{map\.hasLayer\(layers\) ? 'checked' \: ''\}\><span\></span>{groupName}</span></label>`;
-                    } else {
-                        for (const layerName in layers) {
-                            const layerId = L.Util.stamp(layers[layerName]);
-                            groupDiv.innerHTML += `<label><input type="checkbox" class="leaflet-control-layers-selector" value="${layerId}" <span class="math-inline">\{map\.hasLayer\(layers\[layerName\]\) ? 'checked' \: ''\}\><span\></span>{layerName}</span></label>`;
-                        }
-                    }
-                }
-                L.DomEvent.on(div, 'click', (e) => {
-                    const target = e.target;
-                    if (target.classList.contains('leaflet-control-layers-selector')) {
-                        const layerId = parseInt(target.value);
-                        if (target.type === 'radio') {
-                            for (const name in baseLayers) {
-                                if (L.Util.stamp(baseLayers[name]) === layerId) {
-                                    map.eachLayer(layer => { if (layer instanceof L.TileLayer) { map.removeLayer(layer); } });
-                                    baseLayers[name].addTo(map);
-                                    break;
-                                }
-                            }
-                        } else if (target.type === 'checkbox') {
-                            for (const groupName in groupedOverlays) {
-                                const layers = groupedOverlays[groupName];
-                                if (layers instanceof L.LayerGroup && L.Util.stamp(layers) === layerId) {
-                                    if (map.hasLayer(layers)) { map.removeLayer(layers); } else { layers.addTo(map); }
-                                    break;
-                                } else {
-                                    for (const layerName in layers) {
-                                        if (L.Util.stamp(layers[layerName]) === layerId) {
-                                            if (map.hasLayer(layers[layerName])) { map.removeLayer(layers[layerName]); } else { layers[layerName].addTo(map); }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            // Eliminar el controlador de capas existente
+            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
+                map.removeControl(layerControlContainer);
+            }
+
+            // Crear un nuevo controlador de capas
+            layerControlContainer.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'layer-control-container');
+                div.style.display = 'flex'; // Usar flexbox
+                div.style.flexDirection = 'column'; // Colocar en columna
+                div.style.alignItems = 'flex-center'; // Alinear a la derecha
+                div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
+                div.style.height = '100%';
+
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
+                    </div>
+                    <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
+                `;
+
+                // Crear un controlador base para las capas
+                const baseMaps = {
+                    "OpenStreetMap": osmLayer,
+                    "Google Road": googleRoadLayer,
+                    "Google Hybrid": googleHybridLayer
+                };
+
+                const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+                layerControlBase.addTo(map);
+                div.appendChild(layerControlBase.getContainer());
+
+                // Crear un controlador para las capas GeoJSON
+                const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
+                geoJsonLayerControl.addTo(map);
+                div.appendChild(geoJsonLayerControl.getContainer());
+
+                // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
+                const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+                layerControlUsoSuelo.addTo(map);
+                div.appendChild(layerControlUsoSuelo.getContainer());
+
+                const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+                layerControlAlcaldias.addTo(map);
+                div.appendChild(layerControlAlcaldias.getContainer());
+
+                const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+                layerControlPoligonos.addTo(map);
+                div.appendChild(layerControlPoligonos.getContainer());
+
+                const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+                layerControlColonias.addTo(map);
+                div.appendChild(layerControlColonias.getContainer());
+
+                const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+                layerControlCompetencias.addTo(map);
+                div.appendChild(layerControlCompetencias.getContainer());
+
+                // Crear un controlador para las capas de radios y diferencia
+                const radiusLayers = {
+                    "Radio 400m": radius400Layer,
+                    "Radio 800m": radius800Layer,
+                    "Diferencia Radios": differenceLayerGroup,
+                    "Buffer Ageb": bufferLayerGroup,
+                    "Diferencia Ageb": differenceExtractionLayerGroup
+                };
+
+                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+                radiusLayerControl.addTo(map);
+                div.appendChild(radiusLayerControl.getContainer());
+
+                // Estilos iniciales para el contenedor contraído
+                div.style.width = '25px';
+                div.style.height = '25px';
+                div.style.overflow = 'hidden';
+                div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
+
+                // Agregar eventos para desplegar y replegar el controlador
+                div.addEventListener('mouseover', function() {
+                    div.style.width = '280px';
+                    div.style.height = 'auto';
+                    div.style.overflow = 'auto';
+                });
+
+                div.addEventListener('mouseout', function(event) {
+                    if (!div.contains(event.relatedTarget)) {
+                        div.style.width = '25px';
+                        div.style.height = '25px';
+                        div.style.overflow = 'hidden';
                     }
                 });
-                L.DomEvent.on(div, 'mouseover', () => L.DomUtil.addClass(div, 'leaflet-control-layers-expanded'));
-                L.DomEvent.on(div, 'mouseout', () => L.DomUtil.removeClass(div, 'leaflet-control-layers-expanded'));
+
                 return div;
             };
+
+            // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
-            L.DomUtil.removeClass(layerControlContainer.getContainer(), 'leaflet-control-layers-expanded');
         }
-
-        // --- Módulo: Geolocalización en Tiempo Real ---
-        let watchId = null;
-        let realtimeMarker = null;
-        let isRealtimeLocationActive = false;
-        let initialLocationReceived = false;
-
-        function startRealtimeLocation() {
-            if (navigator.geolocation) {
-                watchId = navigator.geolocation.watchPosition(
-                    position => {
-                        const { latitude, longitude } = position.coords;
-                        if (realtimeMarker) { realtimeMarker.setLatLng([latitude, longitude]); } else {
-                            realtimeMarker = L.marker([latitude, longitude], { icon: customIcon }).addTo(map);
-                            if (!initialLocationReceived) { map.setView([latitude, longitude], 15); initialLocationReceived = true; }
-                        }
-                    },
-                    error => {
-                        alert(`Error de geolocalización: ${error.message}`);
-                        stopRealtimeLocation();
-                    },
-                    { enableHighAccuracy: true }
-                );
-                isRealtimeLocationActive = true;
-            } else {
-                alert("Geolocalización no soportada por el navegador.");
-            }
-        }
-
-        function stopRealtimeLocation() {
-            if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-            if (realtimeMarker) { map.removeLayer(realtimeMarker); realtimeMarker = null; }
-            isRealtimeLocationActive = false;
-        }
-
-        document.getElementById('realtime-location-button').addEventListener('click', () => {
-            if (isRealtimeLocationActive) { stopRealtimeLocation(); } else { startRealtimeLocation(); }
-        });
-
-        // --- Módulo: Búsqueda de Puntos de Interés (Competencias) ---
-        const poiMarkers = L.markerClusterGroup();
-        let requestQueue = [];
-        let isProcessingQueue = false;
-
-        const categorias = {
-            hospitales: { query: 'hospital', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Hospital.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            mercados: { query: 'market', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Mercado.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            iglesias: { query: 'church', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Iglesia.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            preescolar: { query: 'kindergarten', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            primarias: { query: 'primary school', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            bodegaAurrera: { query: 'Bodega Aurrera', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            bodegaAurreraExpress: { query: 'Bodega Aurrera Express', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            chedrauiSupercito: { query: 'Chedraui Supercito', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/532dbbc949250be6d8136bf1810083f1a2c97d36/Chedraui.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            tiendas3B: { query: 'Tiendas 3B', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Captura-removebg-preview.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) },
-            tiendasNeto: { query: 'Tiendas Neto', icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Tienda_neto.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }) }
-        };
-
-        function buscarCompetencias(lat, lon) {
-            poiMarkers.clearLayers();
-            map.addLayer(poiMarkers);
-            for (const categoria in categorias) {
-                const { query, icon } = categorias[categoria];
-                const url = `https://nominatim.openstreetmap.org/search?q=<span class="math-inline">\{query\}&format\=geojson&viewbox\=</span>{lon - 0.01},<span class="math-inline">\{lat \- 0\.01\},</span>{lon + 0.01},${lat + 0.01}&bounded=1`;
-                requestQueue.push({ url, icon });
-            }
-            if (!isProcessingQueue) { processRequestQueue(); }
-        }
-
-        function processRequestQueue() {
-            if (requestQueue.length === 0) { isProcessingQueue = false; return; }
-            isProcessingQueue = true;
-            const { url, icon } = requestQueue.shift();
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.features) {
-                        data.features.forEach(feature => {
-                            if (feature.geometry && feature.geometry.coordinates) {
-                                const [lon, lat] = feature.geometry.coordinates;
-                                const marker = L.marker([lat, lon], { icon: icon }).bindPopup(feature.properties.display_name);
-                                poiMarkers.addLayer(marker);
-                            }
-                        });
-                    }
-                    setTimeout(processRequestQueue, 1000);
-                })
-                .catch(err => {
-                    console.error('Error al buscar competencias:', err);
-                    setTimeout(processRequestQueue, 1000);
-                });
-        }
-
-        document.getElementById('competencias-button').addEventListener('click', () => {
-            if (currentMarker) {
-                const latlng = currentMarker.getLatLng();
-                buscarCompetencias(latlng.lat, latlng.lng);
-            } else if (realtimeMarker) {
-                const latlng = realtimeMarker.getLatLng();
-                buscarCompetencias(latlng.lat, latlng.lng);
-            } else {
-                alert("Por favor, coloca un marcador o activa la localización en tiempo real.");
-            }
-        });
-
-        // --- Módulo: Eventos y Funciones Auxiliares ---
-        map.on('click', e => {
-            if (currentMarker) { map.removeLayer(currentMarker); }
-            currentMarker = L.marker(e.latlng, { icon: customIcon }).addTo(map);
-            document.getElementById('lat').value = e.latlng.lat;
-            document.getElementById('lon').value = e.latlng.lng;
-        });
-
-        document.getElementById('useLocationBtn').addEventListener('click', () => {
-            if (realtimeMarker) {
-                const latlng = realtimeMarker.getLatLng();
-                document.getElementById('lat').value = latlng.lat;
-                document.getElementById('lon').value = latlng.lng;
-                if (currentMarker) { map.removeLayer(currentMarker); }
-                currentMarker = L.marker(latlng, { icon: customIcon }).addTo(map);
-            } else {
-                alert("La localización en tiempo real no está activa.");
-            }
-        });
-
-        // --- Funciones para calcular radios, AGEB y extracción ---
-
-        function calcular(lat, lon) {
-            clearLayers();
-            const center = turf.point([lon, lat]);
-            const options = { steps: 64, units: 'meters' };
-            const circle400 = turf.circle(center, 400, options);
-            const circle800 = turf.circle(center, 800, options);
-            L.geoJSON(circle400, { style: { color: 'red', fillOpacity: 0 } }).addTo(radius400Layer);
-            L.geoJSON(circle800, { style: { color: 'blue', fillOpacity: 0 } }).addTo(radius800Layer);
-            calcularAGEB(circle400, circle800);
-        }
-
-        function clearLayers() {
-            radius400Layer.clearLayers();
-            radius800Layer.clearLayers();
-            differenceLayerGroup.clearLayers();
-            bufferLayerGroup.clearLayers();
-            differenceExtractionLayerGroup.clearLayers();
-            ageb400Data = [];
-            ageb800Data = [];
-        }
-
-        function calcularAGEB(circle400, circle800) {
-            function processAgebLayer(layer, circle, dataArray) {
-                if (!layer) return;
-                layer.eachLayer(agebLayer => {
-                    if (agebLayer instanceof L.GeoJSON) {
-                        agebLayer.eachLayer(featureLayer => {
-                            if (featureLayer.feature) {
-                                const intersection = turf.intersect(circle, featureLayer.feature);
-                                if (intersection) {
-                                    const originalArea = turf.area(featureLayer.feature);
-                                    const extractedArea = turf.area(intersection);
-                                    const extractionPercentage = (extractedArea / originalArea) * 100;
-                                    dataArray.push({
-                                        POB1: featureLayer.feature.properties.POB1,
-                                        originalArea: originalArea,
-                                        extractedArea: extractedArea,
-                                        extractionPercentage: extractionPercentage,
-                                        populationTotal: featureLayer.feature.properties.POBTOT
-                                    });L.geoJSON(intersection, { style: { color: 'green', fillOpacity: 0.5 } }).addTo(differenceExtractionLayerGroup);
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-            processAgebLayer(agebCDMXLayer, circle400, ageb400Data);
-            processAgebLayer(agebEdoMexLayer, circle400, ageb400Data);
-            processAgebLayer(agebCDMXLayer, circle800, ageb800Data);
-            processAgebLayer(agebEdoMexLayer, circle800, ageb800Data);
-        }
-
-        document.getElementById('calculate-btn').addEventListener('click', () => {
-            if (currentMarker) {
-                const latlng = currentMarker.getLatLng();
-                calcular(latlng.lat, latlng.lng);
-            } else if (realtimeMarker) {
-                const latlng = realtimeMarker.getLatLng();
-                calcular(latlng.lat, latlng.lng);
-            } else {
-                alert("Por favor, coloca un marcador o activa la localización en tiempo real.");
-            }
-        });
-
-        // --- Inicialización de Capas ---
+               
+        // Cargar capas GeoJSON desde archivos bajo demanda
         loadLayer('Ageb CDMX', 'Ageb');
         loadLayer('Ageb Edo. Mex.', 'Ageb');
         loadLayer('Uso de suelo Centro Barrio', 'UsoSuelo');
@@ -429,13 +1024,242 @@
         loadLayer('Uso de suelo Mixto', 'UsoSuelo');
         loadLayer('Uso de suelo Oficinas', 'UsoSuelo');
         loadLayer('Uso de suelo Plurifamiliar', 'UsoSuelo');
-        loadLayer('Region Vallejo', 'Region_Vallejo');
-        loadLayer('Alcaldias', 'Alcaldias');
-        loadLayer('Municipios', 'Municipios');
-        loadLayer('Poligono', 'Poligono');
-        loadLayer('Colonias', 'Col');
-        loadLayer('Competencias', 'Competencias');
+        loadLayer('Alcaldías CDMX', 'Alcaldias');
+        loadLayer('Municipios Edo. Mex.', 'Municipios');
+        loadLayer('Poligono Región Vallejo', 'Poligono');
+        loadLayer('Poligono Azcapotzalco', 'Poligono');
+        loadLayer('Poligono Benito Juárez', 'Poligono');
+        loadLayer('Poligono Cuauhtémoc', 'Poligono');
+        loadLayer('Poligono Ecatepec', 'Poligono');
+        loadLayer('Poligono M. Hidalgo', 'Poligono');
+        loadLayer('Poligono Nezahualcoyotl', 'Poligono');
+        loadLayer('Colonias Azcapotzalco', 'Col');
+        loadLayer('Colonias Benito Juárez', 'Col');
+        loadLayer('Colonias Cuauhtemoc', 'Col');
+        loadLayer('Colonias Ecatepec', 'Col');
+        loadLayer('Colonias M. Hidalgo', 'Col');
+        loadLayer('Colonias Nezahualcoyotl', 'Col');
+        loadLayer('Bodega Aurrera', 'Competencias');
+        loadLayer('Bodega Aurrera Express', 'Competencias'); 
+        loadLayer('Chedraui Supercito', 'Competencias'); 
+        loadLayer('Iglesias', 'Competencias'); 
+        loadLayer('Mercados', 'Competencias'); 
+        loadLayer('Preescolar', 'Competencias'); 
+        loadLayer('Primarias', 'Competencias'); 
+        loadLayer('Tiendas 3B', 'Competencias'); 
+        loadLayer('Tiendas Neto', 'Competencias'); 
+        
+        
 
+        // Localización en tiempo real
+        let watchId = null;
+        let realtimeMarker = null;
+        const realtimeLocationBtn = document.getElementById('realtime-location-button');
+        const useLocationBtn = document.getElementById('useLocationBtn');
+        let isRealtimeLocationActive = false;
+        let lastAccuracy = null;
+        let initialLocationReceived = false;
+        let previousLatLng = null; // Variable para almacenar la ubicación anterior
+        
+        realtimeLocationBtn.addEventListener('click', () => {
+            if (isRealtimeLocationActive) {
+                stopRealtimeLocation();
+            } else {
+                startRealtimeLocation();
+            }
+        });
+        
+        useLocationBtn.addEventListener('click', () => {
+            if (realtimeMarker) {
+                const latLng = realtimeMarker.getLatLng();
+                document.getElementById('lat').value = latLng.lat;
+                document.getElementById('lon').value = latLng.lng;
+                stopRealtimeLocation();
+            } else {
+                alert("La localización en tiempo real no está activa.");
+            }
+        });
+        
+        function startRealtimeLocation() {
+            if (navigator.geolocation) {
+                realtimeLocationBtn.style.backgroundColor = 'lightgreen';
+                isRealtimeLocationActive = true;
+                initialLocationReceived = false;
+                previousLatLng = null; // Restablecer la ubicación anterior
+        
+                navigator.geolocation.getCurrentPosition(
+                    initialPosition => {
+                        updateRealtimeLocation(initialPosition);
+                        lastAccuracy = initialPosition.coords.accuracy;
+                        console.log(`Precisión inicial: ${lastAccuracy} metros`);
+        
+                        watchId = navigator.geolocation.watchPosition(
+                            position => {
+                                updateRealtimeLocation(position);
+                                lastAccuracy = position.coords.accuracy;
+                                console.log(`Precisión de la localización: ${lastAccuracy} metros`);
+                            },
+                            error => {
+                                handleLocationError(error);
+                                stopRealtimeLocation();
+                            },
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                        );
+                    },
+                    error => {
+                        handleLocationError(error);
+                        stopRealtimeLocation();
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
+        }
+        
+        function stopRealtimeLocation() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (realtimeMarker) {
+                map.removeLayer(realtimeMarker);
+                realtimeMarker = null;
+            }
+            realtimeLocationBtn.style.backgroundColor = 'white';
+            isRealtimeLocationActive = false;
+            console.log("Localización desactivada.");
+        }
+        
+        function updateRealtimeLocation(position) {
+            const accuracy = position.coords.accuracy;
+            const currentLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+        
+            if (accuracy <= 100) {
+                if (previousLatLng) {
+                    const distance = currentLatLng.distanceTo(previousLatLng); // Calcular la distancia en metros
+                    if (distance < 2) { // Umbral de distancia (5 metros)
+                        console.log("Ubicación no ha cambiado significativamente.");
+                        return; // No actualizar si la distancia es menor que el umbral
+                    }
+                }
+        
+                if (realtimeMarker) {
+                    realtimeMarker.setLatLng(currentLatLng);
+                } else {
+                    realtimeMarker = L.marker(currentLatLng).addTo(map);
+                }
+        
+                if (!initialLocationReceived) {
+                    map.setView(currentLatLng, 18);
+                    initialLocationReceived = true;
+                }
+        
+                previousLatLng = currentLatLng; // Actualizar la ubicación anterior
+            } else {
+                console.log(`Precisión baja: ${accuracy} metros. Ubicación no mostrada.`);
+            }
+        }
+        
+        function handleLocationError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Permiso de geolocalización denegado.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Información de ubicación no disponible.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Tiempo de espera agotado.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Ocurrió un error desconocido.");
+                    break;
+            }
+        }
+        
+        // Codigo para competencias
+        const competenciasButton = document.getElementById('competencias-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        let poiMarkers = L.markerClusterGroup().addTo(map); // Agrupar marcadores
+        
+        competenciasButton.addEventListener('click', () => {
+            if (currentMarker) {
+                findNearbyPOIs(currentMarker.getLatLng());
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        });
+        
+       function findNearbyPOIs(latlng) {
+            poiMarkers.clearLayers();
+            loadingIndicator.style.display = 'block';
+        
+            const categories = {
+                'hospital': { query: 'hospital or clinica', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Hospital.png' },
+                'marketplace': { query: 'Mercado', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Mercado.png' },
+                '3B': { query: 'Tienda 3B', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/1cb9732d5bff5cf91c2ef7fa17b017f5690ca732/Captura-removebg-preview.png' },
+                'neto': { query: 'Tienda neto', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Tienda_neto.png' },
+                'school': { query: 'Escuela', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Escuela.png' },
+                'church': { query: 'Iglesia', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Iglesia.png' },
+                'bodega aurrera': { query: 'Bodega Aurrera', icon: 'https://github.com/Dchable16/Mapa_interactivo/raw/237ee2cf25559e6e6759e111262a54df5f1a9361/Bodega_Aurrera.png' }
+            };
+        
+            let promises = [];
+            let delay = 500; // Retraso inicial de 500 ms (0.5 segundos)
+        
+            Object.entries(categories).forEach(([category, data]) => {
+                const encodedQuery = encodeURIComponent(data.query);
+                const viewbox = `${latlng.lng - 0.01},${latlng.lat - 0.01},${latlng.lng + 0.01},${latlng.lat + 0.01}`;
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=geojson&viewbox=${viewbox}&bounded=1&limit=10`;
+        
+                promises.push(new Promise((resolve) => {
+                    setTimeout(() => { // Agregar retraso antes de la solicitud
+                        fetch(url)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`Error en la solicitud: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => resolve({ ...data, category }))
+                            .catch(error => {
+                                console.error("Error al buscar puntos de interés:", error);
+                                alert("No se pudieron encontrar algunos puntos de interés cercanos.");
+                                resolve(null);
+                            });
+                    }, delay);
+                    delay += 500; // Incrementar el retraso para la siguiente solicitud
+                }));
+            });
+        
+            Promise.all(promises).then(results => {
+                results.filter(result => result).forEach(result => {
+                    if (result && result.features) {
+                        result.features.forEach(feature => {
+                            const icon = L.icon({
+                                iconUrl: categories[result.category].icon,
+                                iconSize: [25, 25],
+                                iconAnchor: [16, 32],
+                                popupAnchor: [0, -32]
+                            });
+        
+                            const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], { icon });
+                            marker.bindPopup(`<b>${feature.properties.display_name}</b><br>Dirección: ${feature.properties.display_name}<br>Coordenadas: ${feature.geometry.coordinates[1]}, ${feature.geometry.coordinates[0]}`);
+                            poiMarkers.addLayer(marker);
+                        });
+                    }
+                });
+                loadingIndicator.style.display = 'none';
+            }).catch(error => {
+                console.error("Error general al buscar puntos de interés:", error);
+                alert("Ocurrió un error al buscar puntos de interés cercanos.");
+                loadingIndicator.style.display = 'none';
+            });
+        }
+        
+        document.getElementById('download-report-btn').addEventListener('click', generateReport);
+        
     </script>
 </body>
 </html>
