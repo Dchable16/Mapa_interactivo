@@ -187,7 +187,6 @@
         map.on('zoomend moveend', function() {
           console.log("Evento zoomend moveend disparado"); // Log de depuración
           document.getElementById('zoom-value').textContent = map.getZoom();
-          renderLabels(map, geoJsonLayersAgeb); // Asegúrate de que geoJsonLayersAgeb esté definido y contenga los polígonos
         });
 
         // Agregar el control de escala dinámica al mapa
