@@ -169,6 +169,41 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
+        // Función para mostrar etiquetas permanentes para las capas AGEB
+        function showPermanentLabels() {
+            // Obtener límites del mapa
+            const bounds = map.getBounds();
+        
+            // Limpiar etiquetas existentes
+            visibleLabels.forEach(label => {
+                map.removeLayer(label);
+            });
+            visibleLabels = [];
+        
+            // Iterar sobre las capas AGEB
+            Object.values(geoJsonLayersAgeb).forEach(layer => {
+                layer.eachLayer(function(featureLayer) {
+                    if (bounds.contains(featureLayer.getLatLng())) {
+                        // Crear y agregar la etiqueta
+                        const label = L.tooltip({
+                            permanent: true,
+                            direction: 'top',
+                            className: 'ageb-label',
+                            opacity: 1
+                        }).setContent(featureLayer.feature.properties.POB1.toString());
+        
+                        label.setLatLng(featureLayer.getLatLng());
+                        label.addTo(map);
+                        visibleLabels.push(label);
+                    }
+                });
+            });
+        }
+        
+        // Llamar a showPermanentLabels al cargar el mapa y al mover el mapa
+        map.on('load', showPermanentLabels);
+        map.on('moveend', showPermanentLabels);
+
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
         const closeFormBtn = document.getElementById('close-form-btn');
