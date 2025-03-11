@@ -838,7 +838,7 @@
         
                     // Agregar listener para el evento "zoomend"
                     map.on('zoomend', function () {
-                        if (map.getZoom() >= 16) {
+                        if (map.getZoom() >= 16 && geoJsonLayersAgeb && geoJsonLayersAgeb.eachLayer) {
                             geoJsonLayersAgeb.eachLayer(function (layer) {
                                 if (layer.pob1Label) {
                                     layer.pob1Label.getElement().style.display = 'block';
