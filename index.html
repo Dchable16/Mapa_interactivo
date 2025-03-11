@@ -13,9 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.label@1.4.0/dist/leaflet.label.css">
-    <script src="https://cdn.jsdelivr.net/npm/leaflet.label@1.4.0/dist/leaflet.label.js"></script>
-    
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -98,13 +95,18 @@
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
             width: 15.5px;
             height: 15.5px;
-        }
         .ageb-label {
-            background: none; /* Fondo transparente */
-            border: none; /* Sin borde */
-            padding: 0; /* Sin relleno */
-            font-size: 12px; /* Ajusta el tamaño de la fuente si es necesario */
-            font-weight: bold; /* Opcional: texto en negrita */
+          background-color: white;
+          border: 1px solid black;
+          padding: 5px;
+          border-radius: 5px;
+          white-space: nowrap;
+        }
+        
+        .ageb-icon {
+          background: none;
+          border: none;
+        }
         }
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
@@ -195,46 +197,38 @@
         // Inicializar el contenedor de control de capas
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
-       let debounceTimer; // Variable para el debounce
-       map.on('zoomend moveend', function() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const currentZoom = map.getZoom();
-                document.getElementById('zoom-value').textContent = currentZoom;
+       function renderLabels(map, markers) {
+          if (map.getZoom() >= 16) {
+            markers.eachLayer(function (polygon) {
+              if (polygon instanceof L.Polygon) {
+                try {
+                  const centroid = turf.centroid(polygon.toGeoJSON());
+                  const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
         
-                Object.values(geoJsonLayersAgeb).forEach(layer => {
-                    if (map.hasLayer(layer)) {
-                        layer.eachLayer(function(polygon) {
-                            if (polygon instanceof L.Polygon) {
-                                if (currentZoom >= 16) {
-                                    try {
-                                        const centroid = turf.centroid(polygon.toGeoJSON());
-                                        const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
-        
-                                        if (typeof polygon.bindLabel === 'function') {
-                                            polygon.bindLabel(polygon.feature.properties.POB1.toString(), {
-                                                noHide: true,
-                                                direction: 'center',
-                                                className: 'ageb-label'
-                                            });
-                                        } else {
-                                            console.error("leaflet.label no está cargado");
-                                        }
-        
-                                    } catch (error) {
-                                        console.error("Error al calcular el centroide:", error);
-                                    }
-                                } else {
-                                    if (polygon._leaflet_label) {
-                                        polygon.unbindLabel();
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-            }, 300);
-        });
+                  if (!polygon.label) {
+                    polygon.label = L.marker(latLng, {
+                      icon: L.divIcon({
+                        html: '<div class="ageb-label">' + polygon.feature.properties.POB1.toString() + '</div>',
+                        className: 'ageb-icon',
+                        iconSize: [100, 30],
+                        iconAnchor: [50, 15]
+                      })
+                    }).addTo(map);
+                  }
+                } catch (error) {
+                  console.error("Error al calcular el centroide:", error);
+                }
+              }
+            });
+          } else {
+            markers.eachLayer(function (polygon) {
+              if (polygon.label) {
+                map.removeLayer(polygon.label);
+                polygon.label = null;
+              }
+            });
+          }
+        }
 
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
