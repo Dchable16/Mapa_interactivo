@@ -973,99 +973,100 @@
 
         function updateLayerControls() {
             // Eliminar el controlador de capas existente
-            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
-                map.removeControl(layerControlContainer);
+            if (map.layerControl) {
+                map.removeControl(map.layerControl);
             }
-
-            // Crear un nuevo controlador de capas
-            layerControlContainer.onAdd = function(map) {
-                const div = L.DomUtil.create('div', 'layer-control-container');
-                div.style.display = 'flex'; // Usar flexbox
-                div.style.flexDirection = 'column'; // Colocar en columna
-                div.style.alignItems = 'flex-center'; // Alinear a la derecha
-                div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
-                div.style.height = '100%';
-
-                div.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
-                    </div>
-                    <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
-                `;
-
-                // Crear un controlador base para las capas
-                const baseMaps = {
-                    "OpenStreetMap": osmLayer,
-                    "Google Road": googleRoadLayer,
-                    "Google Hybrid": googleHybridLayer
-                };
-
-                const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
-                layerControlBase.addTo(map);
-                div.appendChild(layerControlBase.getContainer());
-
-                // Crear un controlador para las capas GeoJSON
-                const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
-                geoJsonLayerControl.addTo(map);
-                div.appendChild(geoJsonLayerControl.getContainer());
-
-                // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
-                const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
-                layerControlUsoSuelo.addTo(map);
-                div.appendChild(layerControlUsoSuelo.getContainer());
-
-                const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
-                layerControlAlcaldias.addTo(map);
-                div.appendChild(layerControlAlcaldias.getContainer());
-
-                const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
-                layerControlPoligonos.addTo(map);
-                div.appendChild(layerControlPoligonos.getContainer());
-
-                const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
-                layerControlColonias.addTo(map);
-                div.appendChild(layerControlColonias.getContainer());
-
-                const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
-                layerControlCompetencias.addTo(map);
-                div.appendChild(layerControlCompetencias.getContainer());
-
-                // Crear un controlador para las capas de radios y diferencia
-                const radiusLayers = {
-                    "Radio 400m": radius400Layer,
-                    "Radio 800m": radius800Layer,
-                    "Diferencia Radios": differenceLayerGroup,
-                    "Buffer Ageb": bufferLayerGroup,
-                    "Diferencia Ageb": differenceExtractionLayerGroup
-                };
-
-                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
-                radiusLayerControl.addTo(map);
-                div.appendChild(radiusLayerControl.getContainer());
-
-                // Estilos iniciales para el contenedor contraído
-                div.style.width = '25px';
-                div.style.height = '25px';
-                div.style.overflow = 'hidden';
-                div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
-
-                // Agregar eventos para desplegar y replegar el controlador
-                div.addEventListener('mouseover', function() {
-                    div.style.width = '280px';
-                    div.style.height = 'auto';
-                    div.style.overflow = 'auto';
-                });
-
-                div.addEventListener('mouseout', function(event) {
-                    if (!div.contains(event.relatedTarget)) {
-                        div.style.width = '25px';
-                        div.style.height = '25px';
-                        div.style.overflow = 'hidden';
-                    }
-                });
-
-                return div;
-            };
+        
+            // Crear un controlador de capas personalizado
+            const LayerControl = L.Control.extend({
+                onAdd: function(map) {
+                    const div = L.DomUtil.create('div', 'layer-control-container');
+                    div.style.display = 'flex';
+                    div.style.flexDirection = 'column';
+                    div.style.alignItems = 'flex-center';
+                    div.style.justifyContent = 'flex-center';
+                    div.style.height = '100%';
+        
+                    div.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                            <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
+                        </div>
+                        <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
+                    `;
+        
+                    const baseMaps = {
+                        "OpenStreetMap": osmLayer,
+                        "Google Road": googleRoadLayer,
+                        "Google Hybrid": googleHybridLayer
+                    };
+        
+                    const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+                    layerControlBase.addTo(map);
+                    div.appendChild(layerControlBase.getContainer());
+        
+                    const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
+                    geoJsonLayerControl.addTo(map);
+                    div.appendChild(geoJsonLayerControl.getContainer());
+        
+                    const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+                    layerControlUsoSuelo.addTo(map);
+                    div.appendChild(layerControlUsoSuelo.getContainer());
+        
+                    const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+                    layerControlAlcaldias.addTo(map);
+                    div.appendChild(layerControlAlcaldias.getContainer());
+        
+                    const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+                    layerControlPoligonos.addTo(map);
+                    div.appendChild(layerControlPoligonos.getContainer());
+        
+                    const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+                    layerControlColonias.addTo(map);
+                    div.appendChild(layerControlColonias.getContainer());
+        
+                    const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+                    layerControlCompetencias.addTo(map);
+                    div.appendChild(layerControlCompetencias.getContainer());
+        
+                    const radiusLayers = {
+                        "Radio 400m": radius400Layer,
+                        "Radio 800m": radius800Layer,
+                        "Diferencia Radios": differenceLayerGroup,
+                        "Buffer Ageb": bufferLayerGroup,
+                        "Diferencia Ageb": differenceExtractionLayerGroup
+                    };
+        
+                    const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+                    radiusLayerControl.addTo(map);
+                    div.appendChild(radiusLayerControl.getContainer());
+        
+                    div.style.width = '25px';
+                    div.style.height = '25px';
+                    div.style.overflow = 'hidden';
+                    div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
+        
+                    div.addEventListener('mouseover', function() {
+                        div.style.width = '280px';
+                        div.style.height = 'auto';
+                        div.style.overflow = 'auto';
+                    });
+        
+                    div.addEventListener('mouseout', function(event) {
+                        if (!div.contains(event.relatedTarget)) {
+                            div.style.width = '25px';
+                            div.style.height = '25px';
+                            div.style.overflow = 'hidden';
+                        }
+                    });
+        
+                    return div;
+                }
+            });
+        
+            // Crear una instancia del controlador personalizado y agregarlo al mapa
+            map.layerControl = new LayerControl();
+            map.addControl(map.layerControl);
+        }
 
             // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
