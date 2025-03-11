@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval' https://cdnjs.cloudflare.com https://github.com https://raw.githubusercontent.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://github.com https://raw.githubusercontent.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
@@ -12,14 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-
-    <style>
+   <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
         .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
         #side-form {
-            display: none; 
+            display: none; /* Ocultar por defecto */
             background-color: #f8f8f8;
             padding: 10px;
             border-radius: 8px;
@@ -36,22 +35,27 @@
         }
         #form-toggle-btn {
             position: fixed;
-            left: 0; 
+            left: 0; /* Asegurarnos de que esté en el margen izquierdo */
             top: 50%;
             transform: translateY(-50%);
             background-color: #e0e0e0;
             border: none;
-            border-radius: 0 70% 70% 0; 
-            width: 40px; 
-            height: 65px; 
+            border-radius: 0 70% 70% 0; /* Redondear solo las esquinas derechas */
+            width: 40px; /* Ajustar el ancho */
+            height: 65px; /* Ajustar la altura */
             cursor: pointer;
             z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0; 
+            padding: 0; /* Eliminar el padding */
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            background-color: white; 
+            background-color: white; /* Color de fondo */
+            
+        }
+        
+        #form-toggle-btn i { /* Estilo para el icono dentro del botón */
+            font-size: 24px; /* Ajustar el tamaño del icono */
         }
         #close-form-btn {
             background-color: #e0e0e0;
@@ -95,18 +99,13 @@
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
             width: 15.5px;
             height: 15.5px;
-        .ageb-label {
-          background-color: white;
-          border: 1px solid black;
-          padding: 5px;
-          border-radius: 5px;
-          white-space: nowrap;
         }
-        
-        .ageb-icon {
-          background: none;
-          border: none;
-        }
+       .ageb-label {
+            background: transparent; /* Fondo transparente */
+            border: none; /* Sin borde */
+            padding: 0; /* Sin relleno */
+            font-size: 12px; /* Ajusta el tamaño de la fuente si es necesario */
+            font-weight: bold; /* Opcional: texto en negrita */
         }
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
@@ -197,56 +196,31 @@
         // Inicializar el contenedor de control de capas
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
-       function renderLabels(map, markers) {
-          console.log("renderLabels ejecutado, zoom:", map.getZoom()); // Log de depuración
+        let debounceTimer; // Variable para el debounce
+        map.on('zoomend', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const currentZoom = map.getZoom();
+                document.getElementById('zoom-value').textContent = currentZoom;
         
-          if (map.getZoom() >= 16) {
-            markers.eachLayer(function (polygon) {
-              if (polygon instanceof L.Polygon) {
-                try {
-                  const centroid = turf.centroid(polygon.toGeoJSON());
-                  const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
-                  console.log("Centroide calculado:", latLng); // Log de depuración
-        
-                  if (!polygon.label) {
-                    polygon.label = L.marker(latLng, {
-                      icon: L.divIcon({
-                        html: '<div class="ageb-label">' + polygon.feature.properties.POB1.toString() + '</div>',
-                        className: 'ageb-icon',
-                        iconSize: [100, 30],
-                        iconAnchor: [50, 15]
-                      })
-                    }).addTo(map);
-                  }
-                } catch (error) {
-                  console.error("Error al calcular el centroide:", error);
+                // Mostrar u ocultar etiquetas según el nivel de zoom
+                if (currentZoom < 16) {
+                    // Ocultar etiquetas
+                    Object.values(geoJsonLayersAgeb).forEach(layer => {
+                        layer.eachLayer(function(marker) {
+                            marker.closeTooltip(); // Cerrar tooltip si está abierto
+                        });
+                    });
+                } else {
+                    // Mostrar etiquetas solo si el nivel de zoom es suficiente
+                    Object.values(geoJsonLayersAgeb).forEach(layer => {
+                        layer.eachLayer(function(marker) {
+                            marker.openTooltip(); // Abrir tooltip
+                        });
+                    });
                 }
-              }
-            });
-          } else {
-            markers.eachLayer(function (polygon) {
-              if (polygon.label) {
-                map.removeLayer(polygon.label);
-                polygon.label = null;
-              }
-            });
-          }
-        }
-        
-        // Actualización del nivel de zoom
-        function updateZoomLevel() {
-          document.getElementById('zoom-value').textContent = map.getZoom();
-        }
-        
-        // Evento zoomend moveend
-        map.on('zoomend moveend', function() {
-          console.log("Evento zoomend moveend disparado");
-            document.getElementById('zoom-value').textContent = map.getZoom();
-            renderLabels(map, agebLayerGroup); // Verifica que agebLayerGroup se pasa aquí
+            }, 300); // Ajusta el tiempo de debounce según sea necesario
         });
-        
-        // Inicialización del nivel de zoom
-        updateZoomLevel();
 
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
@@ -525,15 +499,12 @@
                     L.geoJSON(featuresWithinBuffer, {
                         style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
-                            if (type === 'Ageb') { // Solo para capas AGEB
-                                layer.bindTooltip(feature.properties.POB1.toString(), {
-                                    permanent: true,
-                                    direction: 'center',
-                                    className: 'ageb-label',
-                                    offset: [0, 0],
-                                    opacity: 1
-                                }).openTooltip();
-                            }
+                            // Crear etiqueta con el valor de POB1
+                            layer.bindTooltip(feature.properties.POB1.toString(), {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'ageb-label'
+                            }).openTooltip();
                             ageb400Data.push(feature.properties); // Almacenar atributos
                             layer.on('click', function () {
                                 let popupContent = "<b>Atributos:</b><br>";
@@ -752,9 +723,6 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
-
-        // Crear un L.LayerGroup para los polígonos AGEB
-        const agebLayerGroup = L.layerGroup();
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
@@ -841,7 +809,16 @@
                                 const area = Math.floor(turf.area(feature));
                                 feature.properties['Área polígono'] = area;
                             }
-        
+                            if (type === 'Ageb') { // Solo para capas AGEB
+                                // Crear etiqueta con el valor de POB1 sin forma ni fondo
+                                layer.bindTooltip(feature.properties.POB1.toString(), {
+                                    permanent: true,
+                                    direction: 'center',
+                                    className: 'ageb-label',
+                                    offset: [0, 0], // Sin desplazamiento
+                                    opacity: 1 // Opacidad completa
+                                }).openTooltip();
+                            }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
@@ -863,7 +840,6 @@
                                 agebEdoMexLayer = geoJsonLayer;
                             }
                             geoJsonLayersAgeb[layerName] = geoJsonLayer;
-                            agebLayerGroup.addLayer(geoJsonLayer); // Agrega esta línea
                             break;
                         case 'UsoSuelo':
                             geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
@@ -889,40 +865,6 @@
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
-            // Función para renderizar las etiquetas AGEB
-            function renderLabels(map, markers) {
-                console.log("renderLabels ejecutado, zoom:", map.getZoom());
-                if (map.getZoom() >= 16) {
-                    markers.eachLayer(function (polygon) {
-                        if (polygon instanceof L.Polygon) {
-                            try {
-                                const centroid = turf.centroid(polygon.toGeoJSON());
-                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
-                                console.log("Centroide calculado:", latLng);
-                                if (!polygon.label) {
-                                    polygon.label = L.marker(latLng, {
-                                        icon: L.divIcon({
-                                            html: '<div class="ageb-label">' + polygon.feature.properties.POB1.toString() + '</div>',
-                                            className: 'ageb-icon',
-                                            iconSize: [100, 30],
-                                            iconAnchor: [50, 15]
-                                        })
-                                    }).addTo(map);
-                                }
-                            } catch (error) {
-                                console.error("Error al calcular el centroide:", error);
-                            }
-                        }
-                    });
-                } else {
-                    markers.eachLayer(function (polygon) {
-                        if (polygon.label) {
-                            map.removeLayer(polygon.label);
-                            polygon.label = null;
-                        }
-                    });
-                }
-            }
         }
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
@@ -973,96 +915,99 @@
 
         function updateLayerControls() {
             // Eliminar el controlador de capas existente
-            if (map.layerControl) {
-                map.removeControl(map.layerControl);
+            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
+                map.removeControl(layerControlContainer);
             }
-        
-            // Crear un controlador de capas personalizado
-            const LayerControl = L.Control.extend({
-                onAdd: function(map) {
-                    const div = L.DomUtil.create('div', 'layer-control-container');
-                    div.style.display = 'flex';
-                    div.style.flexDirection = 'column';
-                    div.style.alignItems = 'flex-center';
-                    div.style.justifyContent = 'flex-center';
-                    div.style.height = '100%';
-        
-                    div.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                            <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
-                        </div>
-                        <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
-                    `;
-        
-                    const baseMaps = {
-                        "OpenStreetMap": osmLayer,
-                        "Google Road": googleRoadLayer,
-                        "Google Hybrid": googleHybridLayer
-                    };
-        
-                    const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
-                    const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
-                    const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
-                    const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
-                    const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
-                    const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
-                    const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
-                    const radiusLayers = {
-                        "Radio 400m": radius400Layer,
-                        "Radio 800m": radius800Layer,
-                        "Diferencia Radios": differenceLayerGroup,
-                        "Buffer Ageb": bufferLayerGroup,
-                        "Diferencia Ageb": differenceExtractionLayerGroup
-                    };
-                    const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
-        
-                    // Agregar los controles al mapa ANTES de agregarlos al div
-                    layerControlBase.addTo(map);
-                    geoJsonLayerControl.addTo(map);
-                    layerControlUsoSuelo.addTo(map);
-                    layerControlAlcaldias.addTo(map);
-                    layerControlPoligonos.addTo(map);
-                    layerControlColonias.addTo(map);
-                    layerControlCompetencias.addTo(map);
-                    radiusLayerControl.addTo(map);
-        
-                    // Ahora puedes agregarlos al div
-                    div.appendChild(layerControlBase.getContainer());
-                    div.appendChild(geoJsonLayerControl.getContainer());
-                    div.appendChild(layerControlUsoSuelo.getContainer());
-                    div.appendChild(layerControlAlcaldias.getContainer());
-                    div.appendChild(layerControlPoligonos.getContainer());
-                    div.appendChild(layerControlColonias.getContainer());
-                    div.appendChild(layerControlCompetencias.getContainer());
-                    div.appendChild(radiusLayerControl.getContainer());
-        
-                    div.style.width = '25px';
-                    div.style.height = '25px';
-                    div.style.overflow = 'hidden';
-                    div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
-        
-                    div.addEventListener('mouseover', function() {
-                        div.style.width = '280px';
-                        div.style.height = 'auto';
-                        div.style.overflow = 'auto';
-                    });
-        
-                    div.addEventListener('mouseout', function(event) {
-                        if (!div.contains(event.relatedTarget)) {
-                            div.style.width = '25px';
-                            div.style.height = '25px';
-                            div.style.overflow = 'hidden';
-                        }
-                    });
-        
-                    return div;
-                }
-            });
-        
-            // Crear una instancia del controlador personalizado y agregarlo al mapa
-            map.layerControl = new LayerControl();
-            map.addControl(map.layerControl);
-       
+
+            // Crear un nuevo controlador de capas
+            layerControlContainer.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'layer-control-container');
+                div.style.display = 'flex'; // Usar flexbox
+                div.style.flexDirection = 'column'; // Colocar en columna
+                div.style.alignItems = 'flex-center'; // Alinear a la derecha
+                div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
+                div.style.height = '100%';
+
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
+                    </div>
+                    <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
+                `;
+
+                // Crear un controlador base para las capas
+                const baseMaps = {
+                    "OpenStreetMap": osmLayer,
+                    "Google Road": googleRoadLayer,
+                    "Google Hybrid": googleHybridLayer
+                };
+
+                const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+                layerControlBase.addTo(map);
+                div.appendChild(layerControlBase.getContainer());
+
+                // Crear un controlador para las capas GeoJSON
+                const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
+                geoJsonLayerControl.addTo(map);
+                div.appendChild(geoJsonLayerControl.getContainer());
+
+                // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
+                const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+                layerControlUsoSuelo.addTo(map);
+                div.appendChild(layerControlUsoSuelo.getContainer());
+
+                const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+                layerControlAlcaldias.addTo(map);
+                div.appendChild(layerControlAlcaldias.getContainer());
+
+                const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+                layerControlPoligonos.addTo(map);
+                div.appendChild(layerControlPoligonos.getContainer());
+
+                const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+                layerControlColonias.addTo(map);
+                div.appendChild(layerControlColonias.getContainer());
+
+                const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+                layerControlCompetencias.addTo(map);
+                div.appendChild(layerControlCompetencias.getContainer());
+
+                // Crear un controlador para las capas de radios y diferencia
+                const radiusLayers = {
+                    "Radio 400m": radius400Layer,
+                    "Radio 800m": radius800Layer,
+                    "Diferencia Radios": differenceLayerGroup,
+                    "Buffer Ageb": bufferLayerGroup,
+                    "Diferencia Ageb": differenceExtractionLayerGroup
+                };
+
+                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+                radiusLayerControl.addTo(map);
+                div.appendChild(radiusLayerControl.getContainer());
+
+                // Estilos iniciales para el contenedor contraído
+                div.style.width = '25px';
+                div.style.height = '25px';
+                div.style.overflow = 'hidden';
+                div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
+
+                // Agregar eventos para desplegar y replegar el controlador
+                div.addEventListener('mouseover', function() {
+                    div.style.width = '280px';
+                    div.style.height = 'auto';
+                    div.style.overflow = 'auto';
+                });
+
+                div.addEventListener('mouseout', function(event) {
+                    if (!div.contains(event.relatedTarget)) {
+                        div.style.width = '25px';
+                        div.style.height = '25px';
+                        div.style.overflow = 'hidden';
+                    }
+                });
+
+                return div;
+            };
 
             // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
