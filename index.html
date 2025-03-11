@@ -764,6 +764,14 @@
                                 const area = Math.floor(turf.area(feature));
                                 feature.properties['Área polígono'] = area;
                             }
+                            if (type === 'Ageb') { // Solo para capas AGEB
+                                // Crear etiqueta con el valor de POB1
+                                layer.bindTooltip(feature.properties.POB1.toString(), {
+                                    permanent: true,
+                                    direction: 'center',
+                                    className: 'ageb-label'
+                                }).openTooltip();
+                            }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
