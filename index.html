@@ -172,8 +172,6 @@
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
         const closeFormBtn = document.getElementById('close-form-btn');
-        let showPob1Labels = false; // Estado inicial del checkbox
-        let geoJsonLayersAgeb = L.featureGroup(); // Inicializa el grupo de capas AGEB
 
         formToggleBtn.addEventListener('click', () => {
             sideForm.classList.toggle('active');
@@ -695,28 +693,35 @@
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
+            // Verificar si la capa ya ha sido cargada
             if (loadedLayers.has(layerName)) {
                 console.log(`La capa ${layerName} ya ha sido cargada.`);
                 if (callback) callback();
                 return;
             }
         
+            // Verificar si los datos ya están en la caché
             if (geoJsonCache[url]) {
                 console.log(`Cargando desde caché: ${layerName}`);
-                processGeoJSONData(geoJsonCache[url], layerName, type);
+                const data = geoJsonCache[url];
+                processGeoJSONData(data, layerName, type); // Procesar los datos desde la caché
                 if (callback) callback();
                 return;
             }
         
+            // Si no está en caché, realizar la solicitud
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
                     return response.json();
                 })
                 .then(data => {
+                    // Almacenar los datos en la caché
                     geoJsonCache[url] = data;
+        
+                    // Simplificar geometrías si es una capa de uso de suelo
                     if (type === 'UsoSuelo') {
-                        data = simplifyGeoJSON(data, 0.0000005);
+                        data = simplifyGeoJSON(data, 0.0000005); // Ajusta la tolerancia según sea necesario
                     }
         
                     const colorMap = {
@@ -731,11 +736,23 @@
                     };
         
                     const geoJsonLayer = L.geoJSON(data, {
-                        pointToLayer: function (feature, latlng) {
-                            let icono = iconosPersonalizados[type === 'Competencias' ? data.name : feature.properties.layerName];
+                        pointToLayer: function(feature, latlng) {
+                            let icono = null;
+                
+                            if (type === 'Competencias') {
+                                // Usar 'name' del GeoJSON para capas de competencias
+                                icono = iconosPersonalizados[data.name];
+                                console.log("Competencia name:", data.name); //Para depurar
+                            } else {
+                                // Usar 'layerName' de feature.properties para otras capas
+                                icono = iconosPersonalizados[feature.properties.layerName];
+                                console.log("layerName:", feature.properties.layerName); //Para depurar
+                            }
+                
                             if (!icono) {
+                                // Usar icono predeterminado si no se encuentra
                                 icono = L.icon({
-                                    iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png',
+                                    iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png', // Reemplaza con tu icono predeterminado
                                     iconSize: [25, 25],
                                     iconAnchor: [12, 25],
                                     popupAnchor: [0, -28]
@@ -744,41 +761,59 @@
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
-                            return type === 'UsoSuelo' ? { color: 'rgb(128, 0, 128)', weight: 0.3, fillOpacity: 0 } : { color: colorMap[type], weight: 2, fillOpacity: 0.35 };
+                            if (type === 'UsoSuelo') {
+                                return {
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.3, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
+                                };
+                            } else {
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
+                            }
                         },
                         onEachFeature: (feature, layer) => {
-                            if (type === 'Poligono') feature.properties['Área polígono'] = Math.floor(turf.area(feature));
+                            if (type === 'Poligono') {
+                                const area = Math.floor(turf.area(feature));
+                                feature.properties['Área polígono'] = area;
+                            }
+                            if (type === 'Ageb') { // Solo para capas AGEB
+                                // Crear etiqueta con el valor de POB1 sin forma ni fondo
+                                layer.bindTooltip(feature.properties.POB1.toString(), {
+                                    permanent: true,
+                                    direction: 'center',
+                                    className: 'ageb-label',
+                                    offset: [0, 0], // Sin desplazamiento
+                                    opacity: 1 // Opacidad completa
+                                }).openTooltip();
+                            }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
-                                    if (key !== 'liga_ciuda') popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
+                                        popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                    }
                                 }
                                 layer.bindPopup(popupContent).openPopup();
                             });
-                            if (type === 'Ageb' && feature.properties && feature.properties.POB1) {
-                                const divIcon = L.divIcon({
-                                    className: 'pob1-label',
-                                    html: `<div>${feature.properties.POB1}</div>`,
-                                    iconSize: [40, 20],
-                                    iconAnchor: [20, 10]
-                                });
-                                layer.pob1Label = L.marker(layer.getBounds().getCenter(), { icon: divIcon });
-                                layer.pob1Label.addTo(map);
-                                layer.pob1Label.getElement().style.display = 'none';
-                            }
                         }
                     });
         
+                    // Agregar la capa a los grupos correspondientes
                     switch (type) {
                         case 'Ageb':
-                            if (url === 'Ageb_urb_CDMX.geojson') agebCDMXLayer = geoJsonLayer;
-                            else if (url === 'Ageb_urb_Edo_Mex.geojson') agebEdoMexLayer = geoJsonLayer;
-                            geoJsonLayersAgeb.addLayer(geoJsonLayer);
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
+                            }
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
                             break;
                         case 'UsoSuelo':
                             geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
                             break;
                         case 'Alcaldias':
+                            geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
+                            break;
                         case 'Municipios':
                             geoJsonLayersAlcaldias[layerName] = geoJsonLayer;
                             break;
@@ -792,30 +827,13 @@
                             geoJsonLayersCompetencias[layerName] = geoJsonLayer;
                             break;
                     }
-        
                     loadedLayers.add(layerName);
-                    updateLayerControls();
-        
-                    map.on('zoomend', function () {
-                        updatePob1LabelsVisibility();
-                    });
-        
+                    updateLayerControls(); // Asegúrate de que esto se llame aquí
                     if (callback) callback();
                 })
-                .catch(err => {
-                    console.error(`Error al cargar GeoJSON desde ${url}:`, err);
-                    alert(`Error al cargar la capa ${layerName}. Por favor, inténtalo de nuevo.`);
-                });
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-        
-        function updatePob1LabelsVisibility() {
-            geoJsonLayersAgeb.eachLayer(function (layer) {
-                if (layer.pob1Label) {
-                    layer.pob1Label.getElement().style.display = (showPob1Labels && map.getZoom() >= 16) ? 'block' : 'none';
-                }
-            });
-        }
-        
+        // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
                 'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
@@ -832,7 +850,8 @@
                 'Municipios Edo. Mex.': 'Municip_Estado_de_Mexico.geojson',
                 'Poligono Región Vallejo': 'Region_Vallejo.geojson',
                 'Poligono Azcapotzalco': 'Poligono_Azcapotzalco.geojson',
-                'Poligono Benito Juárez': 'Poligono_Cuauhtemoc.geojson',
+                'Poligono Benito Juárez': 'Poligono_Benito_Juarez.geojson',
+                'Poligono Cuauhtémoc': 'Poligono_Cuauhtemoc.geojson',
                 'Poligono Ecatepec': 'Poligono_Ecatepec.geojson',
                 'Poligono M. Hidalgo': 'Poligono_Miguel_Hidalgo.geojson',
                 'Poligono Nezahualcoyotl': 'Poligono_Nezahualcoyotl.geojson',
@@ -853,115 +872,149 @@
                 'Tiendas Neto': 'Tiendas_Neto.geojson'
             
                 
-             };
-    if (layerUrls[layerName]) {
-        loadGeoJSON(layerUrls[layerName], layerName, type);
-    } else {
-        console.error('URL de capa no encontrada para:', layerName);
-    }
-}
-
-function updateLayerControls() {
-    if (layerControlContainer && map.hasLayer(layerControlContainer)) {
-        map.removeControl(layerControlContainer);
-    }
-
-    const baseMaps = {
-        "Mapa Base": baseLayer
-    };
-
-    const overlayMaps = {
-        "AGEB CDMX": geoJsonLayersAgeb.hasLayer(agebCDMXLayer) ? agebCDMXLayer : undefined,
-        "AGEB Edo. Mex.": geoJsonLayersAgeb.hasLayer(agebEdoMexLayer) ? agebEdoMexLayer : undefined,
-        "Uso de suelo Centro Barrio": geoJsonLayersUsoSuelo["Uso de suelo Centro Barrio"],
-        "Uso de suelo Equipamento": geoJsonLayersUsoSuelo["Uso de suelo Equipamento"],
-        "Uso de suelo Habitacional Comercio": geoJsonLayersUsoSuelo["Uso de suelo Habitacional Comercio"],
-        "Uso de suelo Planta Baja": geoJsonLayersUsoSuelo["Uso de suelo Planta Baja"],
-        "Uso de suelo Entrada": geoJsonLayersUsoSuelo["Uso de suelo Entrada"],
-        "Uso de suelo Mixto": geoJsonLayersUsoSuelo["Uso de suelo Mixto"],
-        "Uso de suelo Oficinas": geoJsonLayersUsoSuelo["Uso de suelo Oficinas"],
-        "Uso de suelo Plurifamiliar": geoJsonLayersUsoSuelo["Uso de suelo Plurifamiliar"],
-        "Alcaldías CDMX": geoJsonLayersAlcaldias["Alcaldías CDMX"],
-        "Municipios Edo. Mex.": geoJsonLayersAlcaldias["Municipios Edo. Mex."],
-        "Poligono Región Vallejo": geoJsonLayersPoligonos["Poligono Región Vallejo"],
-        "Poligono Azcapotzalco": geoJsonLayersPoligonos["Poligono Azcapotzalco"],
-        "Poligono Benito Juárez": geoJsonLayersPoligonos["Poligono Benito Juárez"],
-        "Poligono Cuauhtémoc": geoJsonLayersPoligonos["Poligono Cuauhtémoc"],
-        "Poligono Ecatepec": geoJsonLayersPoligonos["Poligono Ecatepec"],
-        "Poligono M. Hidalgo": geoJsonLayersPoligonos["Poligono M. Hidalgo"],
-        "Poligono Nezahualcoyotl": geoJsonLayersPoligonos["Poligono Nezahualcoyotl"],
-        "Colonias Azcapotzalco": geoJsonLayersColonias["Colonias Azcapotzalco"],
-        "Colonias Benito Juárez": geoJsonLayersColonias["Colonias Benito Juárez"],
-        "Colonias Cuauhtemoc": geoJsonLayersColonias["Colonias Cuauhtemoc"],
-        "Colonias Ecatepec": geoJsonLayersColonias["Colonias Ecatepec"],
-        "Colonias M. Hidalgo": geoJsonLayersColonias["Colonias M. Hidalgo"],
-        "Colonias Nezahualcoyotl": geoJsonLayersColonias["Colonias Nezahualcoyotl"],
-        "Bodega Aurrera": geoJsonLayersCompetencias["Bodega Aurrera"],
-        "Bodega Aurrera Express": geoJsonLayersCompetencias["Bodega Aurrera Express"],
-        "Chedraui Supercito": geoJsonLayersCompetencias["Chedraui Supercito"],
-        "Iglesias": geoJsonLayersCompetencias["Iglesias"],
-        "Mercados": geoJsonLayersCompetencias["Mercados"],
-        "Preescolar": geoJsonLayersCompetencias["Preescolar"],
-        "Primarias": geoJsonLayersCompetencias["Primarias"],
-        "Tiendas 3B": geoJsonLayersCompetencias["Tiendas 3B"],
-        "Tiendas Neto": geoJsonLayersCompetencias["Tiendas Neto"]
-        };
-    
-        layerControlContainer = L.control.layers(baseMaps, overlayMaps).addTo(map);
-    
-        if (geoJsonLayersAgeb) {
-            const pob1Checkbox = L.DomUtil.create('input', 'layer-checkbox', layerControlContainer._container);
-            pob1Checkbox.type = 'checkbox';
-            pob1Checkbox.checked = showPob1Labels;
-    
-            const pob1Label = L.DomUtil.create('label', 'layer-name', layerControlContainer._container);
-            pob1Label.textContent = 'Mostrar Etiquetas POB1';
-    
-            L.DomEvent.on(pob1Checkbox, 'change', function () {
-                showPob1Labels = pob1Checkbox.checked;
-                updatePob1LabelsVisibility();
-            });
-    
-            layerControlContainer._container.appendChild(pob1Checkbox);
-            layerControlContainer._container.appendChild(pob1Label);
+            };
+            if (layerUrls[layerName]) {
+                loadGeoJSON(layerUrls[layerName], layerName, type);
+            } else {
+                console.error('URL de capa no encontrada para:', layerName);
+            }
         }
-    }
-    
-    // Cargar capas GeoJSON desde archivos bajo demanda
-    loadLayer('Ageb CDMX', 'Ageb');
-    loadLayer('Ageb Edo. Mex.', 'Ageb');
-    loadLayer('Uso de suelo Centro Barrio', 'UsoSuelo');
-    loadLayer('Uso de suelo Equipamento', 'UsoSuelo');
-    loadLayer('Uso de suelo Habitacional Comercio', 'UsoSuelo');
-    loadLayer('Uso de suelo Planta Baja', 'UsoSuelo');
-    loadLayer('Uso de suelo Entrada', 'UsoSuelo');
-    loadLayer('Uso de suelo Mixto', 'UsoSuelo');
-    loadLayer('Uso de suelo Oficinas', 'UsoSuelo');
-    loadLayer('Uso de suelo Plurifamiliar', 'UsoSuelo');
-    loadLayer('Alcaldías CDMX', 'Alcaldias');
-    loadLayer('Municipios Edo. Mex.', 'Municipios');
-    loadLayer('Poligono Región Vallejo', 'Poligono');
-    loadLayer('Poligono Azcapotzalco', 'Poligono');
-    loadLayer('Poligono Benito Juárez', 'Poligono');
-    loadLayer('Poligono Cuauhtémoc', 'Poligono');
-    loadLayer('Poligono Ecatepec', 'Poligono');
-    loadLayer('Poligono M. Hidalgo', 'Poligono');
-    loadLayer('Poligono Nezahualcoyotl', 'Poligono');
-    loadLayer('Colonias Azcapotzalco', 'Col');
-    loadLayer('Colonias Benito Juárez', 'Col');
-    loadLayer('Colonias Cuauhtemoc', 'Col');
-    loadLayer('Colonias Ecatepec', 'Col');
-    loadLayer('Colonias M. Hidalgo', 'Col');
-    loadLayer('Colonias Nezahualcoyotl', 'Col');
-    loadLayer('Bodega Aurrera', 'Competencias');
-    loadLayer('Bodega Aurrera Express', 'Competencias');
-    loadLayer('Chedraui Supercito', 'Competencias');
-    loadLayer('Iglesias', 'Competencias');
-    loadLayer('Mercados', 'Competencias');
-    loadLayer('Preescolar', 'Competencias');
-    loadLayer('Primarias', 'Competencias');
-    loadLayer('Tiendas 3B', 'Competencias');
-    loadLayer('Tiendas Neto', 'Competencias');
+
+        function updateLayerControls() {
+            // Eliminar el controlador de capas existente
+            if (layerControlContainer && map.hasLayer(layerControlContainer)) {
+                map.removeControl(layerControlContainer);
+            }
+
+            // Crear un nuevo controlador de capas
+            layerControlContainer.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'layer-control-container');
+                div.style.display = 'flex'; // Usar flexbox
+                div.style.flexDirection = 'column'; // Colocar en columna
+                div.style.alignItems = 'flex-center'; // Alinear a la derecha
+                div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
+                div.style.height = '100%';
+
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
+                    </div>
+                    <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
+                `;
+
+                // Crear un controlador base para las capas
+                const baseMaps = {
+                    "OpenStreetMap": osmLayer,
+                    "Google Road": googleRoadLayer,
+                    "Google Hybrid": googleHybridLayer
+                };
+
+                const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
+                layerControlBase.addTo(map);
+                div.appendChild(layerControlBase.getContainer());
+
+                // Crear un controlador para las capas GeoJSON
+                const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
+                geoJsonLayerControl.addTo(map);
+                div.appendChild(geoJsonLayerControl.getContainer());
+
+                // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
+                const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
+                layerControlUsoSuelo.addTo(map);
+                div.appendChild(layerControlUsoSuelo.getContainer());
+
+                const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
+                layerControlAlcaldias.addTo(map);
+                div.appendChild(layerControlAlcaldias.getContainer());
+
+                const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
+                layerControlPoligonos.addTo(map);
+                div.appendChild(layerControlPoligonos.getContainer());
+
+                const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
+                layerControlColonias.addTo(map);
+                div.appendChild(layerControlColonias.getContainer());
+
+                const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
+                layerControlCompetencias.addTo(map);
+                div.appendChild(layerControlCompetencias.getContainer());
+
+                // Crear un controlador para las capas de radios y diferencia
+                const radiusLayers = {
+                    "Radio 400m": radius400Layer,
+                    "Radio 800m": radius800Layer,
+                    "Diferencia Radios": differenceLayerGroup,
+                    "Buffer Ageb": bufferLayerGroup,
+                    "Diferencia Ageb": differenceExtractionLayerGroup
+                };
+
+                const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+                radiusLayerControl.addTo(map);
+                div.appendChild(radiusLayerControl.getContainer());
+
+                // Estilos iniciales para el contenedor contraído
+                div.style.width = '25px';
+                div.style.height = '25px';
+                div.style.overflow = 'hidden';
+                div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
+
+                // Agregar eventos para desplegar y replegar el controlador
+                div.addEventListener('mouseover', function() {
+                    div.style.width = '280px';
+                    div.style.height = 'auto';
+                    div.style.overflow = 'auto';
+                });
+
+                div.addEventListener('mouseout', function(event) {
+                    if (!div.contains(event.relatedTarget)) {
+                        div.style.width = '25px';
+                        div.style.height = '25px';
+                        div.style.overflow = 'hidden';
+                    }
+                });
+
+                return div;
+            };
+
+            // Agregar el contenedor del controlador al mapa
+            layerControlContainer.addTo(map);
+        }
+               
+        // Cargar capas GeoJSON desde archivos bajo demanda
+        loadLayer('Ageb CDMX', 'Ageb');
+        loadLayer('Ageb Edo. Mex.', 'Ageb');
+        loadLayer('Uso de suelo Centro Barrio', 'UsoSuelo');
+        loadLayer('Uso de suelo Equipamento', 'UsoSuelo');
+        loadLayer('Uso de suelo Habitacional Comercio', 'UsoSuelo');
+        loadLayer('Uso de suelo Planta Baja', 'UsoSuelo');
+        loadLayer('Uso de suelo Entrada', 'UsoSuelo');
+        loadLayer('Uso de suelo Mixto', 'UsoSuelo');
+        loadLayer('Uso de suelo Oficinas', 'UsoSuelo');
+        loadLayer('Uso de suelo Plurifamiliar', 'UsoSuelo');
+        loadLayer('Alcaldías CDMX', 'Alcaldias');
+        loadLayer('Municipios Edo. Mex.', 'Municipios');
+        loadLayer('Poligono Región Vallejo', 'Poligono');
+        loadLayer('Poligono Azcapotzalco', 'Poligono');
+        loadLayer('Poligono Benito Juárez', 'Poligono');
+        loadLayer('Poligono Cuauhtémoc', 'Poligono');
+        loadLayer('Poligono Ecatepec', 'Poligono');
+        loadLayer('Poligono M. Hidalgo', 'Poligono');
+        loadLayer('Poligono Nezahualcoyotl', 'Poligono');
+        loadLayer('Colonias Azcapotzalco', 'Col');
+        loadLayer('Colonias Benito Juárez', 'Col');
+        loadLayer('Colonias Cuauhtemoc', 'Col');
+        loadLayer('Colonias Ecatepec', 'Col');
+        loadLayer('Colonias M. Hidalgo', 'Col');
+        loadLayer('Colonias Nezahualcoyotl', 'Col');
+        loadLayer('Bodega Aurrera', 'Competencias');
+        loadLayer('Bodega Aurrera Express', 'Competencias'); 
+        loadLayer('Chedraui Supercito', 'Competencias'); 
+        loadLayer('Iglesias', 'Competencias'); 
+        loadLayer('Mercados', 'Competencias'); 
+        loadLayer('Preescolar', 'Competencias'); 
+        loadLayer('Primarias', 'Competencias'); 
+        loadLayer('Tiendas 3B', 'Competencias'); 
+        loadLayer('Tiendas Neto', 'Competencias'); 
         
         
 
