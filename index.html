@@ -738,7 +738,7 @@
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function(feature, latlng) {
                             let icono = null;
-                
+        
                             if (type === 'Competencias') {
                                 // Usar 'name' del GeoJSON para capas de competencias
                                 icono = iconosPersonalizados[data.name];
@@ -748,7 +748,7 @@
                                 icono = iconosPersonalizados[feature.properties.layerName];
                                 console.log("layerName:", feature.properties.layerName); //Para depurar
                             }
-                
+        
                             if (!icono) {
                                 // Usar icono predeterminado si no se encuentra
                                 icono = L.icon({
@@ -785,6 +785,19 @@
                                 }
                                 layer.bindPopup(popupContent).openPopup();
                             });
+        
+                            // Agregar etiqueta POB1 si es una capa AGEB
+                            if (type === 'Ageb' && feature.properties && feature.properties.POB1) {
+                                const divIcon = L.divIcon({
+                                    className: 'pob1-label',
+                                    html: `<div>${feature.properties.POB1}</div>`,
+                                    iconSize: [40, 20],
+                                    iconAnchor: [20, 10]
+                                });
+                                layer.pob1Label = L.marker(layer.getBounds().getCenter(), { icon: divIcon });
+                                layer.pob1Label.addTo(map);
+                                layer.pob1Label.getElement().style.display = 'none'; // Ocultar inicialmente
+                            }
                         }
                     });
         
@@ -819,6 +832,24 @@
                     }
                     loadedLayers.add(layerName);
                     updateLayerControls(); // Asegúrate de que esto se llame aquí
+        
+                    // Agregar listener para el evento "zoomend"
+                    map.on('zoomend', function () {
+                        if (map.getZoom() >= 16) {
+                            geoJsonLayersAgeb.eachLayer(function (layer) {
+                                if (layer.pob1Label) {
+                                    layer.pob1Label.getElement().style.display = 'block';
+                                }
+                            });
+                        } else {
+                            geoJsonLayersAgeb.eachLayer(function (layer) {
+                                if (layer.pob1Label) {
+                                    layer.pob1Label.getElement().style.display = 'none';
+                                }
+                            });
+                        }
+                    });
+        
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
