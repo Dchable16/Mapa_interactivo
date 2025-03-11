@@ -166,7 +166,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script>
-    // Inicializar el mapa centrado en las coordenadas especificadas
+     // Inicializar el mapa centrado en las coordenadas especificadas
     const map = L.map("map").setView([19.4326, -99.1332], 12);
     const formToggleBtn = document.getElementById('form-toggle-btn');
     const sideForm = document.getElementById('side-form');
@@ -290,7 +290,7 @@
         const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
         radius === 400 ? radius400Layer.addLayer(circle) : radius800Layer.addLayer(circle);
     }
-function calculateDifference() {
+    function calculateDifference() {
         if (currentMarker && radius400m && radius800m) {
             const latLng = currentMarker.getLatLng();
             const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
@@ -423,7 +423,7 @@ function calculateDifference() {
         intersection.properties.extractionPercentage = extractionPercentage;
         intersection.properties.populationTotal = Math.floor(populationTotal);
     }
-        function generateReport() {
+    function generateReport() {
         if (ageb400Data.length === 0 && ageb800Data.length === 0) {
             alert("No hay datos para generar el reporte.");
             return;
@@ -459,11 +459,27 @@ function calculateDifference() {
         link.click();
     }
 
-    // Función para cargar capas GeoJSON desde archivos
-    function loadGeoJSON(url, layerName, type, callback) {
+    // Función para cargar capas GeoJSON desde archivos bajo demanda
+    function loadLayer(layerName, type) {
+        const layerUrls = {
+            'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
+            'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson',
+            'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson',
+            'Alcaldías CDMX': 'Alcaldias_Ciudad_de_México.geojson',
+            // Agregar más capas según sea necesario
+        };
+
+        if (layerUrls[layerName]) {
+            loadGeoJSON(layerUrls[layerName], layerName, type);
+        } else {
+            console.error('URL de capa no encontrada para:', layerName);
+        }
+    }
+
+    // Función para cargar GeoJSON
+    function loadGeoJSON(url, layerName, type) {
         if (loadedLayers.has(layerName)) {
             console.log(`La capa ${layerName} ya ha sido cargada.`);
-            if (callback) callback();
             return;
         }
 
@@ -492,17 +508,15 @@ function calculateDifference() {
                 }).addTo(map);
 
                 loadedLayers.add(layerName);
-                if (callback) callback();
             })
             .catch(err => console.error('Error al cargar GeoJSON:', err));
     }
-        // Localización en tiempo real
+    // Localización en tiempo real
     let watchId = null;
     let realtimeMarker = null;
     const realtimeLocationBtn = document.getElementById('realtime-location-button');
     const useLocationBtn = document.getElementById('useLocationBtn');
     let isRealtimeLocationActive = false;
-    let previousLatLng = null;
 
     realtimeLocationBtn.addEventListener('click', () => {
         isRealtimeLocationActive ? stopRealtimeLocation() : startRealtimeLocation();
@@ -653,7 +667,81 @@ function calculateDifference() {
             loadingIndicator.style.display = 'none';
         });
     }
+    // Función para cargar capas GeoJSON desde archivos bajo demanda
+    function loadLayer(layerName, type) {
+        const layerUrls = {
+            'Ageb CDMX': 'Ageb_urb_CDMX.geojson',
+            'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson',
+            'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson',
+            'Alcaldías CDMX': 'Alcaldias_Ciudad_de_México.geojson',
+            // Agregar más capas según sea necesario
+        };
 
-        </script>
+        if (layerUrls[layerName]) {
+            loadGeoJSON(layerUrls[layerName], layerName, type);
+        } else {
+            console.error('URL de capa no encontrada para:', layerName);
+        }
+    }
+
+    // Función para cargar GeoJSON
+    function loadGeoJSON(url, layerName, type) {
+        if (loadedLayers.has(layerName)) {
+            console.log(`La capa ${layerName} ya ha sido cargada.`);
+            return;
+        }
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                return response.json();
+            })
+            .then(data => {
+                const geoJsonLayer = L.geoJSON(data, {
+                    pointToLayer: function(feature, latlng) {
+                        return L.marker(latlng, { icon: iconosPersonalizados[feature.properties.layerName] || defaultIcon });
+                    },
+                    style: (feature) => {
+                        return { color: 'blue', weight: 2, fillOpacity: 0.5 };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        layer.on('click', () => {
+                            let popupContent = "<b>Atributos:</b><br>";
+                            for (const key in feature.properties) {
+                                popupContent += `${key}: ${feature.properties[key]}<br>`;
+                            }
+                            layer.bindPopup(popupContent).openPopup();
+                        });
+                    }
+                }).addTo(map);
+
+                loadedLayers.add(layerName);
+            })
+            .catch(err => console.error('Error al cargar GeoJSON:', err));
+    }
+    // Función para manejar el evento de clic en el botón de descarga del reporte
+    document.getElementById('download-report-btn').addEventListener('click', generateReport);
+
+    // Función para manejar el evento de clic en el botón de competencias
+    competenciasButton.addEventListener('click', () => {
+        if (currentMarker) {
+            findNearbyPOIs(currentMarker.getLatLng());
+        } else {
+            alert("Primero debe agregar un marcador.");
+        }
+    });
+
+    // Función para inicializar el mapa y cargar las capas necesarias al inicio
+    function initializeMap() {
+        loadLayer('Ageb CDMX', 'Ageb');
+        loadLayer('Ageb Edo. Mex.', 'Ageb');
+        loadLayer('Uso de suelo Centro Barrio', 'UsoSuelo');
+        loadLayer('Alcaldías CDMX', 'Alcaldias');
+        // Agregar más capas según sea necesario
+    }
+
+    // Llamar a la función de inicialización al cargar el documento
+    document.addEventListener('DOMContentLoaded', initializeMap);    
+</script>
 </body>
 </html>
