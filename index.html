@@ -775,12 +775,15 @@
                                 feature.properties['Área polígono'] = area;
                             }
                             if (type === 'Ageb') { // Solo para capas AGEB
-                                // Crear etiqueta con el valor de POB1 sin cuadro de texto
-                                layer.bindLabel(feature.properties.POB1.toString(), {
-                                    noHide: true, // Mantener la etiqueta siempre visible
-                                    direction: 'center',
-                                    className: 'ageb-label'
-                                });
+                                if (L.Label) { // Verificar si L.Label está definido
+                                    layer.bindLabel(feature.properties.POB1.toString(), {
+                                        noHide: true,
+                                        direction: 'center',
+                                        className: 'ageb-label'
+                                    });
+                                } else {
+                                    console.error('leaflet.label no se ha cargado.');
+                                }
                             }
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
