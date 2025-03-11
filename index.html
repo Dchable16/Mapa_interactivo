@@ -12,13 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-   <style>
+    <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .red-marker {background-color: Red; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; }
         .marker-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); color: red; text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white; font-weight: bold; font-size: 14px; white-space: nowrap; padding: 5px; }
         #side-form {
-            display: none; /* Ocultar por defecto */
+            display: none; 
             background-color: #f8f8f8;
             padding: 10px;
             border-radius: 8px;
@@ -35,27 +35,22 @@
         }
         #form-toggle-btn {
             position: fixed;
-            left: 0; /* Asegurarnos de que esté en el margen izquierdo */
+            left: 0; 
             top: 50%;
             transform: translateY(-50%);
             background-color: #e0e0e0;
             border: none;
-            border-radius: 0 70% 70% 0; /* Redondear solo las esquinas derechas */
-            width: 40px; /* Ajustar el ancho */
-            height: 65px; /* Ajustar la altura */
+            border-radius: 0 70% 70% 0; 
+            width: 40px; 
+            height: 65px; 
             cursor: pointer;
             z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0; /* Eliminar el padding */
+            padding: 0; 
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            background-color: white; /* Color de fondo */
-            
-        }
-        
-        #form-toggle-btn i { /* Estilo para el icono dentro del botón */
-            font-size: 24px; /* Ajustar el tamaño del icono */
+            background-color: white; 
         }
         #close-form-btn {
             background-color: #e0e0e0;
@@ -99,13 +94,6 @@
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
             width: 15.5px;
             height: 15.5px;
-        }
-       .ageb-label {
-            background: transparent; /* Fondo transparente */
-            border: none; /* Sin borde */
-            padding: 0; /* Sin relleno */
-            font-size: 12px; /* Ajusta el tamaño de la fuente si es necesario */
-            font-weight: bold; /* Opcional: texto en negrita */
         }
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
