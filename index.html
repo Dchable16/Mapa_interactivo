@@ -690,6 +690,9 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
+
+        //Cargar layergroup
+        let geoJsonLayersAgeb = L.featureGroup(); // O L.layerGroup();
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
@@ -809,7 +812,7 @@
                             } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
                                 agebEdoMexLayer = geoJsonLayer;
                             }
-                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            geoJsonLayersAgeb.addLayer(geoJsonLayer); // Asegúrate de que esto esté aquí
                             break;
                         case 'UsoSuelo':
                             geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
