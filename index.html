@@ -204,7 +204,7 @@
                 document.getElementById('zoom-value').textContent = currentZoom;
         
                 // Mostrar u ocultar etiquetas según el nivel de zoom
-                if (currentZoom < 12) {
+                if (currentZoom < 16) {
                     // Ocultar etiquetas
                     Object.values(geoJsonLayersAgeb).forEach(layer => {
                         layer.eachLayer(function(marker) {
