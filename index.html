@@ -210,7 +210,6 @@
                                     const centroid = turf.centroid(polygon.toGeoJSON());
                                     const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
         
-                                    // Mostrar etiqueta
                                     polygon.bindLabel(polygon.feature.properties.POB1.toString(), {
                                         noHide: true,
                                         direction: 'center',
@@ -220,8 +219,10 @@
                                     console.error("Error al calcular el centroide:", error);
                                 }
                             } else {
-                                // Ocultar etiqueta
-                                polygon.unbindLabel();
+                                // Ocultar etiqueta solo si existe
+                                if (polygon._leaflet_label) {
+                                    polygon.unbindLabel();
+                                }
                             }
                         }
                     });
@@ -506,12 +507,15 @@
                     L.geoJSON(featuresWithinBuffer, {
                         style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
-                            // Crear etiqueta con el valor de POB1
-                            layer.bindTooltip(feature.properties.POB1.toString(), {
-                                permanent: true,
-                                direction: 'center',
-                                className: 'ageb-label'
-                            }).openTooltip();
+                            if (type === 'Ageb') { // Solo para capas AGEB
+                                layer.bindTooltip(feature.properties.POB1.toString(), {
+                                    permanent: true,
+                                    direction: 'center',
+                                    className: 'ageb-label',
+                                    offset: [0, 0],
+                                    opacity: 1
+                                }).openTooltip();
+                            }
                             ageb400Data.push(feature.properties); // Almacenar atributos
                             layer.on('click', function () {
                                 let popupContent = "<b>Atributos:</b><br>";
