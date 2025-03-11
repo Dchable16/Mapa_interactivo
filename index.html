@@ -192,28 +192,35 @@
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
         let debounceTimer; // Variable para el debounce
-        map.on('zoomend', function() {
+       map.on('zoomend moveend', function() { // Escuchar también el evento moveend
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const currentZoom = map.getZoom();
                 document.getElementById('zoom-value').textContent = currentZoom;
+                const bounds = map.getBounds(); // Obtener los límites visibles del mapa
         
-                // Mostrar u ocultar etiquetas según el nivel de zoom
-                if (currentZoom < 16) {
-                    // Ocultar etiquetas
-                    Object.values(geoJsonLayersAgeb).forEach(layer => {
-                        layer.eachLayer(function(marker) {
-                            marker.closeTooltip(); // Cerrar tooltip si está abierto
-                        });
+                Object.values(geoJsonLayersAgeb).forEach(layer => {
+                    layer.eachLayer(function(marker) {
+                        const markerId = L.Util.stamp(marker); // Obtener un ID único para el marcador
+                        const isVisible = bounds.contains(marker.getLatLng()); // Verificar si el marcador está visible
+        
+                        if (currentZoom >= 16 && isVisible) {
+                            if (!visibleLabels.has(markerId)) { // Verificar si la etiqueta ya existe
+                                marker.bindLabel(marker.feature.properties.POB1.toString(), {
+                                    noHide: true,
+                                    direction: 'center',
+                                    className: 'ageb-label'
+                                });
+                                visibleLabels.add(markerId); // Agregar la etiqueta al conjunto de etiquetas visibles
+                            }
+                        } else {
+                            if (visibleLabels.has(markerId)) {
+                                marker.unbindLabel();
+                                visibleLabels.delete(markerId); // Eliminar la etiqueta del conjunto de etiquetas visibles
+                            }
+                        }
                     });
-                } else {
-                    // Mostrar etiquetas solo si el nivel de zoom es suficiente
-                    Object.values(geoJsonLayersAgeb).forEach(layer => {
-                        layer.eachLayer(function(marker) {
-                            marker.openTooltip(); // Abrir tooltip
-                        });
-                    });
-                }
+                });
             }, 300); // Ajusta el tiempo de debounce según sea necesario
         });
 
