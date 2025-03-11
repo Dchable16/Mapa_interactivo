@@ -191,29 +191,33 @@
         // Inicializar el contenedor de control de capas
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
-        let debounceTimer; // Variable para el debounce
+       let debounceTimer; // Variable para el debounce
        map.on('zoomend moveend', function() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const currentZoom = map.getZoom();
                 document.getElementById('zoom-value').textContent = currentZoom;
-                const bounds = map.getBounds();
         
                 Object.values(geoJsonLayersAgeb).forEach(layer => {
-                    layer.eachLayer(function(polygon) { // Cambiar 'marker' a 'polygon'
-                        if (polygon instanceof L.Polygon) { // Verificar si es un polígono
-                            try {
-                                const centroid = turf.centroid(polygon.toGeoJSON());
-                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
-                                const isVisible = bounds.contains(latLng);
+                    layer.eachLayer(function(polygon) {
+                        if (polygon instanceof L.Polygon) {
+                            if (currentZoom >= 16) {
+                                try {
+                                    const centroid = turf.centroid(polygon.toGeoJSON());
+                                    const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
         
-                                if (currentZoom >= 16 && isVisible) {
-                                    // ... código para mostrar la etiqueta ...
-                                } else {
-                                    // ... código para ocultar la etiqueta ...
+                                    // Mostrar etiqueta
+                                    polygon.bindLabel(polygon.feature.properties.POB1.toString(), {
+                                        noHide: true,
+                                        direction: 'center',
+                                        className: 'ageb-label'
+                                    });
+                                } catch (error) {
+                                    console.error("Error al calcular el centroide:", error);
                                 }
-                            } catch (error) {
-                                console.error("Error al calcular el centroide:", error);
+                            } else {
+                                // Ocultar etiqueta
+                                polygon.unbindLabel();
                             }
                         }
                     });
