@@ -203,7 +203,6 @@
                 document.getElementById('zoom-value').textContent = currentZoom;
         
                 Object.values(geoJsonLayersAgeb).forEach(layer => {
-                    // Verificar si la capa está visible
                     if (map.hasLayer(layer)) {
                         layer.eachLayer(function(polygon) {
                             if (polygon instanceof L.Polygon) {
@@ -212,11 +211,17 @@
                                         const centroid = turf.centroid(polygon.toGeoJSON());
                                         const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
         
-                                        polygon.bindLabel(polygon.feature.properties.POB1.toString(), {
-                                            noHide: true,
-                                            direction: 'center',
-                                            className: 'ageb-label'
-                                        });
+                                        // Verificar si leaflet.label esta cargado
+                                        if (typeof polygon.bindLabel === 'function') {
+                                            polygon.bindLabel(polygon.feature.properties.POB1.toString(), {
+                                                noHide: true,
+                                                direction: 'center',
+                                                className: 'ageb-label'
+                                            });
+                                        } else {
+                                            console.error("leaflet.label no esta cargado");
+                                        }
+        
                                     } catch (error) {
                                         console.error("Error al calcular el centroide:", error);
                                     }
