@@ -198,12 +198,15 @@
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
        function renderLabels(map, markers) {
+          console.log("renderLabels ejecutado, zoom:", map.getZoom()); // Log de depuración
+        
           if (map.getZoom() >= 16) {
             markers.eachLayer(function (polygon) {
               if (polygon instanceof L.Polygon) {
                 try {
                   const centroid = turf.centroid(polygon.toGeoJSON());
                   const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+                  console.log("Centroide calculado:", latLng); // Log de depuración
         
                   if (!polygon.label) {
                     polygon.label = L.marker(latLng, {
@@ -229,6 +232,21 @@
             });
           }
         }
+        
+        // Actualización del nivel de zoom
+        function updateZoomLevel() {
+          document.getElementById('zoom-value').textContent = map.getZoom();
+        }
+        
+        // Evento zoomend moveend
+        map.on('zoomend moveend', function() {
+          console.log("Evento zoomend moveend disparado"); // Log de depuración
+          updateZoomLevel();
+          renderLabels(map, geoJsonLayersAgeb); // Asegúrate de que geoJsonLayersAgeb esté definido y contenga los polígonos
+        });
+        
+        // Inicialización del nivel de zoom
+        updateZoomLevel();
 
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
