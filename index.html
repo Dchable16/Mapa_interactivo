@@ -197,7 +197,6 @@
         const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
 
         let debounceTimer; // Variable para el debounce
-
         map.on('zoomend', function() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
@@ -205,7 +204,7 @@
                 document.getElementById('zoom-value').textContent = currentZoom;
         
                 // Mostrar u ocultar etiquetas según el nivel de zoom
-                if (currentZoom < 16) {
+                if (currentZoom < 12) {
                     // Ocultar etiquetas
                     Object.values(geoJsonLayersAgeb).forEach(layer => {
                         layer.eachLayer(function(marker) {
@@ -213,7 +212,7 @@
                         });
                     });
                 } else {
-                    // Mostrar etiquetas
+                    // Mostrar etiquetas solo si el nivel de zoom es suficiente
                     Object.values(geoJsonLayersAgeb).forEach(layer => {
                         layer.eachLayer(function(marker) {
                             marker.openTooltip(); // Abrir tooltip
