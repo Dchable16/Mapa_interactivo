@@ -240,9 +240,9 @@
         
         // Evento zoomend moveend
         map.on('zoomend moveend', function() {
-          console.log("Evento zoomend moveend disparado"); // Log de depuración
-          updateZoomLevel();
-          renderLabels(map, geoJsonLayersAgeb); // Asegúrate de que geoJsonLayersAgeb esté definido y contenga los polígonos
+          console.log("Evento zoomend moveend disparado");
+            document.getElementById('zoom-value').textContent = map.getZoom();
+            renderLabels(map, agebLayerGroup); // Verifica que agebLayerGroup se pasa aquí
         });
         
         // Inicialización del nivel de zoom
@@ -752,6 +752,9 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
+
+        // Crear un L.LayerGroup para los polígonos AGEB
+        const agebLayerGroup = L.layerGroup();
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
@@ -860,6 +863,7 @@
                                 agebEdoMexLayer = geoJsonLayer;
                             }
                             geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            agebLayerGroup.addLayer(geoJsonLayer); // Agrega esta línea
                             break;
                         case 'UsoSuelo':
                             geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
@@ -885,6 +889,40 @@
                     if (callback) callback();
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
+            // Función para renderizar las etiquetas AGEB
+            function renderLabels(map, markers) {
+                console.log("renderLabels ejecutado, zoom:", map.getZoom());
+                if (map.getZoom() >= 16) {
+                    markers.eachLayer(function (polygon) {
+                        if (polygon instanceof L.Polygon) {
+                            try {
+                                const centroid = turf.centroid(polygon.toGeoJSON());
+                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+                                console.log("Centroide calculado:", latLng);
+                                if (!polygon.label) {
+                                    polygon.label = L.marker(latLng, {
+                                        icon: L.divIcon({
+                                            html: '<div class="ageb-label">' + polygon.feature.properties.POB1.toString() + '</div>',
+                                            className: 'ageb-icon',
+                                            iconSize: [100, 30],
+                                            iconAnchor: [50, 15]
+                                        })
+                                    }).addTo(map);
+                                }
+                            } catch (error) {
+                                console.error("Error al calcular el centroide:", error);
+                            }
+                        }
+                    });
+                } else {
+                    markers.eachLayer(function (polygon) {
+                        if (polygon.label) {
+                            map.removeLayer(polygon.label);
+                            polygon.label = null;
+                        }
+                    });
+                }
+            }
         }
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
