@@ -211,7 +211,6 @@
                                         const centroid = turf.centroid(polygon.toGeoJSON());
                                         const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
         
-                                        // Verificar si leaflet.label esta cargado
                                         if (typeof polygon.bindLabel === 'function') {
                                             polygon.bindLabel(polygon.feature.properties.POB1.toString(), {
                                                 noHide: true,
@@ -219,7 +218,7 @@
                                                 className: 'ageb-label'
                                             });
                                         } else {
-                                            console.error("leaflet.label no esta cargado");
+                                            console.error("leaflet.label no está cargado");
                                         }
         
                                     } catch (error) {
