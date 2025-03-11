@@ -169,8 +169,8 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
-        // Función para mostrar etiquetas permanentes para las capas AGEB
-        function showPermanentLabels() {
+        // Función para mostrar etiquetas temporales para las capas AGEB
+        function updateVisibleLabels() {
             // Obtener límites del mapa
             const bounds = map.getBounds();
         
@@ -186,7 +186,6 @@
                     if (bounds.contains(featureLayer.getLatLng())) {
                         // Crear y agregar la etiqueta
                         const label = L.tooltip({
-                            permanent: true,
                             direction: 'top',
                             className: 'ageb-label',
                             opacity: 1
@@ -200,9 +199,9 @@
             });
         }
         
-        // Llamar a showPermanentLabels al cargar el mapa y al mover el mapa
-        map.on('load', showPermanentLabels);
-        map.on('moveend', showPermanentLabels);
+        // Llamar a updateVisibleLabels en los eventos moveend y zoomend
+        map.on('moveend', updateVisibleLabels);
+        map.on('zoomend', updateVisibleLabels);
 
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
