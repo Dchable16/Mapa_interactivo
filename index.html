@@ -19,6 +19,7 @@
     <button id="realtime-location-button">Localización en Tiempo Real</button>
     <button id="useLocationBtn">Usar Localización</button>
     <button id="competencias-button">Competencias</button>
+    <button id="calculate-btn">Calcular</button>
     <div id="loading-indicator">Cargando...</div>
     Latitud: <input type="text" id="lat"><br>
     Longitud: <input type="text" id="lon">
@@ -89,11 +90,7 @@
         });
         const iconosPersonalizados = {
             'Bodega_Aurrera': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Bodega_Aurrera_Express': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Chedraui_Supercito': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/532dbbc949250be6d8136bf1810083f1a2c97d36/Chedraui.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Iglesias': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Iglesia.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Mercados': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Mercado.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
-            'Preescolar': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
+            'Bodega_Aurrera_Express': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Bodega_Aurrera.png', iconSize:[20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
             'Primarias': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Escuela.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
             'Tiendas_3B': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Captura-removebg-preview.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] }),
             'Tiendas_Neto': L.icon({ iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/2c9adbc2ea04e932363488957608dc5cecb59526/Tienda_neto.png', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -20] })
@@ -160,7 +157,7 @@
 
         function loadLayer(layerName, type) {
             const layerUrls = {
-                'Ageb CDMX': 'Ageb_urb_CDMX.geojson', 'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson', 'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson', 'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson', 'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson', 'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson', 'Region Vallejo': 'Region_Vallejo.geojson', 'Alcaldias': 'Alcaldias.geojson', 'Municipios': 'Municipios.geojson', 'Poligono': 'Poligono.geojson', 'Colonias': 'Colonias.geojson', 'Competencias': 'Competencias.geojson'
+                'Ageb CDMX': 'Ageb_urb_CDMX.geojson', 'Ageb Edo. Mex.': 'Ageb_urb_Edo_Mex.geojson', 'Uso de suelo Centro Barrio': 'Uso_suelo_centro_barrio.geojson', 'Uso de suelo Equipamento': 'Uso_suelo_equipamento.geojson', 'Uso de suelo Habitacional Comercio': 'Uso_suelo_habitacional_comercio.geojson', 'Uso de suelo Planta Baja': 'Uso_suelo_habitacional_comercio_planta_baja.geojson', 'Uso de suelo Entrada': 'Uso_suelo_habitacional_entrada.geojson', 'Uso de suelo Mixto': 'Uso_suelo_habitacional_mixto.geojson', 'Uso de suelo Oficinas': 'Uso_suelo_habitacional_oficinas.geojson', 'Uso de suelo Plurifamiliar': 'Uso_suelo_habitacional_plurifamiliar.geojson', 'Region Vallejo': 'Region_Vallejo.geojson', 'Alcaldias': 'Alcaldias.geojson', 'Municipios': 'Municipios.geojson', 'Poligono': 'Poligigono.geojson', 'Colonias': 'Colonias.geojson', 'Competencias': 'Competencias.geojson'
             };
             const url = layerUrls[layerName];
             if (url) { loadGeoJSON(url, layerName, type); } else { console.error(`URL no encontrada para la capa: ${layerName}`); }
@@ -293,7 +290,7 @@
             map.addLayer(poiMarkers);
             for (const categoria in categorias) {
                 const { query, icon } = categorias[categoria];
-                const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=geojson&viewbox=${lon - 0.01},${lat - 0.01},${lon + 0.01},${lat + 0.01}&bounded=1`;
+                const url = `https://nominatim.openstreetmap.org/search?q=<span class="math-inline">\{query\}&format\=geojson&viewbox\=</span>{lon - 0.01},<span class="math-inline">\{lat \- 0\.01\},</span>{lon + 0.01},${lat + 0.01}&bounded=1`;
                 requestQueue.push({ url, icon });
             }
             if (!isProcessingQueue) { processRequestQueue(); }
@@ -352,6 +349,72 @@
                 currentMarker = L.marker(latlng, { icon: customIcon }).addTo(map);
             } else {
                 alert("La localización en tiempo real no está activa.");
+            }
+        });
+
+        // --- Funciones para calcular radios, AGEB y extracción ---
+
+        function calcular(lat, lon) {
+            clearLayers();
+            const center = turf.point([lon, lat]);
+            const options = { steps: 64, units: 'meters' };
+            const circle400 = turf.circle(center, 400, options);
+            const circle800 = turf.circle(center, 800, options);
+            L.geoJSON(circle400, { style: { color: 'red', fillOpacity: 0 } }).addTo(radius400Layer);
+            L.geoJSON(circle800, { style: { color: 'blue', fillOpacity: 0 } }).addTo(radius800Layer);
+            calcularAGEB(circle400, circle800);
+        }
+
+        function clearLayers() {
+            radius400Layer.clearLayers();
+            radius800Layer.clearLayers();
+            differenceLayerGroup.clearLayers();
+            bufferLayerGroup.clearLayers();
+            differenceExtractionLayerGroup.clearLayers();
+            ageb400Data = [];
+            ageb800Data = [];
+        }
+
+        function calcularAGEB(circle400, circle800) {
+            function processAgebLayer(layer, circle, dataArray) {
+                if (!layer) return;
+                layer.eachLayer(agebLayer => {
+                    if (agebLayer instanceof L.GeoJSON) {
+                        agebLayer.eachLayer(featureLayer => {
+                            if (featureLayer.feature) {
+                                const intersection = turf.intersect(circle, featureLayer.feature);
+                                if (intersection) {
+                                    const originalArea = turf.area(featureLayer.feature);
+                                    const extractedArea = turf.area(intersection);
+                                    const extractionPercentage = (extractedArea / originalArea) * 100;
+                                    dataArray.push({
+                                        POB1: featureLayer.feature.properties.POB1,
+                                        originalArea: originalArea,
+                                        extractedArea: extractedArea,
+                                        extractionPercentage: extractionPercentage,
+                                        populationTotal: featureLayer.feature.properties.POBTOT
+                                    });L.geoJSON(intersection, { style: { color: 'green', fillOpacity: 0.5 } }).addTo(differenceExtractionLayerGroup);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            processAgebLayer(agebCDMXLayer, circle400, ageb400Data);
+            processAgebLayer(agebEdoMexLayer, circle400, ageb400Data);
+            processAgebLayer(agebCDMXLayer, circle800, ageb800Data);
+            processAgebLayer(agebEdoMexLayer, circle800, ageb800Data);
+        }
+
+        document.getElementById('calculate-btn').addEventListener('click', () => {
+            if (currentMarker) {
+                const latlng = currentMarker.getLatLng();
+                calcular(latlng.lat, latlng.lng);
+            } else if (realtimeMarker) {
+                const latlng = realtimeMarker.getLatLng();
+                calcular(latlng.lat, latlng.lng);
+            } else {
+                alert("Por favor, coloca un marcador o activa la localización en tiempo real.");
             }
         });
 
