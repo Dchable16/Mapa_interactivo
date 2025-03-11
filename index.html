@@ -1001,33 +1001,12 @@
                     };
         
                     const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
-                    layerControlBase.addTo(map);
-                    div.appendChild(layerControlBase.getContainer());
-        
                     const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
-                    geoJsonLayerControl.addTo(map);
-                    div.appendChild(geoJsonLayerControl.getContainer());
-        
                     const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
-                    layerControlUsoSuelo.addTo(map);
-                    div.appendChild(layerControlUsoSuelo.getContainer());
-        
                     const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
-                    layerControlAlcaldias.addTo(map);
-                    div.appendChild(layerControlAlcaldias.getContainer());
-        
                     const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
-                    layerControlPoligonos.addTo(map);
-                    div.appendChild(layerControlPoligonos.getContainer());
-        
                     const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
-                    layerControlColonias.addTo(map);
-                    div.appendChild(layerControlColonias.getContainer());
-        
                     const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
-                    layerControlCompetencias.addTo(map);
-                    div.appendChild(layerControlCompetencias.getContainer());
-        
                     const radiusLayers = {
                         "Radio 400m": radius400Layer,
                         "Radio 800m": radius800Layer,
@@ -1035,9 +1014,26 @@
                         "Buffer Ageb": bufferLayerGroup,
                         "Diferencia Ageb": differenceExtractionLayerGroup
                     };
-        
                     const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
+        
+                    // Agregar los controles al mapa ANTES de agregarlos al div
+                    layerControlBase.addTo(map);
+                    geoJsonLayerControl.addTo(map);
+                    layerControlUsoSuelo.addTo(map);
+                    layerControlAlcaldias.addTo(map);
+                    layerControlPoligonos.addTo(map);
+                    layerControlColonias.addTo(map);
+                    layerControlCompetencias.addTo(map);
                     radiusLayerControl.addTo(map);
+        
+                    // Ahora puedes agregarlos al div
+                    div.appendChild(layerControlBase.getContainer());
+                    div.appendChild(geoJsonLayerControl.getContainer());
+                    div.appendChild(layerControlUsoSuelo.getContainer());
+                    div.appendChild(layerControlAlcaldias.getContainer());
+                    div.appendChild(layerControlPoligonos.getContainer());
+                    div.appendChild(layerControlColonias.getContainer());
+                    div.appendChild(layerControlCompetencias.getContainer());
                     div.appendChild(radiusLayerControl.getContainer());
         
                     div.style.width = '25px';
