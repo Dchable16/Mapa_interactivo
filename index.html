@@ -735,7 +735,7 @@
         // Definición del objeto de caché
         const geoJsonCache = {};
 
-        // Crea Indice de búsqueda para las etiquetas Ageb
+        // Crea Indice de etiquetas Ageb
         function createAgebIndex(agebLayer) {
             const index = new rbush();
             const items = [];
@@ -755,25 +755,12 @@
         //Crear los indices cuando se carguen las capas ageb
         map.on('overlayadd', function(e) {
             if (e.name === 'Ageb CDMX') {
-                if(currentMarker){
-                    const latlng = currentMarker.getLatLng();
-                    loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
-                }
+                agebCDMXIndex = createAgebIndex(geoJsonLayersAgeb['Ageb CDMX']);
             } else if (e.name === 'Ageb Edo. Mex.') {
-                if(currentMarker){
-                    const latlng = currentMarker.getLatLng();
-                    loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
-                }
+                agebEdoMexIndex = createAgebIndex(geoJsonLayersAgeb['Ageb Edo. Mex.']);
             }
         });
-        map.on('overlayremove', function(e) {
-            if (e.name === 'Ageb CDMX') {
-                agebCDMXLabelsGroup.clearLayers();
-            } else if (e.name === 'Ageb Edo. Mex.') {
-                agebEdoMexLabelsGroup.clearLayers();
-            }
-        });
-        
+
         function loadAgebLabelsInRadius(latlng, agebIndex, labelsGroup, labelsCache) {
             labelsGroup.clearLayers();
             if (!agebIndex) return;
@@ -812,8 +799,8 @@
             });
         }
 
-        
 
+        
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
