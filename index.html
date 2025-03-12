@@ -457,6 +457,7 @@
                     }).setContent(feature.properties.POB1.toString());
         
                     const featureCoordinates = turf.getCoords(feature); // Obtener las coordenadas del feature
+                    console.log("Coordenadas del feature:", featureCoordinates); // Verificar el contenido de las coordenadas
         
                     // Verificar que las coordenadas sean válidas
                     if (featureCoordinates && featureCoordinates.length > 0) {
