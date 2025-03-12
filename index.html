@@ -455,16 +455,16 @@
                         className: 'ageb-label',
                         opacity: 1
                     }).setContent(feature.properties.POB1.toString());
-                
+        
                     const featureCoordinates = turf.getCoords(feature); // Obtener las coordenadas del feature
                     console.log("Coordenadas del feature:", featureCoordinates); // Verificar el contenido de las coordenadas
-                
+        
                     // Verificar que las coordenadas sean válidas
                     if (featureCoordinates && featureCoordinates.length > 0) {
                         const coords = featureCoordinates[0][0]; // Obtener el primer conjunto de coordenadas de MultiPolygon
                         const lat = coords[1]; // Latitud
                         const lng = coords[0]; // Longitud
-                
+        
                         // Verificar que lat y lng no sean null o undefined
                         if (lat !== null && lat !== undefined && lng !== null && lng !== undefined) {
                             label.setLatLng([lat, lng]); // Ajustar latitud y longitud
