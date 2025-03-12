@@ -416,6 +416,8 @@
             calculateDifference();
         }
 
+        let agebCDMXLayer; // Inicializar la variable para la capa AGEB CDMX
+        let agebEdoMexLayer; // Inicializar la variable para la capa AGEB Edo. Mex.
         let createdLabels = []; // Almacenar las etiquetas creadas
         let agebLayerActive = false; // Estado de la capa AGEB
         
@@ -458,6 +460,12 @@
                     turf.booleanIntersects(feature, buffer)
                 ));
         
+                // Extraer información de Ageb con el radio de 400m
+                extractBufferData();
+                
+                // Extraer información de Ageb con el radio de 800m
+                extractDifferenceData();
+        
                 // Crear etiquetas para cada feature dentro del buffer
                 featuresWithinBuffer.features.forEach(feature => {
                     const centroid = turf.centroid(feature); // Calcular el centroide del polígono
@@ -489,15 +497,9 @@
             } else {
                 alert("El marcador no está dentro de ninguna capa AGEB.");
             }
-        
-            // Extraer información de Ageb con el radio de 400m
-            extractBufferData();
-            
-            // Extraer información de Ageb con el radio de 800m
-            extractDifferenceData();
         }
         
-        // Controlador de capas para activar y desactivar la capa AGEB
+        // Controlador de capas
         const layerControl = L.control.layers(null, {
             "AGB CDMX": agebCDMXLayer,
             "AGB Edo. Mex.": agebEdoMexLayer,
@@ -516,6 +518,30 @@
                 toggleAgebLayer(false); // Desactiva las etiquetas
             }
         });
+        
+        // Función para cargar capas GeoJSON desde archivos
+        function loadGeoJSON(url, layerName, type, callback) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
+                    return response.json();
+                })
+                .then(data => {
+                    // Almacenar la capa en la variable correspondiente
+                    if (layerName === 'Ageb CDMX') {
+                        agebCDMXLayer = L.geoJSON(data);
+                    } else if (layerName === 'Ageb Edo. Mex.') {
+                        agebEdoMexLayer = L.geoJSON(data);
+                    }
+                    // Procesar los datos...
+                    if (callback) callback();
+                })
+                .catch(err => console.error('Error al cargar GeoJSON:', err));
+        }
+        
+        // Llamar a la función para cargar las capas
+        loadLayer('Ageb CDMX', 'Ageb');
+        loadLayer('Ageb Edo. Mex.', 'Ageb');
 
         let ageb400Data = [];
         let ageb800Data = [];
