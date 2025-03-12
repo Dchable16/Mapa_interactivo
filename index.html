@@ -312,6 +312,11 @@
                 map.removeLayer(currentMarker); // Eliminar el marcador del mapa
                 const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
                 currentMarker = null; // Limpiar la variable del marcador
+                // Limpiar las etiquetas creadas
+                createdLabels.forEach(label => {
+                    map.removeLayer(label); // Eliminar cada etiqueta del mapa
+                });
+                createdLabels = []; // Limpiar la lista de etiquetas creadas
                 
                 // Limpiar los marcadores de puntos de interés
                 poiMarkers.clearLayers(); // Limpiar todos los marcadores de POIs
