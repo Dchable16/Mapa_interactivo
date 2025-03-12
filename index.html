@@ -313,6 +313,12 @@
                 const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
                 currentMarker = null; // Limpiar la variable del marcador
                 
+                // Limpiar las etiquetas creadas
+                createdLabels.forEach(label => {
+                    map.removeLayer(label); // Eliminar cada etiqueta del mapa
+                });
+                createdLabels = []; // Limpiar la lista de etiquetas creadas
+                
                 // Limpiar los marcadores de puntos de interés
                 poiMarkers.clearLayers(); // Limpiar todos los marcadores de POIs
                 
@@ -416,11 +422,51 @@
             calculateDifference();
         }
 
+        // Variable para almacenar las etiquetas creadas
+        let createdLabels = [];
+        
+        // Función para extraer datos AGEB y crear etiquetas
         function extractAgebData() {
             if (!currentMarker) {
                 alert("Primero debe agregar un marcador.");
                 return;
             }
+        
+            const latLng = currentMarker.getLatLng();
+            const point = turf.point([latLng.lng, latLng.lat]);
+            const buffer = turf.circle([latLng.lng, latLng.lat], 1000, { units: 'meters' }); // Círculo de 1 km
+        
+            // Filtrar las capas AGEB
+            let selectedLayer = null;
+            if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                selectedLayer = agebCDMXLayer.toGeoJSON();
+            } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                selectedLayer = agebEdoMexLayer.toGeoJSON();
+            }
+        
+            if (selectedLayer) {
+                const featuresWithinBuffer = turf.featureCollection(selectedLayer.features.filter(feature => 
+                    turf.booleanIntersects(feature, buffer)
+                ));
+        
+                // Crear etiquetas para cada feature dentro del buffer
+                featuresWithinBuffer.features.forEach(feature => {
+                    const label = L.tooltip({
+                        permanent: true,
+                        direction: 'top',
+                        className: 'ageb-label',
+                        opacity: 1
+                    }).setContent(feature.properties.POB1.toString());
+        
+                    const featureCoordinates = turf.getCoords(feature); // Obtener las coordenadas del feature
+                    label.setLatLng([featureCoordinates[0][1], featureCoordinates[0][0]]); // Ajustar latitud y longitud
+                    label.addTo(map); // Agregar la etiqueta al mapa
+                    createdLabels.push(label); // Almacenar la etiqueta creada
+                });
+            } else {
+                alert("El marcador no está dentro de ninguna capa AGEB.");
+            }
+        }
         
             // Extraer información de Ageb con el radio de 400m
             extractBufferData();
