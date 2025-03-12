@@ -499,26 +499,6 @@
             }
         }
         
-        // Controlador de capas
-        const layerControl = L.control.layers(null, {
-            "AGB CDMX": agebCDMXLayer,
-            "AGB Edo. Mex.": agebEdoMexLayer,
-        }).addTo(map);
-        
-        // Evento para manejar la activación y desactivación de capas
-        layerControl.on('overlayadd', function (eventLayer) {
-            if (eventLayer.name === "AGB CDMX" || eventLayer.name === "AGB Edo. Mex.") {
-                toggleAgebLayer(true); // Activa las etiquetas
-                extractAgebData(); // Extrae los datos si es necesario
-            }
-        });
-        
-        layerControl.on('overlayremove', function (eventLayer) {
-            if (eventLayer.name === "AGB CDMX" || eventLayer.name === "AGB Edo. Mex.") {
-                toggleAgebLayer(false); // Desactiva las etiquetas
-            }
-        });
-        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
             fetch(url)
@@ -539,9 +519,34 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
         
+        // Función para inicializar el controlador de capas
+        function initializeLayerControl() {
+            const layerControl = L.control.layers(null, {
+                "AGB CDMX": agebCDMXLayer,
+                "AGB Edo. Mex.": agebEdoMexLayer,
+            }).addTo(map);
+        
+            // Evento para manejar la activación y desactivación de capas
+            layerControl.on('overlayadd', function (eventLayer) {
+                if (eventLayer.name === "AGB CDMX" || eventLayer.name === "AGB Edo. Mex.") {
+                    toggleAgebLayer(true); // Activa las etiquetas
+                    extractAgebData(); // Extrae los datos si es necesario
+                }
+            });
+        
+            layerControl.on('overlayremove', function (eventLayer) {
+                if (eventLayer.name === "AGB CDMX" || eventLayer.name === "AGB Edo. Mex.") {
+                    toggleAgebLayer(false); // Desactiva las etiquetas
+                }
+            });
+        }
+        
         // Llamar a la función para cargar las capas
-        loadLayer('Ageb CDMX', 'Ageb');
-        loadLayer('Ageb Edo. Mex.', 'Ageb');
+        loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb', () => {
+            loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb', () => {
+                initializeLayerControl(); // Inicializar el controlador de capas después de cargar las capas
+            });
+        });
 
         let ageb400Data = [];
         let ageb800Data = [];
