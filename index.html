@@ -312,11 +312,6 @@
                 map.removeLayer(currentMarker); // Eliminar el marcador del mapa
                 const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
                 currentMarker = null; // Limpiar la variable del marcador
-                // Limpiar las etiquetas creadas
-                createdLabels.forEach(label => {
-                    map.removeLayer(label); // Eliminar cada etiqueta del mapa
-                });
-                createdLabels = []; // Limpiar la lista de etiquetas creadas
                 
                 // Limpiar los marcadores de puntos de interés
                 poiMarkers.clearLayers(); // Limpiar todos los marcadores de POIs
@@ -421,8 +416,24 @@
             calculateDifference();
         }
 
-        // Variable para almacenar las etiquetas creadas
-        let createdLabels = [];
+        let createdLabels = []; // Almacenar las etiquetas creadas
+        let agebLayerActive = false; // Estado de la capa AGEB
+        
+        function toggleAgebLayer(active) {
+            agebLayerActive = active;
+        
+            if (active) {
+                // Mostrar etiquetas cuando la capa AGEB está activa
+                createdLabels.forEach(label => {
+                    label.addTo(map);
+                });
+            } else {
+                // Ocultar etiquetas cuando la capa AGEB está desactivada
+                createdLabels.forEach(label => {
+                    map.removeLayer(label);
+                });
+            }
+        }
         
         function extractAgebData() {
             if (!currentMarker) {
@@ -461,15 +472,20 @@
                         opacity: 1
                     }).setContent(feature.properties.POB1.toString());
         
-                    // Verificar que lat y lng no sean null o undefined
                     if (lat !== null && lat !== undefined && lng !== null && lng !== undefined) {
                         label.setLatLng([lat, lng]); // Ajustar latitud y longitud al centroide
-                        label.addTo(map); // Agregar la etiqueta al mapa
                         createdLabels.push(label); // Almacenar la etiqueta creada
                     } else {
                         console.error("Coordenadas inválidas:", coords);
                     }
                 });
+        
+                // Mostrar etiquetas si la capa está activa
+                if (agebLayerActive) {
+                    createdLabels.forEach(label => {
+                        label.addTo(map);
+                    });
+                }
             } else {
                 alert("El marcador no está dentro de ninguna capa AGEB.");
             }
