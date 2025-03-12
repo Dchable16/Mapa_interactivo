@@ -416,6 +416,8 @@
             calculateDifference();
         }
 
+        let geoJsonCache = {}; // Inicializar el caché para GeoJSON
+
         let agebCDMXLayer; // Inicializar la variable para la capa AGEB CDMX
         let agebEdoMexLayer; // Inicializar la variable para la capa AGEB Edo. Mex.
         let createdLabels = []; // Almacenar las etiquetas creadas
@@ -501,6 +503,15 @@
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
+            // Verificar si los datos ya están en la caché
+            if (geoJsonCache[url]) {
+                console.log(`Cargando desde caché: ${layerName}`);
+                const data = geoJsonCache[url];
+                // Procesar los datos desde la caché...
+                if (callback) callback();
+                return;
+            }
+        
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error al cargar ${url}: ${response.statusText}`);
@@ -513,6 +524,8 @@
                     } else if (layerName === 'Ageb Edo. Mex.') {
                         agebEdoMexLayer = L.geoJSON(data);
                     }
+                    // Almacenar los datos en la caché
+                    geoJsonCache[url] = data;
                     // Procesar los datos...
                     if (callback) callback();
                 })
