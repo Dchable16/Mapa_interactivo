@@ -461,7 +461,8 @@
         
                     // Verificar que las coordenadas sean válidas
                     if (featureCoordinates && featureCoordinates.length > 0) {
-                        const coords = featureCoordinates[0]; // Obtener el primer conjunto de coordenadas
+                        // Acceder a las coordenadas correctamente
+                        const coords = featureCoordinates[0][0]; // Obtener el primer conjunto de coordenadas de MultiPolygon
                         const lat = coords[1]; // Latitud
                         const lng = coords[0]; // Longitud
         
