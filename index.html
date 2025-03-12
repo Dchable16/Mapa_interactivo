@@ -466,8 +466,8 @@
                     L.geoJSON(featuresWithinBuffer, {
                         style: { color: 'orange', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
-                            // Crear etiqueta con el valor de POB1
-                            layer.bindTooltip(feature.properties.POB1.toString(), {
+                            // Crear etiqueta con el valor de populationTotal
+                            layer.bindTooltip(feature.properties.populationTotal.toString(), {
                                 permanent: true,
                                 direction: 'center',
                                 className: 'ageb-label'
@@ -540,8 +540,8 @@
                     L.geoJSON(featuresWithinDifference, {
                         style: { color: 'purple', weight: 2, fillOpacity: 0.5 },
                         onEachFeature: function (feature, layer) {
-                            // Crear etiqueta con el valor de POB1
-                            layer.bindTooltip(feature.properties.POB1.toString(), {
+                            // Crear etiqueta con el valor de populationTotal
+                            layer.bindTooltip(feature.properties.populationTotal.toString(), {
                                 permanent: true,
                                 direction: 'center',
                                 className: 'ageb-label'
