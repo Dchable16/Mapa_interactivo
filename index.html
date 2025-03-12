@@ -496,6 +496,26 @@
             // Extraer información de Ageb con el radio de 800m
             extractDifferenceData();
         }
+        
+        // Controlador de capas para activar y desactivar la capa AGEB
+        const layerControl = L.control.layers(null, {
+            "AGB CDMX": agebCDMXLayer,
+            "AGB Edo. Mex.": agebEdoMexLayer,
+        }).addTo(map);
+        
+        // Evento para manejar la activación y desactivación de capas
+        layerControl.on('overlayadd', function (eventLayer) {
+            if (eventLayer.name === "AGB CDMX" || eventLayer.name === "AGB Edo. Mex.") {
+                toggleAgebLayer(true); // Activa las etiquetas
+                extractAgebData(); // Extrae los datos si es necesario
+            }
+        });
+        
+        layerControl.on('overlayremove', function (eventLayer) {
+            if (eventLayer.name === "AGB CDMX" || eventLayer.name === "AGB Edo. Mex.") {
+                toggleAgebLayer(false); // Desactiva las etiquetas
+            }
+        });
 
         let ageb400Data = [];
         let ageb800Data = [];
