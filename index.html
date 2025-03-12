@@ -750,6 +750,9 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
+
+        let agebCDMXLayer;
+        let agebEdoMexLayer;
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
