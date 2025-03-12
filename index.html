@@ -507,6 +507,12 @@
             if (geoJsonCache[url]) {
                 console.log(`Cargando desde caché: ${layerName}`);
                 const data = geoJsonCache[url];
+                // Almacenar la capa en la variable correspondiente
+                if (layerName === 'Ageb CDMX') {
+                    agebCDMXLayer = L.geoJSON(data);
+                } else if (layerName === 'Ageb Edo. Mex.') {
+                    agebEdoMexLayer = L.geoJSON(data);
+                }
                 // Procesar los datos desde la caché...
                 if (callback) callback();
                 return;
@@ -554,12 +560,17 @@
             });
         }
         
-        // Llamar a la función para cargar las capas
-        loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb', () => {
-            loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb', () => {
-                initializeLayerControl(); // Inicializar el controlador de capas después de cargar las capas
+        // Llamar a la función para cargar las capas bajo demanda
+        function loadLayers() {
+            loadGeoJSON('Ageb_urb_CDMX.geojson', 'Ageb CDMX', 'Ageb', () => {
+                loadGeoJSON('Ageb_urb_Edo_Mex.geojson', 'Ageb Edo. Mex.', 'Ageb', () => {
+                    initializeLayerControl(); // Inicializar el controlador de capas después de cargar las capas
+                });
             });
-        });
+        }
+        
+        // Llamar a la función para cargar las capas al inicio
+        loadLayers();
 
         let ageb400Data = [];
         let ageb800Data = [];
