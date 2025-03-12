@@ -256,6 +256,16 @@
         // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
 
+        // Constantes para las etiquetas Ageb
+        let agebCDMXLabelsGroup = L.layerGroup().addTo(map);
+        let agebEdoMexLabelsGroup = L.layerGroup().addTo(map);
+        const AGEB_LABEL_RADIUS = 1000; // Radio de 1 km
+        let agebCDMXIndex;
+        let agebEdoMexIndex;
+        //Caché de etiquetas
+        let agebCDMXLabelsCache = [];
+        let agebEdoMexLabelsCache = [];
+        
         // Función para agregar un marcador en el mapa
         function addMarker() {
             if (currentMarker) {
@@ -301,6 +311,21 @@
                 L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
         
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
+                
+                if(currentMarker){
+                    //Evento al crear el marcador
+                    currentMarker.on('add', function() {
+                        const latlng = currentMarker.getLatLng();
+                        loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
+                        loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
+                    });
+                    //Evento al eliminar el marcador
+                    currentMarker.on('remove', function() {
+                        agebCDMXLabelsGroup.clearLayers();
+                        agebEdoMexLabelsGroup.clearLayers();
+                    });
+                }
+                
             } catch (error) {
                 console.error("Error al agregar el marcador:", error);
                 alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
@@ -576,54 +601,6 @@
                 alert("Asegúrese de que el marcador esté creado.");
             }
         }
-
-        let agebLabels = {}; // Objeto para almacenar las etiquetas por AGEB
-
-        function createAgebLabels(layer, layerName) {
-            if (!currentMarker) return;
-        
-            const latLng = currentMarker.getLatLng();
-            const point = turf.point([latLng.lng, latLng.lat]);
-            const buffer = turf.circle([latLng.lng, latLng.lat], 1000, { units: 'meters' });
-        
-            layer.eachLayer(ageb => {
-                if (turf.booleanIntersects(ageb.feature, buffer)) {
-                    const centroid = turf.centroid(ageb.feature);
-                    const coords = centroid.geometry.coordinates;
-                    const lat = coords[1];
-                    const lng = coords[0];
-        
-                    if (lat !== null && lat !== undefined && lng !== null && lng !== undefined) {
-                        const label = L.tooltip({
-                            permanent: true,
-                            direction: 'top',
-                            className: 'ageb-label',
-                            opacity: 1
-                        }).setContent(ageb.feature.properties.POB1.toString());
-        
-                        label.setLatLng([lat, lng]);
-                        agebLabels[L.stamp(ageb)] = label; // Almacenar la etiqueta
-                        label.addTo(map);
-                    } else {
-                        console.error("Coordenadas inválidas:", coords);
-                    }
-                }
-            });
-        }
-        
-        function updateAgebLabels() {
-            for (const agebId in agebLabels) {
-                const label = agebLabels[agebId];
-                if (map.hasLayer(label)) {
-                    map.removeLayer(label); // Eliminar todas las etiquetas existentes
-                }
-            }
-            agebLabels = {}; // Limpiar el objeto de etiquetas
-        
-            if (map.hasLayer(agebCDMXLayer)) createAgebLabels(agebCDMXLayer, "AGEB CDMX");
-            if (map.hasLayer(agebEdoMexLayer)) createAgebLabels(agebEdoMexLayer, "AGEB Edo. Mex.");
-        }
-
         
         function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
@@ -751,8 +728,85 @@
         // Definición del objeto de caché
         const geoJsonCache = {};
 
-        let agebCDMXLayer;
-        let agebEdoMexLayer;
+        // Crea Indice de búsqueda para las etiquetas Ageb
+        function createAgebIndex(agebLayer) {
+            const index = new rbush();
+            const items = [];
+            agebLayer.eachLayer(agebFeature => {
+                const bbox = turf.bbox(agebFeature.feature);
+                items.push({
+                    minX: bbox[0],
+                    minY: bbox[1],
+                    maxX: bbox[2],
+                    maxY: bbox[3],
+                    feature: agebFeature
+                });
+            });
+            index.load(items);
+            return index;
+        }
+        //Crear los indices cuando se carguen las capas ageb
+        map.on('overlayadd', function(e) {
+            if (e.name === 'Ageb CDMX') {
+                if(currentMarker){
+                    const latlng = currentMarker.getLatLng();
+                    loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
+                }
+            } else if (e.name === 'Ageb Edo. Mex.') {
+                if(currentMarker){
+                    const latlng = currentMarker.getLatLng();
+                    loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
+                }
+            }
+        });
+        map.on('overlayremove', function(e) {
+            if (e.name === 'Ageb CDMX') {
+                agebCDMXLabelsGroup.clearLayers();
+            } else if (e.name === 'Ageb Edo. Mex.') {
+                agebEdoMexLabelsGroup.clearLayers();
+            }
+        });
+        
+        function loadAgebLabelsInRadius(latlng, agebIndex, labelsGroup, labelsCache) {
+            labelsGroup.clearLayers();
+            if (!agebIndex) return;
+            //Si hay etiquetas en el cache, las carga
+            if (labelsCache.length > 0) {
+                labelsCache.forEach(label => {
+                    labelsGroup.addLayer(label);
+                });
+                return;
+            }
+            const searchBbox = turf.bbox(turf.circle([latlng.lng, latlng.lat], AGEB_LABEL_RADIUS, { units: 'meters' }));
+            const results = agebIndex.search({
+                minX: searchBbox[0],
+                minY: searchBbox[1],
+                maxX: searchBbox[2],
+                maxY: searchBbox[3]
+            });
+            results.forEach(item => {
+                const distance = turf.distance(
+                    turf.point([latlng.lng, latlng.lat]),
+                    turf.centroid(item.feature.feature),
+                    { units: 'meters' }
+                });
+                if (distance <= AGEB_LABEL_RADIUS) {
+                    const centroid = item.feature.getBounds().getCenter();
+                    const label = L.marker(centroid, {
+                        icon: L.divIcon({
+                            className: 'ageb-label',
+                            html: item.feature.feature.properties.POB1,
+                            iconSize: [60, 20]
+                        })
+                    });
+                    labelsGroup.addLayer(label);
+                    labelsCache.push(label);
+                }
+            });
+        }
+
+        
+
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
@@ -939,60 +993,60 @@
             if (layerControlContainer && map.hasLayer(layerControlContainer)) {
                 map.removeControl(layerControlContainer);
             }
-        
+
             // Crear un nuevo controlador de capas
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
-                div.style.display = 'flex';
-                div.style.flexDirection = 'column';
-                div.style.alignItems = 'flex-center';
-                div.style.justifyContent = 'flex-center';
+                div.style.display = 'flex'; // Usar flexbox
+                div.style.flexDirection = 'column'; // Colocar en columna
+                div.style.alignItems = 'flex-center'; // Alinear a la derecha
+                div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
                 div.style.height = '100%';
-        
+
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
                         <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
                     </div>
                     <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
                 `;
-        
+
                 // Crear un controlador base para las capas
                 const baseMaps = {
                     "OpenStreetMap": osmLayer,
                     "Google Road": googleRoadLayer,
                     "Google Hybrid": googleHybridLayer
                 };
-        
+
                 const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
                 layerControlBase.addTo(map);
                 div.appendChild(layerControlBase.getContainer());
-        
+
                 // Crear un controlador para las capas GeoJSON
                 const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
                 geoJsonLayerControl.addTo(map);
                 div.appendChild(geoJsonLayerControl.getContainer());
-        
+
                 // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
                 const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
                 layerControlUsoSuelo.addTo(map);
                 div.appendChild(layerControlUsoSuelo.getContainer());
-        
+
                 const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
                 layerControlAlcaldias.addTo(map);
                 div.appendChild(layerControlAlcaldias.getContainer());
-        
+
                 const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
                 layerControlPoligonos.addTo(map);
                 div.appendChild(layerControlPoligonos.getContainer());
-        
+
                 const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
                 layerControlColonias.addTo(map);
                 div.appendChild(layerControlColonias.getContainer());
-        
+
                 const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
                 layerControlCompetencias.addTo(map);
                 div.appendChild(layerControlCompetencias.getContainer());
-        
+
                 // Crear un controlador para las capas de radios y diferencia
                 const radiusLayers = {
                     "Radio 400m": radius400Layer,
@@ -1001,24 +1055,24 @@
                     "Buffer Ageb": bufferLayerGroup,
                     "Diferencia Ageb": differenceExtractionLayerGroup
                 };
-        
+
                 const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
                 radiusLayerControl.addTo(map);
                 div.appendChild(radiusLayerControl.getContainer());
-        
+
                 // Estilos iniciales para el contenedor contraído
                 div.style.width = '25px';
                 div.style.height = '25px';
                 div.style.overflow = 'hidden';
                 div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
-        
+
                 // Agregar eventos para desplegar y replegar el controlador
                 div.addEventListener('mouseover', function() {
                     div.style.width = '280px';
                     div.style.height = 'auto';
                     div.style.overflow = 'auto';
                 });
-        
+
                 div.addEventListener('mouseout', function(event) {
                     if (!div.contains(event.relatedTarget)) {
                         div.style.width = '25px';
@@ -1026,32 +1080,12 @@
                         div.style.overflow = 'hidden';
                     }
                 });
-        
+
                 return div;
             };
-        
+
             // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
-        
-            // Evento para crear etiquetas al agregar capas AGEB
-            map.on('overlayadd', function (e) {
-                if (e.layer === agebCDMXLayer || e.layer === agebEdoMexLayer) {
-                    createAgebLabels(e.layer, e.name);
-                    updateAgebLabels(); // Asegurar que las etiquetas correctas se muestren
-                }
-            });
-        
-            // Evento para eliminar etiquetas al quitar capas AGEB
-            map.on('overlayremove', function (e) {
-                if (e.layer === agebCDMXLayer || e.layer === agebEdoMexLayer) {
-                    for (const agebId in agebLabels) {
-                        const label = agebLabels[agebId];
-                        if (map.hasLayer(label)) {
-                            map.removeLayer(label); // Ocultar etiquetas al desactivar la capa
-                        }
-                    }
-                }
-            });
         }
                
         // Cargar capas GeoJSON desde archivos bajo demanda
@@ -1089,17 +1123,7 @@
         loadLayer('Primarias', 'Competencias'); 
         loadLayer('Tiendas 3B', 'Competencias'); 
         loadLayer('Tiendas Neto', 'Competencias'); 
-
-        // Cargar capas GeoJSON desde archivos bajo demanda
-        loadLayer('Ageb CDMX', 'Ageb');
-        loadLayer('Ageb Edo. Mex.', 'Ageb');
-
-// Crear etiquetas iniciales si las capas están activas
-if (map.hasLayer(agebCDMXLayer)) createAgebLabels(agebCDMXLayer, "AGEB CDMX");
-if (map.hasLayer(agebEdoMexLayer)) createAgebLabels(agebEdoMexLayer, "AGEB Edo. Mex.");
-
-// Evento para actualizar etiquetas al mover el mapa
-map.on('moveend', updateAgebLabels);
+        
         
 
         // Localización en tiempo real
