@@ -97,7 +97,11 @@
         }
         .ageb-label {
             color: black; /* Color del texto */
-            text-shadow: 0 0 6px white; /* Contorno blanco */
+            text-shadow: 
+                1px 1px 0 white, 
+                -1px -1px 0 white, 
+                1px -1px 0 white, 
+                -1px 1px 0 white; /* Efecto de buffer */
             background-color: transparent; /* Sin fondo */
             padding: 0; /* Sin relleno */
             border: none; /* Sin borde */
