@@ -185,8 +185,9 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
+            const zoomLevel = map.getZoom();
         
-            // Limpiar las etiquetas de AGEB existentes
+            // Limpiar las etiquetas de AGEB existentes (sin cambios)
             const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) {
@@ -196,25 +197,24 @@
                 }
             });
         
-            // Eliminar solo las etiquetas de AGEB
             agebLabelsToRemove.forEach(label => {
                 map.removeLayer(label);
             });
         
-            // Verificar si las capas AGEB 400m o AGEB 800m están activas
+            // Verificar si las capas AGEB 400m o AGEB 800m están activas (sin cambios)
             if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
                 return;
             }
         
-            if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
+            // Crear etiquetas AGEB originales (sin cambios)
+            if (zoomLevel >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                         if (feature.geometry.type === 'Point') {
                             const coords = feature.geometry.coordinates;
                             const latLng = L.latLng(coords[1], coords[0]);
                             if (bounds.contains(latLng)) {
-                                const marker = L.marker(latLng, {
+                                L.marker(latLng, {
                                     icon: L.divIcon({
                                         className: 'ageb-label',
                                         html: feature.properties.POB1.toString(),
@@ -227,7 +227,7 @@
                                 const centroid = turf.centroid(feature);
                                 const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
                                 if (bounds.contains(latLng)) {
-                                    const marker = L.marker(latLng, {
+                                    L.marker(latLng, {
                                         icon: L.divIcon({
                                             className: 'ageb-label',
                                             html: feature.properties.POB1.toString(),
@@ -240,8 +240,67 @@
                     }
                 });
             }
+        
+            // Lógica para mostrar/ocultar iconos de competencias (nueva sección)
+            const competenciasLayers = [];
+            for (const layerName in geoJsonLayersCompetencias) {
+                if (map.hasLayer(geoJsonLayersCompetencias[layerName])) {
+                    competenciasLayers.push(geoJsonLayersCompetencias[layerName]);
+                }
+            }
+        
+            if (zoomLevel >= 15) {
+                competenciasLayers.forEach(layer => {
+                    layer.eachLayer(featureLayer => {
+                        if (featureLayer instanceof L.Marker) {
+                            featureLayer.setVisible(false);
+                        }
+                    });
+                });
+        
+                if (map.hasLayer(radius800Layer)) {
+                    radius800Layer.eachLayer(radiusFeature => {
+                        const radiusGeometry = radiusFeature.feature.geometry;
+        
+                        competenciasLayers.forEach(layer => {
+                            layer.eachLayer(featureLayer => {
+                                if (featureLayer instanceof L.Marker) {
+                                    const markerLatLng = featureLayer.getLatLng();
+                                    const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+        
+                                    if (turf.booleanPointInPolygon(markerPoint, radiusGeometry)) {
+                                        featureLayer.setVisible(true);
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }
+            } else {
+                competenciasLayers.forEach(layer => {
+                    layer.eachLayer(featureLayer => {
+                        if (featureLayer instanceof L.Marker) {
+                            featureLayer.setVisible(true);
+                        }
+                    });
+                });
+            }
+        
             console.log(currentMarker); // Para depurar
         });
+        
+        // Función para establecer la visibilidad de un marcador (sin cambios)
+        L.Marker.prototype.setVisible = function(visible) {
+            if (visible) {
+                if (this._icon) {
+                    this._icon.style.display = '';
+                }
+            } else {
+                if (this._icon) {
+                    this._icon.style.display = 'none';
+                }
+            }
+        };
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
