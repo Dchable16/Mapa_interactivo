@@ -181,27 +181,34 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
-       //Activa y desactiva las etiquetas de los Ageb
-       map.on('zoomend', function() {
+        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-
+        
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual y su etiqueta
             const markersToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) {
-                    //Verificar si la capa no tiene la clase marker-label
                     if(layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className !== 'marker-label'){
-                        markersToRemove.push(layer);
+                        // Excluir las capas de competencias
+                        if (!layer.isCompetenciaLayer) {
+                            markersToRemove.push(layer);
+                        }
                     }
                 }
             });
-
+        
             // Eliminar solo los marcadores de AGEB
             markersToRemove.forEach(marker => {
                 map.removeLayer(marker);
             });
-
+        
+            // Verificar si las capas AGEB 400m o AGEB 800m están activas
+            if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
+                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
+                return;
+            }
+        
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
@@ -803,13 +810,13 @@
                         'Competencias': 'rgb(204, 85, 0)',
                         'Ageb_CDMX': '#abfbbb', // Color para la capa AGEB CDMX
                         'Ageb_EdoMex': '#abfbbb', // Color para la capa AGEB Edo Mex
-                        
+        
                     };
         
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function(feature, latlng) {
                             let icono = null;
-                
+        
                             if (type === 'Competencias') {
                                 // Usar 'name' del GeoJSON para capas de competencias
                                 icono = iconosPersonalizados[data.name];
@@ -819,7 +826,7 @@
                                 icono = iconosPersonalizados[feature.properties.layerName];
                                 console.log("layerName:", feature.properties.layerName); //Para depurar
                             }
-                
+        
                             if (!icono) {
                                 // Usar icono predeterminado si no se encuentra
                                 icono = L.icon({
@@ -832,7 +839,7 @@
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
-                           if (type === 'Ageb') {
+                            if (type === 'Ageb') {
                                 const fillColor = url.includes('Ageb_urb_CDMX.geojson') ? colorMap['Ageb_CDMX'] : colorMap['Ageb_EdoMex'];
                                 return {
                                     color: 'black', // Color del contorno
@@ -893,6 +900,7 @@
                             geoJsonLayersColonias[layerName] = geoJsonLayer;
                             break;
                         case 'Competencias':
+                            geoJsonLayer.isCompetenciaLayer = true; // Agregar propiedad personalizada
                             geoJsonLayersCompetencias[layerName] = geoJsonLayer;
                             break;
                     }
