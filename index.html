@@ -185,29 +185,39 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-
+        
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual y su etiqueta
             const markersToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) {
                     //Verificar si la capa no tiene la clase marker-label
                     if(layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className !== 'marker-label'){
-                        markersToRemove.push(layer);
+                        // Verificar si la capa no es una capa de competencias
+                        let isCompetenciaLayer = false;
+                        for (let key in geoJsonLayersCompetencias) {
+                            if (geoJsonLayersCompetencias[key] === layer) {
+                                isCompetenciaLayer = true;
+                                break;
+                            }
+                        }
+                        if (!isCompetenciaLayer) {
+                            markersToRemove.push(layer);
+                        }
                     }
                 }
             });
-
+        
             // Eliminar solo los marcadores de AGEB
             markersToRemove.forEach(marker => {
                 map.removeLayer(marker);
             });
-
+        
             // Verificar si las capas AGEB 400m o AGEB 800m están activas
             if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
                 // Si alguna de las capas está activa, no mostrar etiquetas AGEB
                 return;
             }
-
+        
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
