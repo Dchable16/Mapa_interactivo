@@ -193,14 +193,7 @@
                     //Verificar si la capa no tiene la clase marker-label
                     if(layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className !== 'marker-label'){
                         // Verificar si la capa no es una capa de competencias
-                        let isCompetenciaLayer = false;
-                        for (let key in geoJsonLayersCompetencias) {
-                            if (geoJsonLayersCompetencias[key] === layer) {
-                                isCompetenciaLayer = true;
-                                break;
-                            }
-                        }
-                        if (!isCompetenciaLayer) {
+                        if (!Object.values(geoJsonLayersCompetencias).includes(layer)) {
                             markersToRemove.push(layer);
                         }
                     }
