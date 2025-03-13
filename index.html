@@ -403,6 +403,20 @@
             
             // Calcular la diferencia entre los radios
             calculateDifference();
+                if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
+                // Asegurarse de que el primer elemento de radius800Layer sea un L.Circle
+                if (radius800Layer.getLayers()[0] instanceof L.Circle) {
+                    const radiusLayer = radius800Layer.getLayers()[0];
+                    const selectedAgeb = selectAgebWithinRadius(radiusLayer, agebLayerGroup);
+                    if (selectedAgeb && selectedAgeb.length > 0) {
+                        showAgebLabels(selectedAgeb, map);
+                    }
+                } else {
+                    console.error("El primer elemento de radius800Layer no es un L.Circle");
+                }
+            } else {
+                console.error("No se pudo seleccionar AGEB dentro del radio de 800m.");
+            }
         }
 
         function extractAgebData() {
@@ -695,9 +709,17 @@
         // Eventos de capa AGEB
         map.on('overlayadd', eventLayer => {
             if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
-                const selectedAgeb = selectAgebWithinRadius(radius800Layer, geoJsonLayersAgeb[eventLayer.name]); // Asegúrate de que radius800Layer esté definido
-                if (selectedAgeb && selectedAgeb.length > 0) {
-                    showAgebLabels(selectedAgeb, map);
+                if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
+                    // Asegurarse de que el primer elemento de radius800Layer sea un L.Circle
+                    if (radius800Layer.getLayers()[0] instanceof L.Circle) {
+                        const radiusLayer = radius800Layer.getLayers()[0];
+                        const selectedAgeb = selectAgebWithinRadius(radiusLayer, geoJsonLayersAgeb[eventLayer.name]);
+                        if (selectedAgeb && selectedAgeb.length > 0) {
+                            showAgebLabels(selectedAgeb, map);
+                        }
+                    } else {
+                        console.error("El primer elemento de radius800Layer no es un L.Circle");
+                    }
                 }
             }
         });
@@ -843,22 +865,22 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
 
-        function selectAgebWithinRadius(radiusLayer, agebLayerGroup) {
-            if (!radiusLayer || !agebLayerGroup) return [];
+        function selectAgebWithinRadius(radiusLayer, agebLayer) {
+            if (!(radiusLayer instanceof L.Circle)) {
+                console.error("radiusLayer no es una instancia de L.Circle");
+                return []; // Devolver un array vacío o manejar el error de otra manera
+            }
         
-            const radiusBounds = radiusLayer.getBounds();
-            const selectedAgeb = [];
+            const bounds = radiusLayer.getBounds();
+            const agebFeatures = [];
         
-            agebLayerGroup.eachLayer(layer => {
-                if (layer instanceof L.GeoJSON) {
-                    layer.eachLayer(featureLayer => {
-                        if (radiusBounds.intersects(featureLayer.getBounds())) {
-                            selectedAgeb.push(featureLayer);
-                        }
-                    });
+            agebLayer.eachLayer(ageb => {
+                if (bounds.intersects(ageb.getBounds())) {
+                    agebFeatures.push(ageb);
                 }
             });
-            return selectedAgeb;
+        
+            return agebFeatures;
         }    
 
         function showAgebLabels(agebFeatures, map) {
