@@ -185,21 +185,20 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-
+        
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const markersToRemove = [];
             map.eachLayer(function(layer) {
-                // Verifica si la capa es un marcador Y no es el marcador manual NI su etiqueta
-                if (layer instanceof L.Marker && layer !== currentMarker && layer !== currentMarkerLabel) {
+                if (layer instanceof L.Marker && layer !== currentMarker) {
                     markersToRemove.push(layer);
                 }
             });
-
+        
             // Eliminar solo los marcadores de AGEB
             markersToRemove.forEach(marker => {
                 map.removeLayer(marker);
             });
-
+        
             // Solo agregar etiquetas de AGEB si la capa está activa y el zoom es 15 o más
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
@@ -234,6 +233,7 @@
                     }
                 });
             }
+            console.log(currentMarker); //para depurar
         });
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
