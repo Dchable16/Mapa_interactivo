@@ -181,7 +181,6 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
-        // Escuchar el evento de zoom
         map.on('zoomend', function() {
             if (map.getZoom() >= 15) {
                 const bounds = map.getBounds();
@@ -193,17 +192,24 @@
                         map.removeLayer(layer);
                     }
                 });
-    
+        
                 features.forEach(feature => {
-                    if (feature.properties.POB1 && bounds.contains(L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]))) {
-                        // Crear una etiqueta para cada característica visible que tenga POB1
-                        const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
-                            icon: L.divIcon({
-                                className: 'ageb-label',
-                                html: feature.properties.POB1.toString(),
-                                iconSize: [100, 20]
-                            })
-                        }).addTo(map);
+                    if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
+                        const coords = feature.geometry.coordinates;
+                        // Asegurarse de que las coordenadas son válidas
+                        if (Array.isArray(coords) && coords.length > 1) {
+                            const latLng = L.latLng(coords[1], coords[0]); // Asegúrate de que el orden sea [lng, lat]
+                            if (bounds.contains(latLng)) {
+                                // Crear una etiqueta para cada característica visible que tenga POB1
+                                const marker = L.marker(latLng, {
+                                    icon: L.divIcon({
+                                        className: 'ageb-label',
+                                        html: feature.properties.POB1.toString(),
+                                        iconSize: [100, 20]
+                                    })
+                                }).addTo(map);
+                            }
+                        }
                     }
                 });
             }
