@@ -182,77 +182,7 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-
-// Función para obtener la URL del icono de POI
-        function getIconUrl(layerName) {
-            switch (layerName) {
-                case 'Bodega Aurrera': return 'URL_del_icono_Bodega_Aurrera';
-                case 'Bodega Aurrera Express': return 'URL_del_icono_Bodega_Aurrera_Express';
-                case 'Chedraui Supercito': return 'URL_del_icono_Chedraui_Supercito';
-                case 'Iglesias': return 'URL_del_icono_Iglesias';
-                case 'Mercados': return 'URL_del_icono_Mercados';
-                case 'Preescolar': return 'URL_del_icono_Preescolar';
-                case 'Primarias': return 'URL_del_icono_Primarias';
-                case 'Tiendas 3B': return 'URL_del_icono_Tiendas_3B';
-                case 'Tiendas Neto': return 'URL_del_icono_Tiendas_Neto';
-                default: return ''; // Icono predeterminado
-            }
-        }
-        
-        // Función para actualizar la visibilidad de los POIs
-        function updatePOIsVisibility() {
-            if (!currentMarker) {
-                console.log("currentMarker no está definido.");
-                return;
-            }
-        
-            const bounds = map.getBounds();
-            const zoom = map.getZoom();
-            const center = currentMarker.getLatLng();
-        
-            // Iterar sobre las capas de POIs y filtrar los datos
-            Object.keys(geoJsonData).forEach(layerName => {
-                // Excluir capas que no son de POIs
-                if (layerName === 'Ageb CDMX' || layerName === 'Ageb Edo. Mex.' || layerName === 'Uso de suelo Centro Barrio' || layerName === 'Uso de suelo Equipamento' || layerName === 'Uso de suelo Habitacional Comercio' || layerName === 'Uso de suelo Planta Baja' || layerName === 'Uso de suelo Entrada' || layerName === 'Uso de suelo Mixto' || layerName === 'Uso de suelo Oficinas' || layerName === 'Uso de suelo Plurifamiliar' || layerName === 'Alcaldías CDMX' || layerName === 'Municipios Edo. Mex.' || layerName === 'Poligono Región Vallejo' || layerName === 'Poligono Azcapotzalco' || layerName === 'Poligono Benito Juárez' || layerName === 'Poligono Cuauhtémoc' || layerName === 'Poligono Ecatepec' || layerName === 'Poligono M. Hidalgo' || layerName === 'Poligono Nezahualcoyotl' || layerName === 'Colonias Azcapotzalco' || layerName === 'Colonias Benito Juárez' || layerName === 'Colonias Cuauhtemoc' || layerName === 'Colonias Ecatepec' || layerName === 'Colonias M. Hidalgo' || layerName === 'Colonias Nezahualcoyotl') {
-                    return;
-                }
-        
-                const layerGroup = geoJsonLayersCompetencias.getLayers().find(layer => layer.name === layerName);
-                if (layerGroup) {
-                    layerGroup.clearLayers(); // Limpiar la capa antes de agregar nuevos marcadores
-                } else {
-                    // Si la capa no existe, crearla
-                    layerGroup = L.layerGroup().addTo(geoJsonLayersCompetencias);
-                    layerGroup.name = layerName;
-                }
-        
-                geoJsonData[layerName].features.forEach(feature => {
-                    const latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-                    const distance = center.distanceTo(latlng);
-        
-                    if (zoom >= 15 && distance > 800) {
-                        return; // No mostrar el marcador si está fuera del radio
-                    }
-                    if (!bounds.contains(latlng)) {
-                        return; // no mostrar el marcador si esta fuera de los limites.
-                    }
-        
-                    const icon = L.icon({
-                        iconUrl: getIconUrl(layerName), // Función para obtener la URL del icono
-                        iconSize: [25, 25],
-                        iconAnchor: [16, 32],
-                        popupAnchor: [0, -32]
-                    });
-        
-                    const marker = L.marker(latlng, { icon });
-                    marker.bindPopup(feature.properties.name || layerName); // Usar el nombre de la propiedad o el nombre de la capa
-                    layerGroup.addLayer(marker);
-                });
-            });
-        }
-        
-        // Función existente para etiquetas AGEB
-        map.on('zoomend', function() {
+       map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
         
@@ -312,16 +242,6 @@
             }
             console.log(currentMarker); // Para depurar
         });
-        
-        // Llamar a ambas funciones en moveend
-        map.on('moveend', function() {
-            updatePOIsVisibility();
-        });
-        
-        // Llamar a updatePOIsVisibility al inicio para mostrar los POIs iniciales
-        updatePOIsVisibility();
-
-
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
