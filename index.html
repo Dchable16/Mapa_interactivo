@@ -217,6 +217,27 @@
             }
         });        
 
+        map.on('overlayadd', function(e) {
+            if (e.name === 'Ageb CDMX') {
+                if(currentMarker){
+                    const latlng = currentMarker.getLatLng();
+                    loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
+                }
+            } else if (e.name === 'Ageb Edo. Mex.') {
+                if(currentMarker){
+                    const latlng = currentMarker.getLatLng();
+                    loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
+                }
+            }
+        });
+        map.on('overlayremove', function(e) {
+            if (e.name === 'Ageb CDMX') {
+                agebCDMXLabelsGroup.clearLayers();
+            } else if (e.name === 'Ageb Edo. Mex.') {
+                agebEdoMexLabelsGroup.clearLayers();
+            }
+        });
+
         // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
