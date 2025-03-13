@@ -185,31 +185,23 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-        
+
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual y su etiqueta
             const markersToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) {
+                    //Verificar si la capa no tiene la clase marker-label
                     if(layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className !== 'marker-label'){
-                        // Excluir las capas de competencias
-                        if (!competenciasLayers.includes(layer)) {
-                            markersToRemove.push(layer);
-                        }
+                        markersToRemove.push(layer);
                     }
                 }
             });
-        
+
             // Eliminar solo los marcadores de AGEB
             markersToRemove.forEach(marker => {
                 map.removeLayer(marker);
             });
-        
-            // Verificar si las capas AGEB 400m o AGEB 800m están activas
-            if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
-                return;
-            }
-        
+
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
@@ -456,7 +448,7 @@
                 const difference = turf.difference(circle800, circle400); // Calcular la diferencia entre los círculos
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
-                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'Red', weight: 3, fillOpacity: 0.0 } }).addTo(differenceLayerGroup);//Cambia color y opacidad de diferencia de radios
+                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'Red', weight: 2, fillOpacity: 0.0 } }).addTo(differenceLayerGroup);//Cambia color y opacidad de diferencia de radios
                     differenceCreated = true; // Marcar como creado
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
@@ -957,14 +949,12 @@
             }
         }
 
-        let competenciasLayers = []; // Variable global para almacenar las capas de competencias
-
         function updateLayerControls() {
             // Eliminar el controlador de capas existente
             if (layerControlContainer && map.hasLayer(layerControlContainer)) {
                 map.removeControl(layerControlContainer);
             }
-        
+
             // Crear un nuevo controlador de capas
             layerControlContainer.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'layer-control-container');
@@ -973,54 +963,51 @@
                 div.style.alignItems = 'flex-center'; // Alinear a la derecha
                 div.style.justifyContent = 'flex-center'; // Alinear horizontalmente al centro
                 div.style.height = '100%';
-        
+
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
                         <i class="leaflet-control-layers-toggle" style="font-size: 24px; color: #000; "></i>
                     </div>
                     <h4 style="text-align: center; margin: 10;">Controles de Capas</h4>
                 `;
-        
+
                 // Crear un controlador base para las capas
                 const baseMaps = {
                     "OpenStreetMap": osmLayer,
                     "Google Road": googleRoadLayer,
                     "Google Hybrid": googleHybridLayer
                 };
-        
+
                 const layerControlBase = L.control.layers(baseMaps, null, { collapsed: true });
                 layerControlBase.addTo(map);
                 div.appendChild(layerControlBase.getContainer());
-        
+
                 // Crear un controlador para las capas GeoJSON
                 const geoJsonLayerControl = L.control.layers(null, geoJsonLayersAgeb, { collapsed: true });
                 geoJsonLayerControl.addTo(map);
                 div.appendChild(geoJsonLayerControl.getContainer());
-        
+
                 // Crear un controlador para las capas de Uso de Suelo, Alcaldías, Polígonos y Colonias
                 const layerControlUsoSuelo = L.control.layers(null, geoJsonLayersUsoSuelo, { collapsed: true });
                 layerControlUsoSuelo.addTo(map);
                 div.appendChild(layerControlUsoSuelo.getContainer());
-        
+
                 const layerControlAlcaldias = L.control.layers(null, geoJsonLayersAlcaldias, { collapsed: true });
                 layerControlAlcaldias.addTo(map);
                 div.appendChild(layerControlAlcaldias.getContainer());
-        
+
                 const layerControlPoligonos = L.control.layers(null, geoJsonLayersPoligonos, { collapsed: true });
                 layerControlPoligonos.addTo(map);
                 div.appendChild(layerControlPoligonos.getContainer());
-        
+
                 const layerControlColonias = L.control.layers(null, geoJsonLayersColonias, { collapsed: true });
                 layerControlColonias.addTo(map);
                 div.appendChild(layerControlColonias.getContainer());
-        
+
                 const layerControlCompetencias = L.control.layers(null, geoJsonLayersCompetencias, { collapsed: true });
                 layerControlCompetencias.addTo(map);
                 div.appendChild(layerControlCompetencias.getContainer());
-        
-                // Obtener las capas de competencias del controlador
-                competenciasLayers = Object.values(geoJsonLayersCompetencias);
-        
+
                 // Crear un controlador para las capas de radios y diferencia
                 const radiusLayers = {
                     "Radio 400m": radius400Layer,
@@ -1029,24 +1016,24 @@
                     "Ageb 400m": bufferLayerGroup,
                     "Ageb 800m": differenceExtractionLayerGroup
                 };
-        
+
                 const radiusLayerControl = L.control.layers(null, radiusLayers, { collapsed: true });
                 radiusLayerControl.addTo(map);
                 div.appendChild(radiusLayerControl.getContainer());
-        
+
                 // Estilos iniciales para el contenedor contraído
                 div.style.width = '25px';
                 div.style.height = '25px';
                 div.style.overflow = 'hidden';
                 div.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
-        
+
                 // Agregar eventos para desplegar y replegar el controlador
                 div.addEventListener('mouseover', function() {
                     div.style.width = '280px';
                     div.style.height = 'auto';
                     div.style.overflow = 'auto';
                 });
-        
+
                 div.addEventListener('mouseout', function(event) {
                     if (!div.contains(event.relatedTarget)) {
                         div.style.width = '25px';
@@ -1054,10 +1041,10 @@
                         div.style.overflow = 'hidden';
                     }
                 });
-        
+
                 return div;
             };
-        
+
             // Agregar el contenedor del controlador al mapa
             layerControlContainer.addTo(map);
         }
