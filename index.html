@@ -183,20 +183,14 @@
 
        //Activa y desactiva las etiquetas de los Ageb
        map.on('zoomend', function() {
-            const bounds = map.getBounds();
-            const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-            
-            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
-            const markersToRemove = [];
+    const bounds = map.getBounds();
+    const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
+    
+    // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) { // Asegúrate de no eliminar el marcador manual
-                    markersToRemove.push(layer);
+                    map.removeLayer(layer);
                 }
-            });
-            
-            // Eliminar solo los marcadores de AGEB
-            markersToRemove.forEach(marker => {
-                map.removeLayer(marker);
             });
         
             if (map.getZoom() >= 15) {
