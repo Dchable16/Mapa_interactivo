@@ -306,28 +306,6 @@
                 alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
             }
         }
-
-        if (currentMarker) {
-            currentMarker.on('add moveend', function() {
-                if (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) {
-                    toggleAgebLabels(currentMarker.getLatLng(), true);
-                }
-            });
-        }
-        
-        map.on('overlayadd', function(eventLayer) {
-            if (eventLayer.layer === agebCDMXLayer || eventLayer.layer === agebEdoMexLayer) {
-                if (currentMarker) {
-                    toggleAgebLabels(currentMarker.getLatLng(), true);
-                }
-            }
-        });
-        
-        map.on('overlayremove', function(eventLayer) {
-            if (eventLayer.layer === agebCDMXLayer || eventLayer.layer === agebEdoMexLayer) {
-                toggleAgebLabels(currentMarker.getLatLng(), false);
-            }
-        });
         
         function removeMarker() {
             if (currentMarker) {
@@ -724,9 +702,6 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
-
-        let agebCDMXLayer = null;
-        let agebEdoMexLayer = null;    
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
@@ -775,18 +750,21 @@
                     const geoJsonLayer = L.geoJSON(data, {
                         pointToLayer: function(feature, latlng) {
                             let icono = null;
-        
+                
                             if (type === 'Competencias') {
+                                // Usar 'name' del GeoJSON para capas de competencias
                                 icono = iconosPersonalizados[data.name];
                                 console.log("Competencia name:", data.name); //Para depurar
                             } else {
+                                // Usar 'layerName' de feature.properties para otras capas
                                 icono = iconosPersonalizados[feature.properties.layerName];
                                 console.log("layerName:", feature.properties.layerName); //Para depurar
                             }
-        
+                
                             if (!icono) {
+                                // Usar icono predeterminado si no se encuentra
                                 icono = L.icon({
-                                    iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png',
+                                    iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png', // Reemplaza con tu icono predeterminado
                                     iconSize: [25, 25],
                                     iconAnchor: [12, 25],
                                     popupAnchor: [0, -28]
@@ -797,12 +775,12 @@
                         style: (feature) => {
                             if (type === 'UsoSuelo') {
                                 return {
-                                    color: 'rgb(128, 0, 128)',
-                                    weight: 0.3,
-                                    fillOpacity: 0
+                                    color: 'rgb(128, 0, 128)', // Color del borde
+                                    weight: 0.3, // Grosor del borde más delgado
+                                    fillOpacity: 0 // Sin fondo
                                 };
                             } else {
-                                return { color: colorMap[type], weight: 3, fillOpacity: 0.25 };
+                                return { color: colorMap[type], weight: 3, fillOpacity: 0.25 }; // Estilo para otras capas
                             }
                         },
                         onEachFeature: (feature, layer) => {
@@ -810,11 +788,11 @@
                                 const area = Math.floor(turf.area(feature));
                                 feature.properties['Área polígono'] = area;
                             }
-        
+                            
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
-                                    if (key !== 'liga_ciuda') {
+                                    if (key !== 'liga_ciuda') { // Omitir este atributo
                                         popupContent += `${key}: ${feature.properties[key]}<br>`;
                                     }
                                 }
@@ -826,23 +804,12 @@
                     // Agregar la capa a los grupos correspondientes
                     switch (type) {
                         case 'Ageb':
-                            geoJsonLayer.eachLayer(layer => {
-                                if (url === 'Ageb_urb_CDMX.geojson') {
-                                    agebCDMXLayer = agebCDMXLayer || L.featureGroup();
-                                    agebCDMXLayer.addLayer(layer);
-                                } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
-                                    agebEdoMexLayer = agebEdoMexLayer || L.featureGroup();
-                                    agebEdoMexLayer.addLayer(layer);
-                                }
-                            });
-                            // Añadir las capas al mapa
-                            if (agebCDMXLayer) {
-                                map.addLayer(agebCDMXLayer);
+                            if (url === 'Ageb_urb_CDMX.geojson') {
+                                agebCDMXLayer = geoJsonLayer;
+                            } else if (url === 'Ageb_urb_Edo_Mex.geojson') {
+                                agebEdoMexLayer = geoJsonLayer;
                             }
-                            if (agebEdoMexLayer) {
-                                map.addLayer(agebEdoMexLayer);
-                            }
-                            // No agregar geoJsonLayer a geoJsonLayersAgeb aquí
+                            geoJsonLayersAgeb[layerName] = geoJsonLayer;
                             break;
                         case 'UsoSuelo':
                             geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
@@ -869,49 +836,6 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
-        function toggleAgebLabels(markerLatLng, showLabels) {
-            const radius = 1000; // 1 km en metros
-        
-            [agebCDMXLayer, agebEdoMexLayer].forEach(layer => {
-                if (layer) {
-                    layer.eachLayer(featureLayer => {
-                        const feature = featureLayer.feature;
-                        if (feature && feature.geometry && feature.geometry.type === 'Polygon') {
-                            const polygon = turf.polygon(feature.geometry.coordinates);
-                            const bbox = turf.bbox(polygon);
-                            const bboxPolygon = turf.bboxPolygon(bbox);
-                            const distanceToBbox = turf.distance(
-                                turf.point([markerLatLng.lng, markerLatLng.lat]),
-                                turf.centroid(bboxPolygon),
-                                { units: 'meters' }
-                            );
-        
-                            if (distanceToBbox <= radius * 2) { // Verificación rápida con bounding box
-                                const distance = turf.distance(
-                                    turf.point([markerLatLng.lng, markerLatLng.lat]),
-                                    turf.centroid(polygon),
-                                    { units: 'meters' }
-                                );
-        
-                                if (distance <= radius) {
-                                    if (showLabels) {
-                                        featureLayer.bindTooltip(feature.properties.NOM_AGEB, { permanent: true, direction: 'center' }).openTooltip();
-                                    } else {
-                                        featureLayer.unbindTooltip();
-                                    }
-                                } else {
-                                    featureLayer.unbindTooltip();
-                                }
-                            } else {
-                                featureLayer.unbindTooltip();
-                            }
-                        }
-                    });
-                }
-            });
-        }
-        
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
