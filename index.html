@@ -182,20 +182,6 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       let competenciasLayers = []; // Almacenar las capas de competencias
-        
-        function updateCompetenciasLayers() {
-            competenciasLayers = [];
-            for (const layerName in geoJsonLayersCompetencias) {
-                if (map.hasLayer(geoJsonLayersCompetencias[layerName])) {
-                    competenciasLayers.push(geoJsonLayersCompetencias[layerName]);
-                }
-            }
-        }
-        
-        // Vincula los eventos después de declarar geoJsonLayersCompetencias
-        map.on('layeradd layerremove', updateCompetenciasLayers); // Actualizar al agregar o quitar capas.
-        updateCompetenciasLayers(); // Inicializar al cargar la página.
         
         map.on('zoomend', function() {
             const bounds = map.getBounds();
@@ -960,6 +946,23 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
+
+        //función para ocultar iconos
+        let competenciasLayers = []; // Almacenar las capas de competencias
+
+        function updateCompetenciasLayers() {
+            competenciasLayers = [];
+            for (const layerName in geoJsonLayersCompetencias) {
+                if (map.hasLayer(geoJsonLayersCompetencias[layerName])) {
+                    competenciasLayers.push(geoJsonLayersCompetencias[layerName]);
+                }
+            }
+        }
+        
+        // Vincula los eventos después de declarar geoJsonLayersCompetencias
+        map.on('layeradd layerremove', updateCompetenciasLayers); // Actualizar al agregar o quitar capas.
+
+        
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
