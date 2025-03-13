@@ -202,7 +202,7 @@
             });
         
             // Crear etiquetas para las capas de extracción si están activas
-            if (map.hasLayer(bufferLayerGroup)) {
+            if (bufferLayerGroup.getLayers().length > 0) { // Verificar si el grupo tiene capas
                 bufferLayerGroup.eachLayer(function(layer) {
                     if (layer.feature && layer.feature.properties && layer.feature.properties.populationTotal) {
                         const centroid = turf.centroid(layer.feature);
@@ -221,7 +221,7 @@
                 });
             }
         
-            if (map.hasLayer(differenceExtractionLayerGroup)) {
+            if (differenceExtractionLayerGroup.getLayers().length > 0) { // Verificar si el grupo tiene capas
                 differenceExtractionLayerGroup.eachLayer(function(layer) {
                     if (layer.feature && layer.feature.properties && layer.feature.properties.populationTotal) {
                         const centroid = turf.centroid(layer.feature);
