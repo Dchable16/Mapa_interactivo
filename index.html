@@ -181,6 +181,34 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
+        // Escuchar el evento de zoom
+        map.on('zoomend', function() {
+            if (map.getZoom() >= 15) {
+                const bounds = map.getBounds();
+                const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
+                
+                // Limpiar las etiquetas existentes
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+    
+                features.forEach(feature => {
+                    if (feature.properties.POB1 && bounds.contains(L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]))) {
+                        // Crear una etiqueta para cada característica visible que tenga POB1
+                        const marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+                            icon: L.divIcon({
+                                className: 'ageb-label',
+                                html: feature.properties.POB1.toString(),
+                                iconSize: [100, 20]
+                            })
+                        }).addTo(map);
+                    }
+                });
+            }
+        });
+
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
         const closeFormBtn = document.getElementById('close-form-btn');
