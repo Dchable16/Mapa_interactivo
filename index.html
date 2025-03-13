@@ -217,27 +217,6 @@
             }
         });        
 
-        map.on('overlayadd', function(e) {
-            if (e.name === 'Ageb CDMX') {
-                if(currentMarker){
-                    const latlng = currentMarker.getLatLng();
-                    loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
-                }
-            } else if (e.name === 'Ageb Edo. Mex.') {
-                if(currentMarker){
-                    const latlng = currentMarker.getLatLng();
-                    loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
-                }
-            }
-        });
-        map.on('overlayremove', function(e) {
-            if (e.name === 'Ageb CDMX') {
-                agebCDMXLabelsGroup.clearLayers();
-            } else if (e.name === 'Ageb Edo. Mex.') {
-                agebEdoMexLabelsGroup.clearLayers();
-            }
-        });
-
         // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
@@ -276,16 +255,6 @@
 
         // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
-        
-        //variables capas Ageb
-        let agebCDMXLabelsGroup = L.layerGroup().addTo(map);
-        let agebEdoMexLabelsGroup = L.layerGroup().addTo(map);
-        const AGEB_LABEL_RADIUS = 1000; // Radio de 1 km
-        let agebCDMXIndex;
-        let agebEdoMexIndex;
-        //Caché de etiquetas
-        let agebCDMXLabelsCache = [];
-        let agebEdoMexLabelsCache = [];
 
         // Función para agregar un marcador en el mapa
         function addMarker() {
@@ -298,8 +267,9 @@
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
         
-            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`);
+            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Log para verificar coordenadas
         
+            // Validar coordenadas
             if (isNaN(lat) || isNaN(lon)) {
                 alert("Por favor ingrese coordenadas válidas.");
                 return;
@@ -319,7 +289,7 @@
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map);
+                }).addTo(map); // Eliminar la parte de bindPopup()
         
                 // Crear la etiqueta del marcador
                 currentMarkerLabel = L.divIcon({
@@ -328,21 +298,7 @@
                     iconSize: [100, 50],
                     iconAnchor: [50, 15]
                 });
-                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map);
-        
-                // Agregar eventos al marcador
-                if (currentMarker) {
-                    currentMarker.on('add', function() {
-                        const latlng = currentMarker.getLatLng();
-                        loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
-                        loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
-                    });
-        
-                    currentMarker.on('remove', function() {
-                        agebCDMXLabelsGroup.clearLayers();
-                        agebEdoMexLabelsGroup.clearLayers();
-                    });
-                }
+                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
         
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
             } catch (error) {
@@ -746,70 +702,6 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
-
-        // Crea indice de etiquetas
-        function createAgebIndex(agebLayer) {
-            const index = new rbush();
-            const items = [];
-            agebLayer.eachLayer(agebFeature => {
-                const bbox = turf.bbox(agebFeature.feature);
-                items.push({
-                    minX: bbox[0],
-                    minY: bbox[1],
-                    maxX: bbox[2],
-                    maxY: bbox[3],
-                    feature: agebFeature
-                });
-            });
-            index.load(items);
-            return index;
-        }
-        //Crear los indices cuando se carguen las capas ageb
-        map.on('overlayadd', function(e) {
-            if (e.name === 'Ageb CDMX') {
-                agebCDMXIndex = createAgebIndex(geoJsonLayersAgeb['Ageb CDMX']);
-            } else if (e.name === 'Ageb Edo. Mex.') {
-                agebEdoMexIndex = createAgebIndex(geoJsonLayersAgeb['Ageb Edo. Mex.']);
-            }
-        });
-
-        function loadAgebLabelsInRadius(latlng, agebIndex, labelsGroup, labelsCache) {
-            labelsGroup.clearLayers();
-            if (!agebIndex) return;
-            //Si hay etiquetas en el cache, las carga
-            if (labelsCache.length > 0) {
-                labelsCache.forEach(label => {
-                    labelsGroup.addLayer(label);
-                });
-                return;
-            }
-            const searchBbox = turf.bbox(turf.circle([latlng.lng, latlng.lat], AGEB_LABEL_RADIUS, { units: 'meters' }));
-            const results = agebIndex.search({
-                minX: searchBbox[0],
-                minY: searchBbox[1],
-                maxX: searchBbox[2],
-                maxY: searchBbox[3]
-            });
-            results.forEach(item => {
-                const distance = turf.distance(
-                    turf.point([latlng.lng, latlng.lat]),
-                    turf.centroid(item.feature.feature),
-                    { units: 'meters' }
-                });
-                if (distance <= AGEB_LABEL_RADIUS) {
-                    const centroid = item.feature.getBounds().getCenter();
-                    const label = L.marker(centroid, {
-                        icon: L.divIcon({
-                            className: 'ageb-label',
-                            html: item.feature.feature.properties.POB1,
-                            iconSize: [60, 20]
-                        })
-                    });
-                    labelsGroup.addLayer(label);
-                    labelsCache.push(label);
-                }
-            });
-        }
         
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
