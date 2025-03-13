@@ -186,11 +186,17 @@
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             
-            // Limpiar solo las etiquetas de AGEB existentes, pero mantener currentMarkerLabel
+            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual y su etiqueta
+            const markersToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) { // No eliminar el marcador manual
-                    map.removeLayer(layer);
+                    markersToRemove.push(layer);
                 }
+            });
+        
+            // Eliminar solo los marcadores de AGEB
+            markersToRemove.forEach(marker => {
+                map.removeLayer(marker);
             });
         
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
@@ -226,11 +232,7 @@
                     }
                 });
             }
-            
-            // Asegúrate de que currentMarkerLabel se mantenga visible
-            if (currentMarkerLabel) {
-                map.addLayer(currentMarkerLabel); // Reagregar la etiqueta si ha sido eliminada
-            }
+            console.log(currentMarker); // para depurar
         });
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
