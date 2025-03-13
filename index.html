@@ -182,14 +182,17 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       map.on('zoomend', function() {
+       // Suponiendo que tienes una variable que controla la visibilidad de la capa AGEB
+        let isAgebLayerActive = true; // Cambia esto según la lógica de activación de tu capa AGEB
+        
+        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             
-            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
+            // Limpiar las etiquetas de AGEB existentes
             const markersToRemove = [];
             map.eachLayer(function(layer) {
-                if (layer instanceof L.Marker && layer !== currentMarker) { // Asegúrate de no eliminar el marcador manual
+                if (layer instanceof L.Marker && layer !== currentMarker) { // No eliminar el marcador manual
                     markersToRemove.push(layer);
                 }
             });
@@ -199,7 +202,13 @@
                 map.removeLayer(marker);
             });
         
-            if (map.getZoom() >= 15) {
+            // Reagregar el marcador manual si existe
+            if (currentMarker) {
+                map.addLayer(currentMarker);
+            }
+        
+            // Agregar etiquetas solo si la capa AGEB está activa y el zoom es 15 o más
+            if (isAgebLayerActive && map.getZoom() >= 15) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                         if (feature.geometry.type === 'Point') {
