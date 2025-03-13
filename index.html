@@ -835,6 +835,13 @@
                                     agebEdoMexLayer.addLayer(layer);
                                 }
                             });
+                            // Añadir las capas al mapa
+                            if (agebCDMXLayer) {
+                                map.addLayer(agebCDMXLayer);
+                            }
+                            if (agebEdoMexLayer) {
+                                map.addLayer(agebEdoMexLayer);
+                            }
                             // No agregar geoJsonLayer a geoJsonLayersAgeb aquí
                             break;
                         case 'UsoSuelo':
