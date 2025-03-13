@@ -875,8 +875,8 @@
             const agebFeatures = [];
         
             agebLayer.eachLayer(ageb => {
-                if (bounds.intersects(ageb.getBounds())) {
-                    agebFeatures.push(ageb.feature); // Agregar el objeto feature directamente
+                if (bounds.intersects(ageb.getBounds()) && ageb.feature) { // Agregar verificación aquí
+                    agebFeatures.push(ageb.feature);
                 }
             });
         
