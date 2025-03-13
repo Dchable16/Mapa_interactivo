@@ -242,8 +242,7 @@
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
         
         // Banderas para controlar la creación de elementos
-        let radius400Created = false;
-        let radius800Created = false;
+        let radiosCreated = { 400: false, 800: false };
         let differenceCreated = false;
         let bufferDataExtracted = false;
         let differenceDataExtracted = false;
@@ -322,8 +321,8 @@
         
                 radius400Layer.clearLayers();
                 radius800Layer.clearLayers();
-                radius400Created = false;
-                radius800Created = false;
+                radiosCreated[400] = false;
+                radiosCreated[800] = false;
         
                 bufferLayerGroup.clearLayers();
                 differenceExtractionLayerGroup.clearLayers();
@@ -340,27 +339,28 @@
             }
         }
         
-        // Función para agregar radios de 400m o 800m alrededor del marcador
+        // Función para agregar un radio alrededor del marcador
         function addRadius(radius) {
-            if (radius === 400 && radius400Created) {
-                alert("El radio de 400m ya ha sido creado.");
-                return;
-            }
-            if (radius === 800 && radius800Created) {
-                alert("El radio de 800m ya ha sido creado.");
+            if (radiosCreated[radius]) {
+                alert(`El radio de ${radius}m ya ha sido creado.`);
                 return;
             }
         
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
-                const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
+                const circle = L.circle(latLng, {
+                    color: radius === 400 ? 'blue' : 'red',
+                    fillOpacity: 0.2,
+                    radius: radius
+                });
+        
                 if (radius === 400) {
                     radius400Layer.addLayer(circle);
-                    radius400Created = true;
                 } else {
                     radius800Layer.addLayer(circle);
-                    radius800Created = true;
                 }
+        
+                radiosCreated[radius] = true;
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -373,14 +373,16 @@
                 return;
             }
         
-            if (currentMarker && radius400Created && radius800Created) {
+            if (currentMarker && radiosCreated[400] && radiosCreated[800]) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
                 const difference = turf.difference(circle800, circle400);
+        
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
-                    L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
+                    L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } })
+                        .addTo(differenceLayerGroup);
                     differenceCreated = true;
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
@@ -388,35 +390,68 @@
             } else {
                 alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
-            
         }
+        
         function createRadiosAndDifference() {
             if (!currentMarker) {
                 alert("Primero debe agregar un marcador.");
                 return;
             }
         
-            // Crear radio de 400m
             addRadius(400);
-            // Crear radio de 800m
             addRadius(800);
-            
-            // Calcular la diferencia entre los radios
             calculateDifference();
-                if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
-                // Asegurarse de que el primer elemento de radius800Layer sea un L.Circle
-                if (radius800Layer.getLayers()[0] instanceof L.Circle) {
-                    const radiusLayer = radius800Layer.getLayers()[0];
-                    const selectedAgeb = selectAgebWithinRadius(radiusLayer, agebLayerGroup);
-                    if (selectedAgeb && selectedAgeb.length > 0) {
-                        showAgebLabels(selectedAgeb, map);
-                    }
-                } else {
-                    console.error("El primer elemento de radius800Layer no es un L.Circle");
+        
+            if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
+                const radiusLayer = radius800Layer.getLayers()[0];
+                const selectedAgeb = selectAgebWithinRadius(radiusLayer, agebLayerGroup);
+                if (selectedAgeb && selectedAgeb.length > 0) {
+                    showAgebLabels(selectedAgeb, map);
                 }
             } else {
                 console.error("No se pudo seleccionar AGEB dentro del radio de 800m.");
             }
+        }
+        
+        // Eventos para controlar la visualización de capas GeoJSON
+        map.on('overlayadd', eventLayer => {
+            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
+                if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
+                    const radiusLayer = radius800Layer.getLayers()[0];
+                    if (radiusLayer instanceof L.Circle) {
+                        const selectedAgeb = selectAgebWithinRadius(radiusLayer, geoJsonLayersAgeb[eventLayer.name]);
+                        if (selectedAgeb && selectedAgeb.length > 0) {
+                            showAgebLabels(selectedAgeb, map);
+                        }
+                    } else {
+                        console.error("radiusLayer no es un L.Circle");
+                    }
+                }
+            }
+        });
+        
+        map.on('overlayremove', eventLayer => {
+            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
+                hideAgebLabels();
+            }
+        });
+        
+        function selectAgebWithinRadius(radiusLayer, agebLayerGroup) {
+            if (!radiusLayer || !agebLayerGroup) return [];
+        
+            const radiusBounds = radiusLayer.getBounds();
+            const selectedAgeb = [];
+        
+            agebLayerGroup.eachLayer(layer => {
+                if (layer instanceof L.GeoJSON) {
+                    layer.eachLayer(featureLayer => {
+                        if (radiusBounds.intersects(featureLayer.getBounds())) {
+                            selectedAgeb.push(featureLayer);
+                        }
+                    });
+                }
+            });
+            return selectedAgeb;
         }
 
         function extractAgebData() {
@@ -865,65 +900,31 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
 
-        function selectAgebWithinRadius(radiusLayer, agebLayer) {
-            if (!(radiusLayer instanceof L.Circle)) {
-                console.error("radiusLayer no es una instancia de L.Circle");
-                return [];
-            }
-        
-            const bounds = radiusLayer.getBounds();
-            const agebFeatures = [];
-        
-            agebLayer.eachLayer(ageb => {
-                if (bounds.intersects(ageb.getBounds()) && ageb.feature) { // Agregar verificación aquí
-                    agebFeatures.push(ageb.feature);
-                }
-            });
-        
-            return agebFeatures;
-        }
-        
-        function showAgebLabels(agebFeatures, map) {
-            hideAgebLabels(); // Limpiar etiquetas existentes
-        
-            agebFeatures.forEach(feature => {
-                // Verificar que feature y feature.properties no sean undefined
-                if (feature && feature.properties && feature.geometry && feature.geometry.coordinates) {
-                    let latLng;
-                    if (feature.geometry.type === "Point") {
-                        latLng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-                    } else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
-                        // Calcular el centroide del polígono
-                        const centroid = turf.centroid(feature);
-                        latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
-                    } else {
-                        console.error("Tipo de geometría no soportado:", feature.geometry.type);
-                        return;
-                    }
-        
-                    const pob1Value = feature.properties.POB1; // Obtener el valor de POB1
-        
-                    if (pob1Value !== undefined && pob1Value !== null) {
-                        const label = L.divIcon({
-                            className: 'ageb-label',
-                            html: pob1Value.toString(), // Usar el valor de POB1 como etiqueta
-                            iconSize: [60, 30],
-                            iconAnchor: [30, 15]
-                        });
-                        const marker = L.marker(latLng, { icon: label }).addTo(map);
-                        agebLabels[feature._leaflet_id] = marker; // Almacenar el marcador de etiqueta
-                    }
-                } else {
-                    console.error("Feature no tiene la estructura esperada:", feature);
-                }
+        function showAgebLabels(agebLayers, map) {
+            hideAgebLabels(); // Limpiar etiquetas anteriores
+            agebLayers.forEach(layer => {
+                const center = layer.getBounds().getCenter();
+                const label = L.marker(center, {
+                    icon: L.divIcon({
+                        className: 'ageb-label',
+                        html: `<div style="background-color: white; padding: 5px; border: 1px solid black;">${layer.feature.properties.POB1}</div>`, // Usar POB1 aquí
+                        iconSize: [100, 40],
+                        iconAnchor: [50, 20]
+                    })
+                }).addTo(map);
+                agebLabels[layer._leaflet_id] = label;
             });
         }
+        
         function hideAgebLabels() {
             for (const id in agebLabels) {
                 map.removeLayer(agebLabels[id]);
             }
             agebLabels = {}; // Limpiar el objeto agebLabels
         }
+        
+        // Evento para crear radios y diferencia al hacer clic en el botón
+        document.getElementById('create-radios-btn').addEventListener('click', createRadiosAndDifference);
         
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
