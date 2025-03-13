@@ -388,6 +388,34 @@
             } else {
                 alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
+            
+        }
+        function createRadiosAndDifference() {
+            if (!currentMarker) {
+                alert("Primero debe agregar un marcador.");
+                return;
+            }
+        
+            // Crear radio de 400m
+            addRadius(400);
+            // Crear radio de 800m
+            addRadius(800);
+            
+            // Calcular la diferencia entre los radios
+            calculateDifference();
+        }
+
+        function extractAgebData() {
+            if (!currentMarker) {
+                alert("Primero debe agregar un marcador.");
+                return;
+            }
+        
+            // Extraer información de Ageb con el radio de 400m
+            extractBufferData();
+        
+            // Extraer información de Ageb con el radio de 800m
+            extractDifferenceData();
         }
 
         let ageb400Data = [];
