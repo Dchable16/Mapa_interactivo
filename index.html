@@ -182,33 +182,18 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       // Suponiendo que tienes una variable que controla la visibilidad de la capa AGEB
-        let isAgebLayerActive = true; // Cambia esto según la lógica de activación de tu capa AGEB
-        
-        map.on('zoomend', function() {
+       map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             
-            // Limpiar las etiquetas de AGEB existentes
-            const markersToRemove = [];
+            // Limpiar las etiquetas existentes
             map.eachLayer(function(layer) {
-                if (layer instanceof L.Marker && layer !== currentMarker) { // No eliminar el marcador manual
-                    markersToRemove.push(layer);
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
                 }
             });
-            
-            // Eliminar solo los marcadores de AGEB
-            markersToRemove.forEach(marker => {
-                map.removeLayer(marker);
-            });
         
-            // Reagregar el marcador manual si existe
-            if (currentMarker) {
-                map.addLayer(currentMarker);
-            }
-        
-            // Agregar etiquetas solo si la capa AGEB está activa y el zoom es 15 o más
-            if (isAgebLayerActive && map.getZoom() >= 15) {
+            if (map.getZoom() >= 15) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                         if (feature.geometry.type === 'Point') {
@@ -225,8 +210,7 @@
                             }
                         } else if (feature.geometry.type === 'MultiPolygon') {
                             feature.geometry.coordinates.forEach(polygon => {
-                                const centroid = turf.centroid(feature);
-                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+                                const latLng = L.latLng(polygon[0][0][1], polygon[0][0][0]);
                                 if (bounds.contains(latLng)) {
                                     const marker = L.marker(latLng, {
                                         icon: L.divIcon({
