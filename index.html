@@ -255,6 +255,16 @@
 
         // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
+        
+        //variables capas Ageb
+        let agebCDMXLabelsGroup = L.layerGroup().addTo(map);
+        let agebEdoMexLabelsGroup = L.layerGroup().addTo(map);
+        const AGEB_LABEL_RADIUS = 1000; // Radio de 1 km
+        let agebCDMXIndex;
+        let agebEdoMexIndex;
+        //Caché de etiquetas
+        let agebCDMXLabelsCache = [];
+        let agebEdoMexLabelsCache = [];
 
         // Función para agregar un marcador en el mapa
         function addMarker() {
