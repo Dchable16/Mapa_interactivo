@@ -843,7 +843,7 @@
                             } else {
                                 return { color: colorMap[type], weight: 2, fillOpacity: 0.25 }; // Estilo para otras capas
                             }
-                        },
+                        }
                         onEachFeature: (feature, layer) => {
                             if (type === 'Poligono') {
                                 const area = Math.floor(turf.area(feature));
