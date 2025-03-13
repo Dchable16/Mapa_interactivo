@@ -202,6 +202,12 @@
                 map.removeLayer(marker);
             });
 
+            // Verificar si las capas AGEB 400m o AGEB 800m están activas
+            if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
+                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
+                return;
+            }
+
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
