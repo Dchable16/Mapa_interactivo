@@ -182,17 +182,17 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
         map.on('zoomend', function() {
-            if (map.getZoom() >= 15) {
-                const bounds = map.getBounds();
-                const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-                
-                // Limpiar las etiquetas existentes
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker) {
-                        map.removeLayer(layer);
-                    }
-                });
+            const bounds = map.getBounds();
+            const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
+            
+            // Limpiar las etiquetas existentes
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
         
+            if (map.getZoom() >= 15) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                         if (feature.geometry.type === 'Point') {
@@ -208,10 +208,8 @@
                                 }).addTo(map);
                             }
                         } else if (feature.geometry.type === 'MultiPolygon') {
-                            // Iterar sobre cada polígono en el MultiPolygon
                             feature.geometry.coordinates.forEach(polygon => {
-                                // Usar el primer punto del primer anillo como un punto representativo
-                                const latLng = L.latLng(polygon[0][0][1], polygon[0][0][0]); // [lat, lng]
+                                const latLng = L.latLng(polygon[0][0][1], polygon[0][0][0]);
                                 if (bounds.contains(latLng)) {
                                     const marker = L.marker(latLng, {
                                         icon: L.divIcon({
