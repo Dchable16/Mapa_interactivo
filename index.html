@@ -827,16 +827,20 @@
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
-                            if (type === 'UsoSuelo') {
+                            if (type === 'Ageb') {
+                                return {
+                                    color: 'rgb(76, 170, 102)', // Color del contorno
+                                    weight: 1.5, // Grosor del contorno
+                                    fillOpacity: 0.85, // Opacidad del relleno
+                                    fillColor: 'rgb(62, 207, 114)' // Color del relleno
+                                };
+                            } else if (type === 'UsoSuelo') {
                                 return {
                                     color: 'rgb(128, 0, 128)', // Color del borde
                                     weight: 0.3, // Grosor del borde más delgado
                                     fillOpacity: 0 // Sin fondo
                                 };
-                            } else {
-                                return { color: colorMap[type], weight: 2, fillOpacity: 0.25 }; // Estilo para otras capas
-                            }
-                        },
+                                            },
                         onEachFeature: (feature, layer) => {
                             if (type === 'Poligono') {
                                 const area = Math.floor(turf.area(feature));
