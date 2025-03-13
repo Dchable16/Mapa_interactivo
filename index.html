@@ -836,6 +836,73 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
+
+        function toggleAgebLabels(markerLatLng, showLabels) {
+    const radius = 1000; // 1 km en metros
+
+    [agebCDMXLayer, agebEdoMexLayer].forEach(layer => {
+        if (layer) {
+            layer.eachLayer(featureLayer => {
+                const feature = featureLayer.feature;
+                if (feature && feature.geometry && feature.geometry.type === 'Polygon') {
+                    const polygon = turf.polygon(feature.geometry.coordinates);
+                    const bbox = turf.bbox(polygon);
+                    const bboxPolygon = turf.bboxPolygon(bbox);
+                    const distanceToBbox = turf.distance(
+                        turf.point([markerLatLng.lng, markerLatLng.lat]),
+                        turf.centroid(bboxPolygon),
+                        { units: 'meters' }
+                    );
+
+                    if (distanceToBbox <= radius * 2) { // Verificación rápida con bounding box
+                        const distance = turf.distance(
+                            turf.point([markerLatLng.lng, markerLatLng.lat]),
+                            turf.centroid(polygon),
+                            { units: 'meters' }
+                        );
+
+                        if (distance <= radius) {
+                            if (showLabels) {
+                                featureLayer.bindTooltip(feature.properties.NOM_AGEB, { permanent: true, direction: 'center' }).openTooltip();
+                            } else {
+                                featureLayer.unbindTooltip();
+                            }
+                        } else {
+                            featureLayer.unbindTooltip();
+                        }
+                    } else {
+                        featureLayer.unbindTooltip();
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Escuchar eventos de activación/desactivación de capas AGEB
+map.on('overlayadd', function(eventLayer) {
+    if (eventLayer.layer === agebCDMXLayer || eventLayer.layer === agebEdoMexLayer) {
+        if (currentMarker) {
+            toggleAgebLabels(currentMarker.getLatLng(), true);
+        }
+    }
+});
+
+map.on('overlayremove', function(eventLayer) {
+    if (eventLayer.layer === agebCDMXLayer || eventLayer.layer === agebEdoMexLayer) {
+        toggleAgebLabels(currentMarker.getLatLng(), false);
+    }
+});
+
+// Cuando se crea o se mueve el marcador
+if (currentMarker) {
+    currentMarker.on('add moveend', function() {
+        if (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) {
+            toggleAgebLabels(currentMarker.getLatLng(), true);
+        }
+    });
+}
+        
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
