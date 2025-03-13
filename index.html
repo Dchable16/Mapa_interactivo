@@ -107,13 +107,6 @@
             border: none; /* Sin borde */
             font-size: 16px; /* Aumenta el tamaño de la fuente aquí */
         }
-        .ageb-label {
-            background-color: rgba(255, 255, 255, 0.7);
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            padding: 2px 5px;
-            font-size: 12px;
-        }
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -263,16 +256,6 @@
         // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
 
-        //Constantes para etiquetas Ageb
-        let agebCDMXLabelsGroup = L.layerGroup().addTo(map);
-        let agebEdoMexLabelsGroup = L.layerGroup().addTo(map);
-        const AGEB_LABEL_RADIUS = 1000; // Radio de 1 km
-        let agebCDMXIndex;
-        let agebEdoMexIndex;
-        //Caché de etiquetas
-        let agebCDMXLabelsCache = [];
-        let agebEdoMexLabelsCache = [];
-
         // Función para agregar un marcador en el mapa
         function addMarker() {
             if (currentMarker) {
@@ -300,19 +283,6 @@
             if (lon < -180 || lon > 180) {
                 alert("La longitud debe estar entre -180 y 180 grados.");
                 return;
-            }
-            if(currentMarker){
-                //Evento al crear el marcador
-                currentMarker.on('add', function() {
-                    const latlng = currentMarker.getLatLng();
-                    loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
-                    loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
-                });
-                //Evento al eliminar el marcador
-                currentMarker.on('remove', function() {
-                    agebCDMXLabelsGroup.clearLayers();
-                    agebEdoMexLabelsGroup.clearLayers();
-                });
             }
         
             try {
@@ -732,8 +702,8 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
-        
-        //Indice de etiquetas Ageb
+
+        // Crea indice de etiquetas
         function createAgebIndex(agebLayer) {
             const index = new rbush();
             const items = [];
@@ -758,44 +728,6 @@
                 agebEdoMexIndex = createAgebIndex(geoJsonLayersAgeb['Ageb Edo. Mex.']);
             }
         });
-
-        function loadAgebLabelsInRadius(latlng, agebIndex, labelsGroup, labelsCache) {
-            labelsGroup.clearLayers();
-            if (!agebIndex) return;
-            //Si hay etiquetas en el cache, las carga
-            if (labelsCache.length > 0) {
-                labelsCache.forEach(label => {
-                    labelsGroup.addLayer(label);
-                });
-                return;
-            }
-            const searchBbox = turf.bbox(turf.circle([latlng.lng, latlng.lat], AGEB_LABEL_RADIUS, { units: 'meters' }));
-            const results = agebIndex.search({
-                minX: searchBbox[0],
-                minY: searchBbox[1],
-                maxX: searchBbox[2],
-                maxY: searchBbox[3]
-            });
-            results.forEach(item => {
-                const distance = turf.distance(
-                    turf.point([latlng.lng, latlng.lat]),
-                    turf.centroid(item.feature.feature),
-                    { units: 'meters' }
-                });
-                if (distance <= AGEB_LABEL_RADIUS) {
-                    const centroid = item.feature.getBounds().getCenter();
-                    const label = L.marker(centroid, {
-                        icon: L.divIcon({
-                            className: 'ageb-label',
-                            html: item.feature.feature.properties.POB1,
-                            iconSize: [60, 20]
-                        })
-                    });
-                    labelsGroup.addLayer(label);
-                    labelsCache.push(label);
-                }
-            });
-        }
 
 
         
