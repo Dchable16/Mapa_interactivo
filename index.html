@@ -203,7 +203,8 @@
                                     icon: L.divIcon({
                                         className: 'ageb-label',
                                         html: feature.properties.POB1.toString(),
-                                        iconSize: [100, 20]
+                                        iconSize: [100, 20],
+                                        iconAnchor: [50, 10] // Centrar el icono
                                     })
                                 }).addTo(map);
                             }
@@ -215,7 +216,8 @@
                                         icon: L.divIcon({
                                             className: 'ageb-label',
                                             html: feature.properties.POB1.toString(),
-                                            iconSize: [100, 20]
+                                            iconSize: [100, 20],
+                                            iconAnchor: [50, 10] // Centrar el icono
                                         })
                                     }).addTo(map);
                                 }
