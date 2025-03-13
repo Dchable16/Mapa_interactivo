@@ -797,7 +797,8 @@
                         'Municipios': 'rgb(255, 255, 0)',
                         'Alcaldias': 'rgb(0, 255, 127)',
                         'Competencias': 'rgb(204, 85, 0)',
-                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(62,207,114)' : 'rgb(76,170,102)',
+                        'Ageb_CDMX': 'rgb(62, 207, 114)', // Color para la capa AGEB CDMX
+                        'Ageb_EdoMex': 'rgb(76, 170, 102)', // Color para la capa AGEB Edo Mex
                         
                     };
         
@@ -828,11 +829,12 @@
                         },
                         style: (feature) => {
                            if (type === 'Ageb') {
+                                const fillColor = url.includes('Ageb_urb_CDMX.geojson') ? colorMap['Ageb_CDMX'] : colorMap['Ageb_EdoMex'];
                                 return {
                                     color: 'black', // Color del contorno
                                     weight: 1.5, // Grosor del contorno
-                                    fillOpacity: 0.95, // Opacidad del relleno
-                                    fillColor: 'rgb(62, 207, 114)' // Color del relleno
+                                    fillOpacity: 1.0, // Opacidad del relleno
+                                    fillColor: fillColor // Color del relleno basado en la capa
                                 };
                             } else if (type === 'UsoSuelo') {
                                 return {
