@@ -242,7 +242,8 @@
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
         
         // Banderas para controlar la creación de elementos
-        let radiosCreated = { 400: false, 800: false };
+        let radius400Created = false;
+        let radius800Created = false;
         let differenceCreated = false;
         let bufferDataExtracted = false;
         let differenceDataExtracted = false;
@@ -296,9 +297,6 @@
                 L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map);
         
                 map.setView([lat, lon], 12);
-        
-                // Llamar a createRadiosAndDifference después de agregar el marcador
-                createRadiosAndDifference();
             } catch (error) {
                 console.error("Error al agregar el marcador:", error);
                 alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
@@ -324,8 +322,8 @@
         
                 radius400Layer.clearLayers();
                 radius800Layer.clearLayers();
-                radiosCreated[400] = false;
-                radiosCreated[800] = false;
+                radius400Created = false;
+                radius800Created = false;
         
                 bufferLayerGroup.clearLayers();
                 differenceExtractionLayerGroup.clearLayers();
@@ -342,28 +340,27 @@
             }
         }
         
-        // Función para agregar un radio alrededor del marcador
+        // Función para agregar radios de 400m o 800m alrededor del marcador
         function addRadius(radius) {
-            if (radiosCreated[radius]) {
-                alert(`El radio de ${radius}m ya ha sido creado.`);
+            if (radius === 400 && radius400Created) {
+                alert("El radio de 400m ya ha sido creado.");
+                return;
+            }
+            if (radius === 800 && radius800Created) {
+                alert("El radio de 800m ya ha sido creado.");
                 return;
             }
         
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
-                const circle = L.circle(latLng, {
-                    color: radius === 400 ? 'blue' : 'red',
-                    fillOpacity: 0.2,
-                    radius: radius
-                });
-        
+                const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
                 if (radius === 400) {
                     radius400Layer.addLayer(circle);
+                    radius400Created = true;
                 } else {
                     radius800Layer.addLayer(circle);
+                    radius800Created = true;
                 }
-        
-                radiosCreated[radius] = true;
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -376,16 +373,14 @@
                 return;
             }
         
-            if (currentMarker && radiosCreated[400] && radiosCreated[800]) {
+            if (currentMarker && radius400Created && radius800Created) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
                 const difference = turf.difference(circle800, circle400);
-        
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
-                    L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } })
-                        .addTo(differenceLayerGroup);
+                    L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
                     differenceCreated = true;
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
@@ -393,57 +388,6 @@
             } else {
                 alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
-        }
-        
-        function createRadiosAndDifference() {
-            if (!currentMarker) {
-                alert("Primero debe agregar un marcador.");
-                return;
-            }
-        
-            addRadius(800);
-        
-            if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
-                const radiusLayer = radius800Layer.getLayers()[0];
-                const selectedAgeb = selectAgebWithinRadius(radiusLayer, agebLayerGroup);
-                if (selectedAgeb && selectedAgeb.length > 0) {
-                    showAgebLabels(selectedAgeb, map);
-                }
-            } else {
-                console.error("No se pudo seleccionar AGEB dentro del radio de 800m.");
-            }
-        }
-        
-        // Eventos para controlar la visualización de capas GeoJSON
-        map.on('overlayadd', eventLayer => {
-            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
-                if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
-                    const radiusLayer = radius800Layer.getLayers()[0];
-                    const selectedAgeb = selectAgebWithinRadius(radiusLayer, geoJsonLayersAgeb[eventLayer.name]);
-                    if (selectedAgeb && selectedAgeb.length > 0) {
-                        showAgebLabels(selectedAgeb, map);
-                    }
-                }
-            }
-        });
-        
-        map.on('overlayremove', eventLayer => {
-            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
-                hideAgebLabels();
-            }
-        });
-
-        function extractAgebData() {
-            if (!currentMarker) {
-                alert("Primero debe agregar un marcador.");
-                return;
-            }
-        
-            // Extraer información de Ageb con el radio de 400m
-            extractBufferData();
-        
-            // Extraer información de Ageb con el radio de 800m
-            extractDifferenceData();
         }
 
         let ageb400Data = [];
