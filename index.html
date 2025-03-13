@@ -277,9 +277,8 @@
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
         
-            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Log para verificar coordenadas
+            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`);
         
-            // Validar coordenadas
             if (isNaN(lat) || isNaN(lon)) {
                 alert("Por favor ingrese coordenadas válidas.");
                 return;
@@ -299,7 +298,7 @@
                 // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map); // Eliminar la parte de bindPopup()
+                }).addTo(map);
         
                 // Crear la etiqueta del marcador
                 currentMarkerLabel = L.divIcon({
@@ -308,7 +307,21 @@
                     iconSize: [100, 50],
                     iconAnchor: [50, 15]
                 });
-                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
+                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map);
+        
+                // Agregar eventos al marcador
+                if (currentMarker) {
+                    currentMarker.on('add', function() {
+                        const latlng = currentMarker.getLatLng();
+                        loadAgebLabelsInRadius(latlng, agebCDMXIndex, agebCDMXLabelsGroup, agebCDMXLabelsCache);
+                        loadAgebLabelsInRadius(latlng, agebEdoMexIndex, agebEdoMexLabelsGroup, agebEdoMexLabelsCache);
+                    });
+        
+                    currentMarker.on('remove', function() {
+                        agebCDMXLabelsGroup.clearLayers();
+                        agebEdoMexLabelsGroup.clearLayers();
+                    });
+                }
         
                 map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
             } catch (error) {
