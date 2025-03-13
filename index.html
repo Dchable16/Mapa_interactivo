@@ -201,12 +201,46 @@
                 map.removeLayer(label);
             });
         
-            // Verificar si las capas AGEB 400m o AGEB 800m están activas
-            if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
-                return;
+            // Crear etiquetas para las capas de extracción si están activas
+            if (map.hasLayer(bufferLayerGroup)) {
+                bufferLayerGroup.eachLayer(function(layer) {
+                    if (layer.feature && layer.feature.properties && layer.feature.properties.populationTotal) {
+                        const centroid = turf.centroid(layer.feature);
+                        const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+        
+                        if (bounds.contains(latLng)) {
+                            L.marker(latLng, {
+                                icon: L.divIcon({
+                                    className: 'ageb-label',
+                                    html: layer.feature.properties.populationTotal.toString(),
+                                    iconSize: [100, 20]
+                                })
+                            }).addTo(map);
+                        }
+                    }
+                });
             }
         
+            if (map.hasLayer(differenceExtractionLayerGroup)) {
+                differenceExtractionLayerGroup.eachLayer(function(layer) {
+                    if (layer.feature && layer.feature.properties && layer.feature.properties.populationTotal) {
+                        const centroid = turf.centroid(layer.feature);
+                        const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+        
+                        if (bounds.contains(latLng)) {
+                            L.marker(latLng, {
+                                icon: L.divIcon({
+                                    className: 'ageb-label',
+                                    html: layer.feature.properties.populationTotal.toString(),
+                                    iconSize: [100, 20]
+                                })
+                            }).addTo(map);
+                        }
+                    }
+                });
+            }
+        
+            // Crear etiquetas para las capas AGEB originales si el zoom es suficiente
             if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
