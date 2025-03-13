@@ -889,19 +889,23 @@
             return selectedAgeb;
         }    
 
-        function showAgebLabels(agebLayers, map) {
-            hideAgebLabels(); // Limpiar etiquetas anteriores
-            agebLayers.forEach(layer => {
-                const center = layer.getBounds().getCenter();
-                const label = L.marker(center, {
-                    icon: L.divIcon({
+        function showAgebLabels(agebFeatures, map) {
+            hideAgebLabels(); // Limpiar etiquetas existentes
+        
+            agebFeatures.forEach(feature => {
+                const latLng = feature.getBounds().getCenter();
+                const pob1Value = feature.feature.properties.POB1; // Obtener el valor de POB1
+        
+                if (pob1Value !== undefined && pob1Value !== null) {
+                    const label = L.divIcon({
                         className: 'ageb-label',
-                        html: `<div style="background-color: white; padding: 5px; border: 1px solid black;">${layer.feature.properties.NOM_AGEB}</div>`, // Asegúrate de que esta propiedad exista en tus datos AGEB
-                        iconSize: [100, 40],
-                        iconAnchor: [50, 20]
-                    })
-                }).addTo(map);
-                agebLabels[layer._leaflet_id] = label;
+                        html: pob1Value.toString(), // Usar el valor de POB1 como etiqueta
+                        iconSize: [60, 30],
+                        iconAnchor: [30, 15]
+                    });
+                    const marker = L.marker(latLng, { icon: label }).addTo(map);
+                    agebLabels[feature._leaflet_id] = marker; // Almacenar el marcador de etiqueta
+                }
             });
         }
 
