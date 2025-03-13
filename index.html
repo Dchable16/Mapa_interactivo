@@ -296,6 +296,9 @@
                 L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map);
         
                 map.setView([lat, lon], 12);
+        
+                // Llamar a createRadiosAndDifference después de agregar el marcador
+                createRadiosAndDifference();
             } catch (error) {
                 console.error("Error al agregar el marcador:", error);
                 alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
@@ -398,27 +401,25 @@
                 return;
             }
         
-            addRadius(400);
             addRadius(800);
-            calculateDifference();
         
-            if (typeof selectAgebWithinRadius === 'function') {
-                const selectedAgeb = selectAgebWithinRadius(radius800Layer, agebLayerGroup);
+            if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
+                const radiusLayer = radius800Layer.getLayers()[0];
+                const selectedAgeb = selectAgebWithinRadius(radiusLayer, agebLayerGroup);
                 if (selectedAgeb && selectedAgeb.length > 0) {
                     showAgebLabels(selectedAgeb, map);
                 }
             } else {
-                console.error("La función selectAgebWithinRadius no está definida.");
+                console.error("No se pudo seleccionar AGEB dentro del radio de 800m.");
             }
         }
-        
-        // ... (resto del código) ...
         
         // Eventos para controlar la visualización de capas GeoJSON
         map.on('overlayadd', eventLayer => {
             if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
                 if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
-                    const selectedAgeb = selectAgebWithinRadius(radius800Layer.getLayers()[0], geoJsonLayersAgeb[eventLayer.name]);
+                    const radiusLayer = radius800Layer.getLayers()[0];
+                    const selectedAgeb = selectAgebWithinRadius(radiusLayer, geoJsonLayersAgeb[eventLayer.name]);
                     if (selectedAgeb && selectedAgeb.length > 0) {
                         showAgebLabels(selectedAgeb, map);
                     }
