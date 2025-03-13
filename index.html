@@ -876,7 +876,7 @@
         
             agebLayer.eachLayer(ageb => {
                 if (bounds.intersects(ageb.getBounds())) {
-                    agebFeatures.push(ageb.toGeoJSON()); // Convertir a GeoJSON antes de agregar
+                    agebFeatures.push(ageb.feature); // Agregar el objeto feature directamente
                 }
             });
         
@@ -888,8 +888,19 @@
         
             agebFeatures.forEach(feature => {
                 // Verificar que feature y feature.properties no sean undefined
-                if (feature && feature.properties) {
-                    const latLng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]); // Crear LatLng
+                if (feature && feature.properties && feature.geometry && feature.geometry.coordinates) {
+                    let latLng;
+                    if (feature.geometry.type === "Point") {
+                        latLng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+                    } else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+                        // Calcular el centroide del polígono
+                        const centroid = turf.centroid(feature);
+                        latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+                    } else {
+                        console.error("Tipo de geometría no soportado:", feature.geometry.type);
+                        return;
+                    }
+        
                     const pob1Value = feature.properties.POB1; // Obtener el valor de POB1
         
                     if (pob1Value !== undefined && pob1Value !== null) {
