@@ -188,6 +188,7 @@
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual y su etiqueta
             const markersToRemove = [];
             map.eachLayer(function(layer) {
+                console.log(layer, layer.isCompetenciaLayer); // Para depurar
                 if (layer instanceof L.Marker && layer !== currentMarker) {
                     if(layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className !== 'marker-label'){
                         // Excluir las capas de competencias
@@ -242,7 +243,7 @@
                     }
                 });
             }
-            console.log(currentMarker); // para depurar
+            console.log(currentMarker); // Para depurar
         });
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
@@ -901,6 +902,7 @@
                             break;
                         case 'Competencias':
                             geoJsonLayer.isCompetenciaLayer = true; // Agregar propiedad personalizada
+                            console.log(geoJsonLayer); //Para depurar
                             geoJsonLayersCompetencias[layerName] = geoJsonLayer;
                             break;
                     }
