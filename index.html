@@ -185,23 +185,19 @@
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
         
-            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual y su etiqueta
-            const markersToRemove = [];
+            // Limpiar las etiquetas de AGEB existentes
+            const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
-                console.log(layer, layer.isCompetenciaLayer); // Para depurar
                 if (layer instanceof L.Marker && layer !== currentMarker) {
-                    if(layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className !== 'marker-label'){
-                        // Excluir las capas de competencias
-                        if (!layer.isCompetenciaLayer) {
-                            markersToRemove.push(layer);
-                        }
+                    if (layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className === 'ageb-label') {
+                        agebLabelsToRemove.push(layer);
                     }
                 }
             });
         
-            // Eliminar solo los marcadores de AGEB
-            markersToRemove.forEach(marker => {
-                map.removeLayer(marker);
+            // Eliminar solo las etiquetas de AGEB
+            agebLabelsToRemove.forEach(label => {
+                map.removeLayer(label);
             });
         
             // Verificar si las capas AGEB 400m o AGEB 800m están activas
