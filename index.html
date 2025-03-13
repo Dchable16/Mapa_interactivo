@@ -181,18 +181,25 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
-        map.on('zoomend', function() {
-            if (map.getZoom() >= 15) {
-                const bounds = map.getBounds();
-                const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-                
-                // Limpiar las etiquetas existentes
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker) {
-                        map.removeLayer(layer);
-                    }
-                });
+       //Activa y desactiva las etiquetas de los Ageb
+       map.on('zoomend', function() {
+            const bounds = map.getBounds();
+            const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
+            
+            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
+            const markersToRemove = [];
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && layer !== currentMarker) { // Asegúrate de no eliminar el marcador manual
+                    markersToRemove.push(layer);
+                }
+            });
+            
+            // Eliminar solo los marcadores de AGEB
+            markersToRemove.forEach(marker => {
+                map.removeLayer(marker);
+            });
         
+            if (map.getZoom() >= 15) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                         if (feature.geometry.type === 'Point') {
@@ -208,10 +215,9 @@
                                 }).addTo(map);
                             }
                         } else if (feature.geometry.type === 'MultiPolygon') {
-                            // Iterar sobre cada polígono en el MultiPolygon
                             feature.geometry.coordinates.forEach(polygon => {
-                                // Usar el primer punto del primer anillo como un punto representativo
-                                const latLng = L.latLng(polygon[0][0][1], polygon[0][0][0]); // [lat, lng]
+                                const centroid = turf.centroid(feature);
+                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
                                 if (bounds.contains(latLng)) {
                                     const marker = L.marker(latLng, {
                                         icon: L.divIcon({
@@ -791,7 +797,9 @@
                         'Municipios': 'rgb(255, 255, 0)',
                         'Alcaldias': 'rgb(0, 255, 127)',
                         'Competencias': 'rgb(204, 85, 0)',
-                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(62,207,114)' : 'rgb(76,170,102)',
+                        'Ageb_CDMX': '#abfbbb', // Color para la capa AGEB CDMX
+                        'Ageb_EdoMex': '#abfbbb', // Color para la capa AGEB Edo Mex
+                        
                     };
         
                     const geoJsonLayer = L.geoJSON(data, {
@@ -820,14 +828,22 @@
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
-                            if (type === 'UsoSuelo') {
+                           if (type === 'Ageb') {
+                                const fillColor = url.includes('Ageb_urb_CDMX.geojson') ? colorMap['Ageb_CDMX'] : colorMap['Ageb_EdoMex'];
+                                return {
+                                    color: 'black', // Color del contorno
+                                    weight: 1.5, // Grosor del contorno
+                                    fillOpacity: 1.0, // Opacidad del relleno
+                                    fillColor: fillColor // Color del relleno basado en la capa
+                                };
+                            } else if (type === 'UsoSuelo') {
                                 return {
                                     color: 'rgb(128, 0, 128)', // Color del borde
                                     weight: 0.3, // Grosor del borde más delgado
                                     fillOpacity: 0 // Sin fondo
                                 };
                             } else {
-                                return { color: colorMap[type], weight: 3, fillOpacity: 0.25 }; // Estilo para otras capas
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.25 }; // Estilo para otras capas
                             }
                         },
                         onEachFeature: (feature, layer) => {
@@ -835,7 +851,6 @@
                                 const area = Math.floor(turf.area(feature));
                                 feature.properties['Área polígono'] = area;
                             }
-                            
                             layer.on('click', () => {
                                 let popupContent = "<b>Atributos:</b><br>";
                                 for (const key in feature.properties) {
