@@ -180,51 +180,51 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
-
+        
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
         const closeFormBtn = document.getElementById('close-form-btn');
-
+        
         formToggleBtn.addEventListener('click', () => {
             sideForm.classList.toggle('active');
         });
-
+        
         closeFormBtn.addEventListener('click', () => {
             sideForm.classList.remove('active');
         });
-
+        
         // Inicializar el contenedor de control de capas
-        const layerControlContainer = L.control({ position: 'topright' }); // Inicializar la variable aquí
-
+        const layerControlContainer = L.control({ position: 'topright' });
+        
         map.on('zoomend moveend', function() {
-          console.log("Evento zoomend moveend disparado"); // Log de depuración
-          document.getElementById('zoom-value').textContent = map.getZoom();
+            console.log("Evento zoomend moveend disparado");
+            document.getElementById('zoom-value').textContent = map.getZoom();
         });
-
+        
         // Agregar el control de escala dinámica al mapa
         L.control.scale({
-            position: 'bottomleft', // Posición del control
-            metric: true,        // Mostrar escala métrica
-            imperial: false        // No mostrar escala imperial
+            position: 'bottomleft',
+            metric: true,
+            imperial: false
         }).addTo(map);
-
+        
         // Función para centrar el mapa en el marcador
         document.getElementById('center-button').addEventListener('click', function() {
             if (currentMarker) {
-                map.setView(currentMarker.getLatLng(), map.getZoom()); // Centrar el mapa en el marcador
+                map.setView(currentMarker.getLatLng(), map.getZoom());
             } else {
                 alert("No hay ningún marcador en el mapa para centrar.");
             }
-        });        
-
+        });
+        
         // Capas base del mapa
         const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }).addTo(map); // Añadir capa de OpenStreetMap al mapa
-
+        }).addTo(map);
+        
         const googleRoadLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { attribution: "Google" });
         const googleHybridLayer = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { attribution: "Google" });
-
+        
         // Definición de capas GeoJSON
         const geoJsonLayersAgeb = {};
         const geoJsonLayersUsoSuelo = {};
@@ -235,31 +235,25 @@
         
         // Variables para el marcador y los radios
         let currentMarker = null;
-        let radius400m = null;
-        let radius800m = null;
-        let differenceLayer = null;
-
-        // Grupos de capas para los radios y la diferencia
         const radius400Layer = L.layerGroup().addTo(map);
         const radius800Layer = L.layerGroup().addTo(map);
         const differenceLayerGroup = L.layerGroup().addTo(map);
         const bufferLayerGroup = L.layerGroup().addTo(map);
         const differenceExtractionLayerGroup = L.layerGroup().addTo(map);
-
+        
         // Banderas para controlar la creación de elementos
-        let radius400Created = false;
-        let radius800Created = false;
+        let radiosCreated = { 400: false, 800: false };
         let differenceCreated = false;
         let bufferDataExtracted = false;
         let differenceDataExtracted = false;
-
+        
         // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
-
-        // carga los label de Agebs
-        let agebLabels = {}; // Inicialización de agebLabels
-        let agebLayerGroup = L.layerGroup().addTo(map); // Asegúrate de que agebLayerGroup esté definido
-
+        
+        // Carga los label de Agebs
+        let agebLabels = {};
+        let agebLayerGroup = L.layerGroup().addTo(map);
+        
         // Función para agregar un marcador en el mapa
         function addMarker() {
             if (currentMarker) {
@@ -271,9 +265,8 @@
             const lon = parseFloat(document.getElementById('lon').value);
             const markerName = document.getElementById('markerName').value;
         
-            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`); // Log para verificar coordenadas
+            console.log(`Intentando agregar marcador en lat: ${lat}, lon: ${lon}`);
         
-            // Validar coordenadas
             if (isNaN(lat) || isNaN(lon)) {
                 alert("Por favor ingrese coordenadas válidas.");
                 return;
@@ -290,21 +283,19 @@
             }
         
             try {
-                // Crear el nuevo marcador amarillo sin el popup
                 currentMarker = L.marker([lat, lon], {
                     icon: L.divIcon({ className: 'red-marker', iconSize: [12, 12], iconAnchor: [10, 20] })
-                }).addTo(map); // Eliminar la parte de bindPopup()
+                }).addTo(map);
         
-                // Crear la etiqueta del marcador
                 currentMarkerLabel = L.divIcon({
                     className: 'marker-label',
                     html: markerName,
                     iconSize: [100, 50],
                     iconAnchor: [50, 15]
                 });
-                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map); // Añadir la etiqueta al mapa
+                L.marker([lat, lon], { icon: currentMarkerLabel }).addTo(map);
         
-                map.setView([lat, lon], 12); // Centrar el mapa en el nuevo marcador
+                map.setView([lat, lon], 12);
             } catch (error) {
                 console.error("Error al agregar el marcador:", error);
                 alert("Ocurrió un error al agregar el marcador. Verifique la consola para más detalles.");
@@ -313,69 +304,63 @@
         
         function removeMarker() {
             if (currentMarker) {
-                map.removeLayer(currentMarker); // Eliminar el marcador del mapa
-                const latLng = currentMarker.getLatLng(); // Guardar las coordenadas del marcador
-                currentMarker = null; // Limpiar la variable del marcador
-                
-                // Limpiar los marcadores de puntos de interés
-                poiMarkers.clearLayers(); // Limpiar todos los marcadores de POIs
-                
-                // Eliminar la etiqueta del marcador si existe
+                map.removeLayer(currentMarker);
+                const latLng = currentMarker.getLatLng();
+                currentMarker = null;
+        
+                poiMarkers.clearLayers();
+        
                 if (currentMarkerLabel) {
                     map.eachLayer(function(layer) {
                         if (layer instanceof L.Marker && layer.getLatLng && layer.getLatLng().equals(latLng)) {
-                            map.removeLayer(layer); // Eliminar la etiqueta del mapa
+                            map.removeLayer(layer);
                         }
                     });
-                    currentMarkerLabel = null; // Limpiar la variable de la etiqueta
+                    currentMarkerLabel = null;
                 }
         
-                // Limpiar las capas de radios y restablecer las banderas
-                radius400Layer.clearLayers(); // Limpiar las capas de radios
+                radius400Layer.clearLayers();
                 radius800Layer.clearLayers();
-                radius400Created = false; // Reiniciar la bandera de creación de radio 400m
-                radius800Created = false; // Reiniciar la bandera de creación de radio 800m
-                
-                // Limpiar las capas de extracción y restablecer las banderas
-                bufferLayerGroup.clearLayers(); // Limpiar las capas de buffer
-                differenceExtractionLayerGroup.clearLayers(); // Limpiar las capas de extracción
-                differenceLayerGroup.clearLayers(); // Limpiar la capa de diferencia
-                bufferDataExtracted = false; // Reiniciar la bandera de extracción de buffer
-                differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
-                differenceCreated = false; // Reiniciar la bandera de diferencia
+                radiosCreated[400] = false;
+                radiosCreated[800] = false;
         
-                // Limpiar los campos de entrada
-                document.getElementById('lat').value = ''; // Limpiar el campo de latitud
-                document.getElementById('lon').value = ''; // Limpiar el campo de longitud
-                document.getElementById('markerName').value = ''; // Limpiar el campo de nombre del marcador
+                bufferLayerGroup.clearLayers();
+                differenceExtractionLayerGroup.clearLayers();
+                differenceLayerGroup.clearLayers();
+                bufferDataExtracted = false;
+                differenceDataExtracted = false;
+                differenceCreated = false;
+        
+                document.getElementById('lat').value = '';
+                document.getElementById('lon').value = '';
+                document.getElementById('markerName').value = '';
             } else {
                 alert("No hay ningún marcador para eliminar.");
             }
         }
-
-        // Función para agregar radios de 400m o 800m alrededor del marcador
+        
+        // Función para agregar un radio alrededor del marcador
         function addRadius(radius) {
-            if (radius === 400 && radius400Created) {
-                alert("El radio de 400m ya ha sido creado.");
-                return; // Evitar agregar un nuevo radio si ya existe
+            if (radiosCreated[radius]) {
+                alert(`El radio de ${radius}m ya ha sido creado.`);
+                return;
             }
-            if (radius === 800 && radius800Created) {
-                alert("El radio de 800m ya ha sido creado.");
-                return; // Evitar agregar un nuevo radio si ya existe
-            }
-
+        
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
-                const circle = L.circle(latLng, { color: radius === 400 ? 'blue' : 'red', fillOpacity: 0.2, radius: radius });
+                const circle = L.circle(latLng, {
+                    color: radius === 400 ? 'blue' : 'red',
+                    fillOpacity: 0.2,
+                    radius: radius
+                });
+        
                 if (radius === 400) {
-                    radius400Layer.addLayer(circle); // Añadir el círculo de 400m al grupo de capas
-                    radius400m = circle; // Guardar el círculo en la variable
-                    radius400Created = true; // Marcar como creado
+                    radius400Layer.addLayer(circle);
                 } else {
-                    radius800Layer.addLayer(circle); // Añadir el círculo de 800m al grupo de capas
-                    radius800m = circle; // Guardar el círculo en la variable
-                    radius800Created = true; // Marcar como creado
+                    radius800Layer.addLayer(circle);
                 }
+        
+                radiosCreated[radius] = true;
             } else {
                 alert("Primero debe agregar un marcador.");
             }
@@ -385,18 +370,20 @@
         function calculateDifference() {
             if (differenceCreated) {
                 alert("La diferencia entre radios ya ha sido calculada.");
-                return; // Evitar calcular la diferencia si ya se ha hecho
+                return;
             }
-
-            if (currentMarker && radius400m && radius800m) {
+        
+            if (currentMarker && radiosCreated[400] && radiosCreated[800]) {
                 const latLng = currentMarker.getLatLng();
                 const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
                 const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-                const difference = turf.difference(circle800, circle400); // Calcular la diferencia entre los círculos
+                const difference = turf.difference(circle800, circle400);
+        
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
-                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } }).addTo(differenceLayerGroup);
-                    differenceCreated = true; // Marcar como creado
+                    L.geoJSON(geoJson, { style: { color: 'green', weight: 2, fillOpacity: 0.5 } })
+                        .addTo(differenceLayerGroup);
+                    differenceCreated = true;
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
                 }
@@ -404,28 +391,46 @@
                 alert("Asegúrese de que el marcador y ambos radios estén creados.");
             }
         }
-
+        
         function createRadiosAndDifference() {
             if (!currentMarker) {
                 alert("Primero debe agregar un marcador.");
                 return;
             }
         
-            // Crear radio de 400m
             addRadius(400);
-        
-            // Crear radio de 800m
             addRadius(800);
-        
-            // Calcular la diferencia entre los radios
             calculateDifference();
         
-            // Seleccionar y mostrar etiquetas AGEB dentro del radio de 800m
-            const selectedAgeb = selectAgebWithinRadius(radius800Layer, agebLayerGroup);
-            if (selectedAgeb && selectedAgeb.length > 0) {
-                showAgebLabels(selectedAgeb, map);
+            if (typeof selectAgebWithinRadius === 'function') {
+                const selectedAgeb = selectAgebWithinRadius(radius800Layer, agebLayerGroup);
+                if (selectedAgeb && selectedAgeb.length > 0) {
+                    showAgebLabels(selectedAgeb, map);
+                }
+            } else {
+                console.error("La función selectAgebWithinRadius no está definida.");
             }
         }
+        
+        // ... (resto del código) ...
+        
+        // Eventos para controlar la visualización de capas GeoJSON
+        map.on('overlayadd', eventLayer => {
+            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
+                if (typeof selectAgebWithinRadius === 'function' && radius800Layer && radius800Layer.getLayers().length > 0) {
+                    const selectedAgeb = selectAgebWithinRadius(radius800Layer.getLayers()[0], geoJsonLayersAgeb[eventLayer.name]);
+                    if (selectedAgeb && selectedAgeb.length > 0) {
+                        showAgebLabels(selectedAgeb, map);
+                    }
+                }
+            }
+        });
+        
+        map.on('overlayremove', eventLayer => {
+            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
+                hideAgebLabels();
+            }
+        });
 
         function extractAgebData() {
             if (!currentMarker) {
