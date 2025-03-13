@@ -476,7 +476,7 @@
                     bufferLayerGroup.clearLayers();
         
                     L.geoJSON(featuresWithinBuffer, {
-                        style: { color: 'orange', weight: 3, fillOpacity: 0.75 },//cambia color y opacidad del Ageb 400m
+                        style: { color: 'orange', weight: 3, fillOpacity: 0.75, fillColor: 'green' },//cambia color y opacidad del Ageb 400m
                         onEachFeature: function (feature, layer) {
                             // Crear etiqueta con el valor de populationTotal
                             layer.bindTooltip(feature.properties.populationTotal.toString(), {
