@@ -256,6 +256,10 @@
         // Conjunto para rastrear capas ya cargadas
         const loadedLayers = new Set();
 
+        // carga los label de Agebs
+        let agebLabels = {}; // Inicialización de agebLabels
+        let agebLayerGroup = L.layerGroup().addTo(map); // Asegúrate de que agebLayerGroup esté definido
+
         // Función para agregar un marcador en el mapa
         function addMarker() {
             if (currentMarker) {
@@ -409,11 +413,18 @@
         
             // Crear radio de 400m
             addRadius(400);
+        
             // Crear radio de 800m
             addRadius(800);
-            
+        
             // Calcular la diferencia entre los radios
             calculateDifference();
+        
+            // Seleccionar y mostrar etiquetas AGEB dentro del radio de 800m
+            const selectedAgeb = selectAgebWithinRadius(radius800Layer, agebLayerGroup);
+            if (selectedAgeb && selectedAgeb.length > 0) {
+                showAgebLabels(selectedAgeb, map);
+            }
         }
 
         function extractAgebData() {
@@ -702,7 +713,23 @@
         
         // Definición del objeto de caché
         const geoJsonCache = {};
-        
+
+        // Eventos de capa AGEB
+        map.on('overlayadd', eventLayer => {
+            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
+                const selectedAgeb = selectAgebWithinRadius(radius800Layer, geoJsonLayersAgeb[eventLayer.name]); // Asegúrate de que radius800Layer esté definido
+                if (selectedAgeb && selectedAgeb.length > 0) {
+                    showAgebLabels(selectedAgeb, map);
+                }
+            }
+        });
+    
+        map.on('overlayremove', eventLayer => {
+            if (eventLayer.name === 'Ageb CDMX' || eventLayer.name === 'Ageb Edo. Mex.') {
+                hideAgebLabels();
+            }
+        });
+                        
         // Función para cargar capas GeoJSON desde archivos
         function loadGeoJSON(url, layerName, type, callback) {
             // Verificar si la capa ya ha sido cargada
@@ -810,6 +837,7 @@
                                 agebEdoMexLayer = geoJsonLayer;
                             }
                             geoJsonLayersAgeb[layerName] = geoJsonLayer;
+                            agebLayerGroup.addLayer(geoJsonLayer); // Agregar al agebLayerGroup
                             break;
                         case 'UsoSuelo':
                             geoJsonLayersUsoSuelo[layerName] = geoJsonLayer;
@@ -836,6 +864,48 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
+
+        function selectAgebWithinRadius(radiusLayer, agebLayerGroup) {
+            if (!radiusLayer || !agebLayerGroup) return [];
+        
+            const radiusBounds = radiusLayer.getBounds();
+            const selectedAgeb = [];
+        
+            agebLayerGroup.eachLayer(layer => {
+                if (layer instanceof L.GeoJSON) {
+                    layer.eachLayer(featureLayer => {
+                        if (radiusBounds.intersects(featureLayer.getBounds())) {
+                            selectedAgeb.push(featureLayer);
+                        }
+                    });
+                }
+            });
+            return selectedAgeb;
+        }    
+
+        function showAgebLabels(agebLayers, map) {
+            hideAgebLabels(); // Limpiar etiquetas anteriores
+            agebLayers.forEach(layer => {
+                const center = layer.getBounds().getCenter();
+                const label = L.marker(center, {
+                    icon: L.divIcon({
+                        className: 'ageb-label',
+                        html: `<div style="background-color: white; padding: 5px; border: 1px solid black;">${layer.feature.properties.NOM_AGEB}</div>`, // Asegúrate de que esta propiedad exista en tus datos AGEB
+                        iconSize: [100, 40],
+                        iconAnchor: [50, 20]
+                    })
+                }).addTo(map);
+                agebLabels[layer._leaflet_id] = label;
+            });
+        }
+
+        function hideAgebLabels() {
+            for (const id in agebLabels) {
+                map.removeLayer(agebLabels[id]);
+            }
+            agebLabels = {}; // Limpiar el objeto agebLabels
+        }
+        
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
