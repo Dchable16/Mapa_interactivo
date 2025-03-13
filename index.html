@@ -476,7 +476,7 @@
                     bufferLayerGroup.clearLayers();
         
                     L.geoJSON(featuresWithinBuffer, {
-                        style: { color: 'orange', weight: 3, fillOpacity: 0.3 },
+                        style: { color: 'orange', weight: 3, fillOpacity: 1.0 },//cambia color y opacidad del Ageb 400m
                         onEachFeature: function (feature, layer) {
                             // Crear etiqueta con el valor de populationTotal
                             layer.bindTooltip(feature.properties.populationTotal.toString(), {
@@ -550,7 +550,7 @@
                     differenceExtractionLayerGroup.clearLayers();
         
                     L.geoJSON(featuresWithinDifference, {
-                        style: { color: 'purple', weight: 3, fillOpacity: 0.3 },
+                        style: { color: 'purple', weight: 3, fillOpacity: 1.0 },//cambia color y opacidad del Ageb 400m
                         onEachFeature: function (feature, layer) {
                             // Crear etiqueta con el valor de populationTotal
                             layer.bindTooltip(feature.properties.populationTotal.toString(), {
