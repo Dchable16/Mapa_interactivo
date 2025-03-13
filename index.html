@@ -868,7 +868,7 @@
         function selectAgebWithinRadius(radiusLayer, agebLayer) {
             if (!(radiusLayer instanceof L.Circle)) {
                 console.error("radiusLayer no es una instancia de L.Circle");
-                return []; // Devolver un array vacío o manejar el error de otra manera
+                return [];
             }
         
             const bounds = radiusLayer.getBounds();
@@ -876,33 +876,37 @@
         
             agebLayer.eachLayer(ageb => {
                 if (bounds.intersects(ageb.getBounds())) {
-                    agebFeatures.push(ageb);
+                    agebFeatures.push(ageb.toGeoJSON()); // Convertir a GeoJSON antes de agregar
                 }
             });
         
             return agebFeatures;
-        }    
-
+        }
+        
         function showAgebLabels(agebFeatures, map) {
             hideAgebLabels(); // Limpiar etiquetas existentes
         
             agebFeatures.forEach(feature => {
-                const latLng = feature.getBounds().getCenter();
-                const pob1Value = feature.feature.properties.POB1; // Obtener el valor de POB1
+                // Verificar que feature y feature.properties no sean undefined
+                if (feature && feature.properties) {
+                    const latLng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]); // Crear LatLng
+                    const pob1Value = feature.properties.POB1; // Obtener el valor de POB1
         
-                if (pob1Value !== undefined && pob1Value !== null) {
-                    const label = L.divIcon({
-                        className: 'ageb-label',
-                        html: pob1Value.toString(), // Usar el valor de POB1 como etiqueta
-                        iconSize: [60, 30],
-                        iconAnchor: [30, 15]
-                    });
-                    const marker = L.marker(latLng, { icon: label }).addTo(map);
-                    agebLabels[feature._leaflet_id] = marker; // Almacenar el marcador de etiqueta
+                    if (pob1Value !== undefined && pob1Value !== null) {
+                        const label = L.divIcon({
+                            className: 'ageb-label',
+                            html: pob1Value.toString(), // Usar el valor de POB1 como etiqueta
+                            iconSize: [60, 30],
+                            iconAnchor: [30, 15]
+                        });
+                        const marker = L.marker(latLng, { icon: label }).addTo(map);
+                        agebLabels[feature._leaflet_id] = marker; // Almacenar el marcador de etiqueta
+                    }
+                } else {
+                    console.error("Feature no tiene la estructura esperada:", feature);
                 }
             });
         }
-
         function hideAgebLabels() {
             for (const id in agebLabels) {
                 map.removeLayer(agebLabels[id]);
