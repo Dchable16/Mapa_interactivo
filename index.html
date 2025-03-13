@@ -201,7 +201,10 @@
         
         // Función para actualizar la visibilidad de los POIs
         function updatePOIsVisibility() {
-            if (!currentMarker) return; // No hacer nada si no hay un marcador
+            if (!currentMarker) {
+                console.log("currentMarker no está definido.");
+                return;
+            }
         
             const bounds = map.getBounds();
             const zoom = map.getZoom();
@@ -209,6 +212,7 @@
         
             // Iterar sobre las capas de POIs y filtrar los datos
             Object.keys(geoJsonData).forEach(layerName => {
+                // Excluir capas que no son de POIs
                 if (layerName === 'Ageb CDMX' || layerName === 'Ageb Edo. Mex.' || layerName === 'Uso de suelo Centro Barrio' || layerName === 'Uso de suelo Equipamento' || layerName === 'Uso de suelo Habitacional Comercio' || layerName === 'Uso de suelo Planta Baja' || layerName === 'Uso de suelo Entrada' || layerName === 'Uso de suelo Mixto' || layerName === 'Uso de suelo Oficinas' || layerName === 'Uso de suelo Plurifamiliar' || layerName === 'Alcaldías CDMX' || layerName === 'Municipios Edo. Mex.' || layerName === 'Poligono Región Vallejo' || layerName === 'Poligono Azcapotzalco' || layerName === 'Poligono Benito Juárez' || layerName === 'Poligono Cuauhtémoc' || layerName === 'Poligono Ecatepec' || layerName === 'Poligono M. Hidalgo' || layerName === 'Poligono Nezahualcoyotl' || layerName === 'Colonias Azcapotzalco' || layerName === 'Colonias Benito Juárez' || layerName === 'Colonias Cuauhtemoc' || layerName === 'Colonias Ecatepec' || layerName === 'Colonias M. Hidalgo' || layerName === 'Colonias Nezahualcoyotl') {
                     return;
                 }
