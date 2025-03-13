@@ -392,7 +392,7 @@
             }
         }
         
-        function createRadiosAndDifference() {
+        function createRadiosAndDifference() { 
             if (!currentMarker) {
                 alert("Primero debe agregar un marcador.");
                 return;
@@ -435,25 +435,6 @@
                 hideAgebLabels();
             }
         });
-        
-        function selectAgebWithinRadius(radiusLayer, agebLayerGroup) {
-            if (!radiusLayer || !agebLayerGroup) return [];
-        
-            const radiusBounds = radiusLayer.getBounds();
-            const selectedAgeb = [];
-        
-            agebLayerGroup.eachLayer(layer => {
-                if (layer instanceof L.GeoJSON) {
-                    layer.eachLayer(featureLayer => {
-                        if (radiusBounds.intersects(featureLayer.getBounds())) {
-                            selectedAgeb.push(featureLayer);
-                        }
-                    });
-                }
-            });
-            return selectedAgeb;
-        }
-
         function extractAgebData() {
             if (!currentMarker) {
                 alert("Primero debe agregar un marcador.");
@@ -900,6 +881,24 @@
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
 
+        function selectAgebWithinRadius(radiusLayer, agebLayerGroup) {
+            if (!radiusLayer || !agebLayerGroup) return [];
+        
+            const radiusBounds = radiusLayer.getBounds();
+            const selectedAgeb = [];
+        
+            agebLayerGroup.eachLayer(layer => {
+                if (layer instanceof L.GeoJSON) {
+                    layer.eachLayer(featureLayer => {
+                        if (radiusBounds.intersects(featureLayer.getBounds())) {
+                            selectedAgeb.push(featureLayer);
+                        }
+                    });
+                }
+            });
+            return selectedAgeb;
+        }
+        
         function showAgebLabels(agebLayers, map) {
             hideAgebLabels(); // Limpiar etiquetas anteriores
             agebLayers.forEach(layer => {
@@ -924,7 +923,63 @@
         }
         
         // Evento para crear radios y diferencia al hacer clic en el botón
-        document.getElementById('create-radios-btn').addEventListener('click', createRadiosAndDifference);
+        const createRadiosBtn = document.getElementById('create-radios-btn');
+        if (createRadiosBtn) {
+            createRadiosBtn.addEventListener('click', createRadiosAndDifference);
+        } else {
+            console.error("El elemento con ID 'create-radios-btn' no se encontró.");
+        }
+        
+        // Variables para la capa AGEB de CDMX
+        let agebCDMXLayer;
+        
+        // Función para cargar la capa AGEB de CDMX
+        function loadAgebCDMXLayer(geoJsonData) {
+            agebCDMXLayer = L.geoJSON(geoJsonData, {
+                style: { color: 'blue', weight: 1, fillOpacity: 0.2 }
+            }).addTo(map);
+        }
+        
+        // Función para extraer datos de AGEB dentro del radio de 400m
+        function extractBufferData() {
+            if (!currentMarker || !radiosCreated[400] || !agebCDMXLayer) {
+                alert("Primero debe agregar un marcador, crear el radio de 400m y cargar la capa AGEB de CDMX.");
+                return;
+            }
+        
+            bufferLayerGroup.clearLayers();
+            const radius400 = radius400Layer.getLayers()[0];
+            const radius400Bounds = radius400.getBounds();
+            const ageb400Data = [];
+        
+            agebCDMXLayer.eachLayer(ageb => {
+                if (radius400Bounds.intersects(ageb.getBounds())) {
+                    ageb400Data.push(ageb.feature.properties);
+                }
+            });
+        
+            if (ageb400Data.length > 0) {
+                L.geoJSON(turf.featureCollection(ageb400Data.map(data => turf.feature(turf.polygon(data.geometry.coordinates), data))), {
+                    style: { color: 'green', weight: 2, fillOpacity: 0.2 }
+                }).addTo(bufferLayerGroup);
+                bufferDataExtracted = true;
+            } else {
+                alert("No se encontraron AGEB dentro del radio de 400m.");
+            }
+        }
+        
+        // Función para extraer datos de AGEB
+        function extractAgebData() {
+            extractBufferData();
+        }
+        
+        // Evento para extraer datos de AGEB al hacer clic en el botón
+        const extractAgebDataBtn = document.getElementById('extract-ageb-data-btn');
+        if (extractAgebDataBtn) {
+            extractAgebDataBtn.addEventListener('click', extractAgebData);
+        } else {
+            console.error("El elemento con ID 'extract-ageb-data-btn' no se encontró.");
+        }
         
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
