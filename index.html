@@ -454,7 +454,7 @@
                 const difference = turf.difference(circle800, circle400); // Calcular la diferencia entre los círculos
                 if (difference) {
                     const geoJson = turf.featureCollection([difference]);
-                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'Red', weight: 2, fillOpacity: 0.0 } }).addTo(differenceLayerGroup);//Cambia color y opacidad de diferencia de radios
+                    differenceLayer = L.geoJSON(geoJson, { style: { color: 'Red', weight: 3, fillOpacity: 0.0 } }).addTo(differenceLayerGroup);//Cambia color y opacidad de diferencia de radios
                     differenceCreated = true; // Marcar como creado
                 } else {
                     alert("No se pudo calcular la diferencia entre los círculos.");
