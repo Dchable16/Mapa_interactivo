@@ -185,6 +185,7 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
+            const zoomLevel = map.getZoom();
         
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const agebLabelsToRemove = [];
@@ -201,7 +202,7 @@
                 map.removeLayer(label);
             });
         
-            if (map.getZoom() >= 15) {
+            if (zoomLevel >= 15) {
                 // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
                 if (currentMarker) { // Verificar si hay un marcador principal
                     const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
@@ -216,8 +217,8 @@
                     });
                 }
         
-                // Mostrar etiquetas AGEB solo si hay capas AGEB activas
-                if (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) {
+                // Mostrar etiquetas AGEB solo si hay capas AGEB activas y no están activas las capas de buffer o diferencia
+                if ((map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) && !(map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup))) {
                     features.forEach(feature => {
                         if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                             if (feature.geometry.type === 'Point') {
