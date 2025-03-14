@@ -327,6 +327,7 @@
                 const mainPoint = turf.point([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]);
                 let colorIndex = 0;
                 const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink'];
+                const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
         
                 const competenciasFiltradas = [
                     'Bodega Aurrera',
@@ -342,21 +343,24 @@
                     if (popup) {
                         const nombreCompetencia = popup.getContent();
                         if (competenciasFiltradas.includes(nombreCompetencia)) {
-                            const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
-                            const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
-                            const midpoint = turf.midpoint(mainPoint, markerPoint);
+                            // Verificar si el marcador está dentro del radio de 800m
+                            if (turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
+                                const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+                                const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
+                                const midpoint = turf.midpoint(mainPoint, markerPoint);
         
-                            const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
-                            colorIndex++;
+                                const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
+                                colorIndex++;
         
-                            L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
-                                icon: L.divIcon({
-                                    className: 'distance-marker',
-                                    html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
-                                    iconSize: [60, 30],
-                                    iconAnchor: [30, 15]
-                                })
-                            }).addTo(distanceMarkers);
+                                L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
+                                    icon: L.divIcon({
+                                        className: 'distance-marker',
+                                        html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
+                                        iconSize: [60, 30],
+                                        iconAnchor: [30, 15]
+                                    })
+                                }).addTo(distanceMarkers);
+                            }
                         }
                     }
                 });
