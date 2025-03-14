@@ -254,11 +254,6 @@
                         }
                     });
                 }
-                showDistances();
-                if (!radiusControlAdded) {
-                    radiusControl.addTo(map);
-                    radiusControlAdded = true;
-                }
             } else {
                 // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
                 map.eachLayer(function(layer) {
@@ -271,74 +266,9 @@
                     marker.addTo(map);
                 });
                 removedMarkers = []; // Limpiar la lista de marcadores eliminados
-                distanceLayerGroup.clearLayers();
-                if (radiusControlAdded) {
-                    radiusControl.remove();
-                    radiusControlAdded = false;
-                }
             }
         });
-
         
-        
-        // Variable para almacenar las líneas y etiquetas de distancia
-        let distanceLayerGroup = L.layerGroup().addTo(map);
-        
-        // Control de capas para las líneas y etiquetas de distancia
-        const radiusLayers = {
-            "Distancias a Competencias": distanceLayerGroup
-        };
-        
-        // Control de capas (se mostrará/ocultará según el zoom)
-        let radiusControl = L.control.layers(null, radiusLayers).addTo(map);
-        
-        let radiusControlAdded = false; // Bandera para rastrear el control
-        
-        // Función para calcular y mostrar distancias
-        function showDistances() {
-            distanceLayerGroup.clearLayers(); // Limpiar capas anteriores
-        
-            if (currentMarker) {
-                const markerLatLng = currentMarker.getLatLng();
-                const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
-        
-                competenciasLayers.forEach(layer => {
-                    layer.eachLayer(featureLayer => {
-                        if (featureLayer instanceof L.Marker) {
-                            const featureLatLng = featureLayer.getLatLng();
-                            const featurePoint = turf.point([featureLatLng.lng, featureLatLng.lat]);
-        
-                            if (turf.booleanPointInPolygon(featurePoint, turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' }))) {
-                                const distance = turf.distance(markerPoint, featurePoint, { units: 'meters' });
-                                const distanceFormatted = distance.toFixed(2) + "m";
-        
-                                // Asignar color diferente según el tipo de competencia
-                                let lineColor = 'gray'; // Color predeterminado
-                                if (layer === bodegaAurreraLayer) lineColor = 'red';
-                                if (layer === bodegaAurreraExpressLayer) lineColor = 'blue';
-                                if (layer === chedrauiSupercitoLayer) lineColor = 'green';
-                                if (layer === tiendas3BLayer) lineColor = 'orange';
-                                if (layer === tiendasNetoLayer) lineColor = 'purple';
-        
-                                // Crear línea
-                                L.polyline([markerLatLng, featureLatLng], { color: lineColor }).addTo(distanceLayerGroup);
-        
-                                // Crear etiqueta de distancia
-                                L.marker(featureLatLng, {
-                                    icon: L.divIcon({
-                                        className: 'distance-label',
-                                        html: distanceFormatted,
-                                        iconSize: [100, 20]
-                                    })
-                                }).addTo(distanceLayerGroup);
-                            }
-                        }
-                    });
-                });
-            }
-        }
-
-
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
         const closeFormBtn = document.getElementById('close-form-btn');
