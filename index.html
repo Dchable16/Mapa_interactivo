@@ -181,8 +181,8 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
-       // Activa y desactiva las etiquetas de los Ageb
-        map.on('zoomend', function() {
+       //Activa y desactiva las etiquetas de los Ageb
+       map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
         
@@ -263,16 +263,6 @@
             }
         });
         
-            if (map.getZoom() < 15) {
-                // Si el zoom es menor a 15, mostrar todos los marcadores
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker && layer !== currentMarker) {
-                        layer.addTo(map); // Asegúrate de que se muestre el marcador
-                    }
-                });
-            }
-        });
-                
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
         const closeFormBtn = document.getElementById('close-form-btn');
