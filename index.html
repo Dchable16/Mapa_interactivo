@@ -107,6 +107,12 @@
             border: none; /* Sin borde */
             font-size: 16px; /* Aumenta el tamaño de la fuente aquí */
         }
+        .distance-marker {
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -182,8 +188,45 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       let removedMarkers = []; // Almacenar marcadores eliminados
 
+        let distanceLayers = L.layerGroup().addTo(map); // Grupo para las líneas de distancia
+        let distanceMarkers = L.layerGroup().addTo(map); // Grupo para los marcadores de distancia
+        let removedMarkers = []; // Almacenar marcadores eliminados
+        let markerCompetencias = L.markerClusterGroup(); // Grupo de marcadores de competencias.
+        let competenciasGeoJSON = {
+            'Bodega Aurrera': 'Bodega_Aurrera.geojson',
+            'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson',
+            'Chedraui Supercito': 'Chedraui_Supercito.geojson',
+            'Tiendas 3B': 'Tiendas_3B.geojson',
+            'Tiendas Neto': 'Tiendas_Neto.geojson'
+        };
+
+        function cargarCompetencias() {
+            markerCompetencias.clearLayers(); // Limpiar marcadores existentes
+            for (let nombreCompetencia in competenciasGeoJSON) {
+                fetch(competenciasGeoJSON[nombreCompetencia])
+                    .then(response => response.json())
+                    .then(data => {
+                        L.geoJSON(data, {
+                            pointToLayer: function (feature, latlng) {
+                                let marker = L.marker(latlng).bindPopup(nombreCompetencia);
+                                markerCompetencias.addLayer(marker);
+                                return marker;
+                            }
+                        });
+                    });
+            }
+            map.addLayer(markerCompetencias);
+        }
+        
+        document.getElementById('competencias-button').addEventListener('click', function() {
+            if (map.hasLayer(markerCompetencias)) {
+                map.removeLayer(markerCompetencias);
+            } else {
+                cargarCompetencias();
+            }
+        });    
+        
         map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
@@ -218,6 +261,8 @@
                             }
                         }
                     });
+                    // Calcular y mostrar distancias
+                    calculateAndShowDistances();
                 }
         
                 // Mostrar etiquetas AGEB solo si hay capas AGEB activas y no están activas las capas de buffer o diferencia
@@ -266,8 +311,48 @@
                     marker.addTo(map);
                 });
                 removedMarkers = []; // Limpiar la lista de marcadores eliminados
+                // Limpiar las líneas y marcadores de distancia
+                distanceLayers.clearLayers();
+                distanceMarkers.clearLayers();
             }
         });
+
+
+        function calculateAndShowDistances() {
+            distanceLayers.clearLayers();
+            distanceMarkers.clearLayers();
+        
+            if (currentMarker) {
+                const mainPoint = turf.point([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]);
+                let colorIndex = 0;
+                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink'];
+        
+                // Iterar solo sobre los marcadores de competencias
+                markerCompetencias.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        const markerLatLng = layer.getLatLng();
+                        const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+                        const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
+                        const midpoint = turf.midpoint(mainPoint, markerPoint);
+        
+                        // Dibujar línea de distancia
+                        const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
+                        colorIndex++;
+        
+                        // Mostrar marcador de distancia
+                        L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
+                            icon: L.divIcon({
+                                className: 'distance-marker',
+                                html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
+                                iconSize: [60, 30],
+                                iconAnchor: [30, 15]
+                            })
+                        }).addTo(distanceMarkers);
+                    }
+                });
+            }
+        }
+        
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
