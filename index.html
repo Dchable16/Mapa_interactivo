@@ -335,29 +335,34 @@
             if (currentMarker) {
                 const mainPoint = turf.point([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]);
                 let colorIndex = 0;
-                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink'];
+                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink']; // Lista de colores para las líneas
+                const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
         
                 // Iterar solo sobre los marcadores de competencias
                 markerCompetencias.eachLayer(function(layer) {
                     if (layer instanceof L.Marker) {
                         const markerLatLng = layer.getLatLng();
                         const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
-                        const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
-                        const midpoint = turf.midpoint(mainPoint, markerPoint);
         
-                        // Dibujar línea de distancia
-                        const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
-                        colorIndex++;
+                        // Verificar si el marcador está dentro del radio de 800m
+                        if (turf.booleanPointInPolygon(markerPoint, radius800)) {
+                            const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
+                            const midpoint = turf.midpoint(mainPoint, markerPoint);
         
-                        // Mostrar marcador de distancia
-                        L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
-                            icon: L.divIcon({
-                                className: 'distance-marker',
-                                html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
-                                iconSize: [60, 30],
-                                iconAnchor: [30, 15]
-                            })
-                        }).addTo(distanceMarkers);
+                            // Dibujar línea de distancia
+                            const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
+                            colorIndex++;
+        
+                            // Mostrar marcador de distancia
+                            L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
+                                icon: L.divIcon({
+                                    className: 'distance-marker',
+                                    html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
+                                    iconSize: [60, 30],
+                                    iconAnchor: [30, 15]
+                                })
+                            }).addTo(distanceMarkers);
+                        }
                     }
                 });
             }
