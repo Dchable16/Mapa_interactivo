@@ -267,6 +267,8 @@
                                 const markerLatLng = featureLayer.getLatLng();
                                 const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
         
+                                console.log("Coordenadas del marcador:", markerLatLng); // Para depurar
+        
                                 const isInside = turf.booleanPointInPolygon(markerPoint, radiusGeometry);
                                 console.log("Punto dentro del radio:", isInside); // Para depurar
         
