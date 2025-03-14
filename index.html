@@ -203,8 +203,8 @@
 
         function addCompetenciasMarkers() {
             markerCompetencias.clearLayers();
-            for (let nombreCompetencia in competenciasList) {
-                fetch(competenciasList[nombreCompetencia])
+            for (let nombreCompetencia in competenciasGeoJSON) { // Cambiado a competenciasGeoJSON
+                fetch(competenciasGeoJSON[nombreCompetencia])
                     .then(response => response.json())
                     .then(data => {
                         L.geoJSON(data, {
@@ -223,7 +223,7 @@
             if (map.hasLayer(markerCompetencias)) {
                 map.removeLayer(markerCompetencias);
             } else {
-                cargarCompetencias();
+                addCompetenciasMarkers(); // Asegúrate de que llame a addCompetenciasMarkers()
             }
         });    
         
