@@ -185,7 +185,7 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-            
+        
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
@@ -195,7 +195,7 @@
                     }
                 }
             });
-            
+        
             // Eliminar solo las etiquetas de AGEB
             agebLabelsToRemove.forEach(label => {
                 map.removeLayer(label);
@@ -203,9 +203,7 @@
         
             if (map.getZoom() >= 15) {
                 // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
-                const hasCompetitionLayers = map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup);
-                
-                if (hasCompetitionLayers) {
+                if (currentMarker) { // Verificar si hay un marcador principal
                     const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
                     map.eachLayer(function(layer) {
                         if (layer instanceof L.Marker && layer !== currentMarker) {
