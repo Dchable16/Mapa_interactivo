@@ -186,7 +186,7 @@
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             
-            // Limpiar las etiquetas de AGEB existentes
+            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) {
@@ -200,26 +200,28 @@
             agebLabelsToRemove.forEach(label => {
                 map.removeLayer(label);
             });
-            
-            // Verificar si las capas AGEB están activas
-            if (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) {
+        
+            // Verificar si las capas AGEB 400m o AGEB 800m están activas
+            if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
+                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
                 if (map.getZoom() >= 15) {
-                    // Si el zoom es 15 o más, verifica si hay capas de competencia activas
-                    if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                        // Ocultar marcadores fuera del radio de 800m
-                        const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
-                        map.eachLayer(function(layer) {
-                            if (layer instanceof L.Marker && layer !== currentMarker) {
-                                const markerLatLng = layer.getLatLng();
-                                // Verificar si el marcador está dentro del radio de 800m
-                                if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
-                                    map.removeLayer(layer); // Eliminar el marcador si está fuera del radio
-                                }
+                    // Ocultar marcadores fuera del radio de 800m
+                    const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker && layer !== currentMarker) {
+                            const markerLatLng = layer.getLatLng();
+                            // Verificar si el marcador está dentro del radio de 800m
+                            if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
+                                map.removeLayer(layer); // Eliminar el marcador si está fuera del radio
+                            } else {
+                                layer.addTo(map); // Asegúrate de que se muestre el marcador si está dentro
                             }
-                        });
-                    }
-                } else {
-                    // Si el zoom es menor a 15, mostrar las etiquetas de AGEB
+                        }
+                    });
+                }
+            } else {
+                // Si no hay capas de competencia activas y el zoom es 15 o más, muestra las etiquetas de AGEB
+                if (map.getZoom() >= 15) {
                     features.forEach(feature => {
                         if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                             if (feature.geometry.type === 'Point') {
@@ -252,6 +254,15 @@
                         }
                     });
                 }
+            }
+        
+            if (map.getZoom() < 15) {
+                // Si el zoom es menor a 15, mostrar todos los marcadores
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker && layer !== currentMarker) {
+                        layer.addTo(map); // Asegúrate de que se muestre el marcador
+                    }
+                });
             }
         });
                 
