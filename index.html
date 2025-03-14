@@ -201,10 +201,10 @@
             'Tiendas Neto': 'Tiendas_Neto.geojson'
         };
 
-        function cargarCompetencias() {
-            markerCompetencias.clearLayers(); // Limpiar marcadores existentes
-            for (let nombreCompetencia in competenciasGeoJSON) {
-                fetch(competenciasGeoJSON[nombreCompetencia])
+        function addCompetenciasMarkers() {
+            markerCompetencias.clearLayers();
+            for (let nombreCompetencia in competenciasList) {
+                fetch(competenciasList[nombreCompetencia])
                     .then(response => response.json())
                     .then(data => {
                         L.geoJSON(data, {
