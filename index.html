@@ -221,10 +221,13 @@
         }
         
         document.getElementById('competencias-button').addEventListener('click', function() {
-            if (map.hasLayer(markerCompetencias)) {
-                map.removeLayer(markerCompetencias);
+            if (map.hasLayer(distanceLayers)) {
+                map.removeLayer(distanceLayers);
+                map.removeLayer(distanceMarkers);
             } else {
-                addCompetenciasMarkers(); // Asegúrate de que llame a addCompetenciasMarkers()
+                map.addLayer(distanceLayers);
+                map.addLayer(distanceMarkers);
+                calculateAndShowDistances();
             }
         });    
         
