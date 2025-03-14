@@ -182,34 +182,32 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-        
-        map.on('zoomend', function() {
+       map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-            const zoomLevel = map.getZoom();
+        
+            // Limpiar las etiquetas de AGEB existentes
+            const agebLabelsToRemove = [];
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && layer !== currentMarker) {
+                    if (layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className === 'ageb-label') {
+                        agebLabelsToRemove.push(layer);
+                    }
+                }
+            });
+        
+            // Eliminar solo las etiquetas de AGEB
+            agebLabelsToRemove.forEach(label => {
+                map.removeLayer(label);
+            });
         
             // Verificar si las capas AGEB 400m o AGEB 800m están activas
             if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                // Si alguna de las capas de buffer o diferencia está activa, no mostrar etiquetas AGEB
+                // Si alguna de las capas está activa, no mostrar etiquetas AGEB
                 return;
             }
         
-            if (zoomLevel >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
-                // Limpiar etiquetas de AGEB existentes SOLO si se van a crear nuevas
-                const agebLabelsToRemove = [];
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker && layer !== currentMarker) {
-                        if (layer.options && layer.options.icon && layer.options.icon.options && layer.options.icon.options.className === 'ageb-label') {
-                            agebLabelsToRemove.push(layer);
-                        }
-                    }
-                });
-        
-                // Eliminar solo las etiquetas de AGEB
-                agebLabelsToRemove.forEach(label => {
-                    map.removeLayer(label);
-                });
-        
+            if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
                 features.forEach(feature => {
                     if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                         if (feature.geometry.type === 'Point') {
@@ -242,53 +240,6 @@
                     }
                 });
             }
-        
-            // Lógica optimizada para mostrar/ocultar iconos de competencias
-            if (zoomLevel >= 15) {
-                competenciasLayers.forEach(layer => {
-                    layer.eachLayer(featureLayer => {
-                        if (featureLayer instanceof L.Marker) {
-                            featureLayer.setOpacity(0); // Ocultar todos los marcadores inicialmente
-                        }
-                    });
-                });
-        
-                if (map.hasLayer(radius800Layer) && radius800Layer.getLayers().length > 0) {
-                    const radiusGeometry = radius800Layer.getLayers()[0].feature.geometry;
-        
-                    console.log("Geometría del radio:", radiusGeometry); // Para depurar
-                    console.log("capa radius 800:", radius800Layer.toGeoJSON());//para depurar
-        
-                    competenciasLayers.forEach(layer => {
-                        console.log("Número de marcadores en la capa:", layer.getLayers().filter(l => l instanceof L.Marker).length); // Para depurar
-        
-                        layer.eachLayer(featureLayer => {
-                            if (featureLayer instanceof L.Marker) {
-                                const markerLatLng = featureLayer.getLatLng();
-                                const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
-        
-                                console.log("Coordenadas del marcador:", markerLatLng); // Para depurar
-        
-                                const isInside = turf.booleanPointInPolygon(markerPoint, radiusGeometry);
-                                console.log("Punto dentro del radio:", isInside); // Para depurar
-        
-                                if (isInside) {
-                                    featureLayer.setOpacity(1); // Mostrar marcadores dentro del radio
-                                }
-                            }
-                        });
-                    });
-                }
-            } else {
-                competenciasLayers.forEach(layer => {
-                    layer.eachLayer(featureLayer => {
-                        if (featureLayer instanceof L.Marker) {
-                            featureLayer.setOpacity(1); // Mostrar todos los marcadores si el zoom es menor a 15
-                        }
-                    });
-                });
-            }
-        
             console.log(currentMarker); // Para depurar
         });
         
@@ -464,25 +415,24 @@
         function addRadius(radius) {
             if (radius === 400 && radius400Created) {
                 alert("El radio de 400m ya ha sido creado.");
-                return;
+                return; // Evitar agregar un nuevo radio si ya existe
             }
             if (radius === 800 && radius800Created) {
                 alert("El radio de 800m ya ha sido creado.");
-                return;
+                return; // Evitar agregar un nuevo radio si ya existe
             }
-        
+
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
-                const circleGeometry = turf.circle([latLng.lng, latLng.lat], radius, { units: 'meters' });
-        
+                const circle = L.circle(latLng, { color: radius === 400 ? 'red' : 'red', fillOpacity: 0.0, radius: radius });//Cambia color y opacidad de radios
                 if (radius === 400) {
-                    radius400Layer.clearLayers();
-                    L.geoJSON(circleGeometry, { style: { color: 'red', fillOpacity: 0.0 } }).addTo(radius400Layer);
-                    radius400Created = true;
+                    radius400Layer.addLayer(circle); // Añadir el círculo de 400m al grupo de capas
+                    radius400m = circle; // Guardar el círculo en la variable
+                    radius400Created = true; // Marcar como creado
                 } else {
-                    radius800Layer.clearLayers();
-                    L.geoJSON(circleGeometry, { style: { color: 'red', fillOpacity: 0.0 } }).addTo(radius800Layer);
-                    radius800Created = true;
+                    radius800Layer.addLayer(circle); // Añadir el círculo de 800m al grupo de capas
+                    radius800m = circle; // Guardar el círculo en la variable
+                    radius800Created = true; // Marcar como creado
                 }
             } else {
                 alert("Primero debe agregar un marcador.");
@@ -957,23 +907,6 @@
                 })
                 .catch(err => console.error('Error al cargar GeoJSON:', err));
         }
-
-        //función para ocultar iconos
-        let competenciasLayers = []; // Almacenar las capas de competencias
-
-        function updateCompetenciasLayers() {
-            competenciasLayers = [];
-            for (const layerName in geoJsonLayersCompetencias) {
-                if (map.hasLayer(geoJsonLayersCompetencias[layerName])) {
-                    competenciasLayers.push(geoJsonLayersCompetencias[layerName]);
-                }
-            }
-        }
-        
-        // Vincula los eventos después de declarar geoJsonLayersCompetencias
-        map.on('layeradd layerremove', updateCompetenciasLayers); // Actualizar al agregar o quitar capas.
-
-        
         // Función para cargar capas bajo demanda
         function loadLayer(layerName, type) {
             const layerUrls = {
