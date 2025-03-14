@@ -108,9 +108,16 @@
             font-size: 16px; /* Aumenta el tamaño de la fuente aquí */
         }
         .distance-marker {
-            background-color: none;
-            padding: 0;
-            border-radius: none;
+           color: black; /* Color del texto */
+            text-shadow: 
+                1px 1px 0 white, 
+                -1px -1px 0 white, 
+                1px -1px 0 white, 
+                -1px 1px 0 white; /* Efecto de buffer */
+            background-color: transparent; /* Sin fondo */
+            padding: 0; /* Sin relleno */
+            border: none; /* Sin borde */
+            font-size: 16px; /* Aumenta el tamaño de la fuente aquí */
         }
         
         .form-container { padding: 8px; }
