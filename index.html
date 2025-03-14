@@ -182,7 +182,11 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       // Almacenar todos los marcadores de competencia existentes
+       // Declaración e inicialización de bufferLayerGroup y differenceExtractionLayerGroup
+        let bufferLayerGroup = L.layerGroup();
+        let differenceExtractionLayerGroup = L.layerGroup();
+        
+        // Almacenar todos los marcadores de competencia existentes
         let allCompetenciaMarkers = [];
         
         // Función debounce para limitar la frecuencia de ejecución
