@@ -326,16 +326,15 @@
                 const mainPoint = turf.point([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]);
                 const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
                 let colorIndex = 0;
-                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink']; // Lista de colores para las líneas
+                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink'];
         
                 map.eachLayer(function(layer) {
                     if (layer instanceof L.Marker && layer !== currentMarker) {
                         const markerLatLng = layer.getLatLng();
                         const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
         
-                        // Verificar si el nombre de la capa del marcador coincide con las capas especificadas
-                        const layerName = layer.getPopup().getContent(); // Asegúrate de que esto obtenga el nombre correcto de la capa
-                        if (competenciasGeoJSON.hasOwnProperty(layerName) && turf.booleanPointInPolygon(markerPoint, radius800)) {
+                        // Verificar si el marcador es uno de los especificados y está dentro del radio de 800m
+                        if (competenciasGeoJSON.hasOwnProperty(layer.getPopup().getContent()) && turf.booleanPointInPolygon(markerPoint, radius800)) {
                             const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
                             const midpoint = turf.midpoint(mainPoint, markerPoint);
         
