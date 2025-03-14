@@ -193,12 +193,12 @@
         let distanceMarkers = L.layerGroup().addTo(map); // Grupo para los marcadores de distancia
         let removedMarkers = []; // Almacenar marcadores eliminados
         let markerCompetencias = L.markerClusterGroup(); // Grupo de marcadores de competencias.
-        let competenciasGeoJSON = {
-            'Bodega Aurrera': 'Bodega_Aurrera.geojson',
-            'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson',
-            'Chedraui Supercito': 'Chedraui_Supercito.geojson',
-            'Tiendas 3B': 'Tiendas_3B.geojson',
-            'Tiendas Neto': 'Tiendas_Neto.geojson'
+        let competenciasList = {
+            'Bodega Aurrera',
+            'Bodega Aurrera Express',
+            'Chedraui Supercito',
+            'Tiendas 3B',
+            'Tiendas Neto'
         };
 
         function addCompetenciasMarkers() {
