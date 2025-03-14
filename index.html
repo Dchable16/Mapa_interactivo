@@ -201,13 +201,11 @@
                 map.removeLayer(label);
             });
         
-            // Verificar si hay capas de competencia activas
-            const hasCompetitionLayers = map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup);
-        
             if (map.getZoom() >= 15) {
-                // Si el zoom es 15 o más
+                // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
+                const hasCompetitionLayers = map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup);
+                
                 if (hasCompetitionLayers) {
-                    // Ocultar marcadores fuera del radio de 800m
                     const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
                     map.eachLayer(function(layer) {
                         if (layer instanceof L.Marker && layer !== currentMarker) {
@@ -218,7 +216,6 @@
                             }
                         }
                     });
-                    return; // No mostrar etiquetas AGEB si hay capas de competencia activas
                 }
         
                 // Mostrar etiquetas AGEB solo si hay capas AGEB activas
@@ -257,13 +254,11 @@
                 }
             } else {
                 // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
-                if (hasCompetitionLayers) {
-                    map.eachLayer(function(layer) {
-                        if (layer instanceof L.Marker && layer !== currentMarker) {
-                            layer.addTo(map); // Asegúrate de que se muestre el marcador
-                        }
-                    });
-                }
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker && layer !== currentMarker) {
+                        layer.addTo(map); // Asegúrate de que se muestre el marcador
+                    }
+                });
             }
         });
         
