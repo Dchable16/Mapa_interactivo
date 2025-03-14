@@ -210,7 +210,9 @@
 
         function cargarCompetencias() {
             markerCompetencias.clearLayers(); // Limpiar marcadores existentes
-            for (let nombreCompetencia in competenciasGeoJSON) {
+            const competencias = Object.keys(competenciasGeoJSON); // Obtener los nombres de las competencias
+        
+            competencias.forEach(nombreCompetencia => {
                 fetch(competenciasGeoJSON[nombreCompetencia])
                     .then(response => response.json())
                     .then(data => {
@@ -221,8 +223,9 @@
                                 return marker;
                             }
                         });
-                    });
-            }
+                    })
+                    .catch(err => console.error(`Error al cargar ${nombreCompetencia}:`, err));
+            });
             map.addLayer(markerCompetencias);
         }
         
