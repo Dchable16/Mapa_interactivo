@@ -182,7 +182,7 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       map.on('zoomend', function() {
+      map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             
@@ -202,7 +202,7 @@
             });
         
             if (map.getZoom() >= 15) {
-                // Si el zoom es 15 o más, verifica si hay capas de competencia activas
+                // Si el zoom es 15 o más, verifica si hay capas AGEB activas
                 if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
                     // Ocultar marcadores fuera del radio de 800m
                     const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
@@ -218,7 +218,12 @@
                         }
                     });
                 } else {
-                    // Si no hay capas de competencia activas, muestra las etiquetas de AGEB
+                    // Si no hay capas AGEB activas, no mostrar etiquetas AGEB
+                    return;
+                }
+        
+                // Mostrar etiquetas de AGEB si hay capas activas
+                if (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) {
                     features.forEach(feature => {
                         if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
                             if (feature.geometry.type === 'Point') {
@@ -252,7 +257,7 @@
                     });
                 }
             } else {
-                // Si el zoom es menor a 15, mostrar todos los marcadores
+                // Si el zoom es menor a 15, mostrar todos los marcadores de capas de competencia activas
                 map.eachLayer(function(layer) {
                     if (layer instanceof L.Marker && layer !== currentMarker) {
                         layer.addTo(map); // Asegúrate de que se muestre el marcador
