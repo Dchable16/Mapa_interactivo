@@ -266,16 +266,6 @@
                 }
             }
         });
-                });
-            } else {
-                // Si el zoom es menor a 15, mostrar todos los marcadores
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker && layer !== currentMarker) {
-                        layer.addTo(map); // Asegúrate de que se muestre el marcador
-                    }
-                });
-            }
-        });
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
         const sideForm = document.getElementById('side-form');
