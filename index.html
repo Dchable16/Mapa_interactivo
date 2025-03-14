@@ -193,20 +193,29 @@
         let distanceMarkers = L.layerGroup().addTo(map); // Grupo para los marcadores de distancia
         let removedMarkers = []; // Almacenar marcadores eliminados
         let markerCompetencias = L.markerClusterGroup(); // Grupo de marcadores de competencias.
-        let competenciasList = {
-            'Bodega Aurrera',
-            'Bodega Aurrera Express',
-            'Chedraui Supercito',
-            'Tiendas 3B',
-            'Tiendas Neto'
+        let competenciasGeoJSON = {
+            'Bodega Aurrera': 'Bodega_Aurrera.geojson',
+            'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson',
+            'Chedraui Supercito': 'Chedraui_Supercito.geojson',
+            'Tiendas 3B': 'Tiendas_3B.geojson',
+            'Tiendas Neto': 'Tiendas_Neto.geojson'
         };
 
-        function addCompetenciasMarkers() {
-            markerCompetencias.clearLayers();
-            competenciasList.forEach(competencia => {
-                let marker = L.marker([competencia.lat, competencia.lng]).bindPopup(competencia.name);
-                markerCompetencias.addLayer(marker);
-            });
+        function cargarCompetencias() {
+            markerCompetencias.clearLayers(); // Limpiar marcadores existentes
+            for (let nombreCompetencia in competenciasGeoJSON) {
+                fetch(competenciasGeoJSON[nombreCompetencia])
+                    .then(response => response.json())
+                    .then(data => {
+                        L.geoJSON(data, {
+                            pointToLayer: function (feature, latlng) {
+                                let marker = L.marker(latlng).bindPopup(nombreCompetencia);
+                                markerCompetencias.addLayer(marker);
+                                return marker;
+                            }
+                        });
+                    });
+            }
             map.addLayer(markerCompetencias);
         }
         
@@ -214,7 +223,7 @@
             if (map.hasLayer(markerCompetencias)) {
                 map.removeLayer(markerCompetencias);
             } else {
-                addCompetenciasMarkers();
+                cargarCompetencias();
             }
         });    
         
