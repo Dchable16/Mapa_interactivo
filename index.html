@@ -185,7 +185,7 @@
        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-            
+        
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
@@ -195,24 +195,20 @@
                     }
                 }
             });
-            
+        
             // Eliminar solo las etiquetas de AGEB
             agebLabelsToRemove.forEach(label => {
                 map.removeLayer(label);
             });
         
-            // Verificar si hay capas AGEB activas
-            const agebActive = map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer);
-        
-            if (map.getZoom() >= 15) {
-                // Si el zoom es 15 o más
-                if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                    // Ocultar marcadores fuera del radio de 800m
+            // Verificar si las capas AGEB 400m o AGEB 800m están activas
+            if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
+                // Si alguna de las capas está activa, aplicar el filtro de radio
+                if (map.getZoom() >= 15 && currentMarker) {
                     const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
                     map.eachLayer(function(layer) {
                         if (layer instanceof L.Marker && layer !== currentMarker) {
                             const markerLatLng = layer.getLatLng();
-                            // Verificar si el marcador está dentro del radio de 800m
                             if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
                                 map.removeLayer(layer); // Eliminar el marcador si está fuera del radio
                             } else {
@@ -221,14 +217,29 @@
                         }
                     });
                 }
+                return; // No mostrar etiquetas AGEB si las capas de competencia están activas
+            }
         
-                // Mostrar etiquetas AGEB solo si hay capas AGEB activas
-                if (agebActive) {
-                    features.forEach(feature => {
-                        if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
-                            if (feature.geometry.type === 'Point') {
-                                const coords = feature.geometry.coordinates;
-                                const latLng = L.latLng(coords[1], coords[0]);
+            // Si no hay capas de competencia activas, muestra las etiquetas de AGEB
+            if (map.getZoom() >= 15 && (map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer))) {
+                features.forEach(feature => {
+                    if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
+                        if (feature.geometry.type === 'Point') {
+                            const coords = feature.geometry.coordinates;
+                            const latLng = L.latLng(coords[1], coords[0]);
+                            if (bounds.contains(latLng)) {
+                                const marker = L.marker(latLng, {
+                                    icon: L.divIcon({
+                                        className: 'ageb-label',
+                                        html: feature.properties.POB1.toString(),
+                                        iconSize: [100, 20]
+                                    })
+                                }).addTo(map);
+                            }
+                        } else if (feature.geometry.type === 'MultiPolygon') {
+                            feature.geometry.coordinates.forEach(polygon => {
+                                const centroid = turf.centroid(feature);
+                                const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
                                 if (bounds.contains(latLng)) {
                                     const marker = L.marker(latLng, {
                                         icon: L.divIcon({
@@ -238,33 +249,17 @@
                                         })
                                     }).addTo(map);
                                 }
-                            } else if (feature.geometry.type === 'MultiPolygon') {
-                                feature.geometry.coordinates.forEach(polygon => {
-                                    const centroid = turf.centroid(feature);
-                                    const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
-                                    if (bounds.contains(latLng)) {
-                                        const marker = L.marker(latLng, {
-                                            icon: L.divIcon({
-                                                className: 'ageb-label',
-                                                html: feature.properties.POB1.toString(),
-                                                iconSize: [100, 20]
-                                            })
-                                        }).addTo(map);
-                                    }
-                                });
-                            }
+                            });
                         }
-                    });
-                }
+                    }
+                });
             } else {
-                // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
-                if (map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup)) {
-                    map.eachLayer(function(layer) {
-                        if (layer instanceof L.Marker && layer !== currentMarker) {
-                            layer.addTo(map); // Asegúrate de que se muestre el marcador
-                        }
-                    });
-                }
+                // Si el zoom es menor a 15, mostrar todos los marcadores
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker && layer !== currentMarker) {
+                        layer.addTo(map); // Asegúrate de que se muestre el marcador
+                    }
+                });
             }
         });
         
