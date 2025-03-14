@@ -107,6 +107,30 @@
             border: none; /* Sin borde */
             font-size: 16px; /* Aumenta el tamaño de la fuente aquí */
         }
+
+        // Estilos CSS para el marcador de distancia
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .distance-marker div {
+                    background: transparent;
+                    border: none;
+                    font-size: 12px;
+                    font-weight: bold;
+                    color: #333;
+                }
+                .distance-button{
+                    background: white;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    border: 1px solid #ccc;
+                    margin-bottom: 10px;
+                }
+            `;
+        document.head.appendChild(style);
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -183,6 +207,73 @@
 
        //Activa y desactiva las etiquetas de los Ageb
        let removedMarkers = []; // Almacenar marcadores eliminados
+       let distanceLines = []; // Almacenar líneas de distancia
+       let distanceMarkers = []; // Almacenar marcadores de distancia
+       let distancesVisible = false; // Estado de visibilidad de las distancias
+
+        function calculateAndShowDistances() {
+            if (!currentMarker) return;
+        
+            // Limpiar líneas y marcadores de distancia existentes
+            distanceLines.forEach(line => map.removeLayer(line));
+            distanceMarkers.forEach(marker => map.removeLayer(marker));
+            distanceLines = [];
+            distanceMarkers = [];
+        
+            const markerLatLng = currentMarker.getLatLng();
+            const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+        
+            // Definir colores para las líneas de distancia
+            const distanceColors = {
+                'Bodega Aurrera': 'red',
+                'Bodega Aurrera Express': 'blue',
+                'Chedraui Supercito': 'green',
+                'Tiendas 3B': 'orange',
+                'Tiendas Neto': 'purple'
+            };
+        
+            // Iterar sobre las capas de competencia
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker && layer !== currentMarker) {
+                    const layerLatLng = layer.getLatLng();
+                    const layerPoint = turf.point([layerLatLng.lng, layerLatLng.lat]);
+                    const distance = turf.distance(markerPoint, layerPoint, { units: 'meters' });
+        
+                    // Verificar si el marcador está dentro del radio de 800m
+                    if (distance <= 800) {
+                        const distanceLine = L.polyline([markerLatLng, layerLatLng], { color: distanceColors[layer.options.title] }).addTo(map);
+                        distanceLines.push(distanceLine);
+        
+                        const distanceMarker = L.marker(layerLatLng, {
+                            icon: L.divIcon({
+                                className: 'distance-marker',
+                                html: `${distance.toFixed(0)}m`,
+                                iconSize: [60, 20]
+                            })
+                        }).addTo(map);
+                        distanceMarkers.push(distanceMarker);
+                    }
+                }
+            });
+        }
+
+        // Botón para activar/desactivar las distancias
+        const distanceButton = L.DomUtil.create('button', 'distance-button', document.querySelector('.leaflet-top.leaflet-left'));
+        distanceButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        distanceButton.title = "Mostrar/Ocultar distancias";
+        distanceButton.ariaLabel = "Mostrar/Ocultar distancias";
+        
+        distanceButton.onclick = function() {
+            distancesVisible = !distancesVisible;
+            if (distancesVisible) {
+                calculateAndShowDistances();
+            } else {
+                distanceLines.forEach(line => map.removeLayer(line));
+                distanceMarkers.forEach(marker => map.removeLayer(marker));
+                distanceLines = [];
+                distanceMarkers = [];
+            }
+        };
 
         map.on('zoomend', function() {
             const bounds = map.getBounds();
@@ -253,6 +344,10 @@
                             }
                         }
                     });
+                }
+                // Calcular y mostrar distancias si están visibles
+                if(distancesVisible){
+                    calculateAndShowDistances();
                 }
             } else {
                 // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
