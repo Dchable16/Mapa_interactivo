@@ -182,7 +182,9 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
        //Activa y desactiva las etiquetas de los Ageb
-       map.on('zoomend', function() {
+       let removedMarkers = []; // Almacenar marcadores eliminados
+
+        map.on('zoomend', function() {
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             const zoomLevel = map.getZoom();
@@ -211,6 +213,7 @@
                             const markerLatLng = layer.getLatLng();
                             // Verificar si el marcador está dentro del radio de 800m
                             if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
+                                removedMarkers.push(layer); // Almacenar marcador eliminado
                                 map.removeLayer(layer); // Eliminar el marcador si está fuera del radio
                             }
                         }
@@ -258,6 +261,11 @@
                         layer.addTo(map); // Asegúrate de que se muestre el marcador
                     }
                 });
+                // Restaurar marcadores eliminados
+                removedMarkers.forEach(marker => {
+                    marker.addTo(map);
+                });
+                removedMarkers = []; // Limpiar la lista de marcadores eliminados
             }
         });
         
