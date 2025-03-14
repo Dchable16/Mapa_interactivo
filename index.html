@@ -212,49 +212,37 @@
        let distancesVisible = false; // Estado de visibilidad de las distancias
 
         function calculateAndShowDistances() {
-            if (!currentMarker) return;
+            distanceLayers.clearLayers();
+            distanceMarkers.clearLayers();
         
-            // Limpiar líneas y marcadores de distancia existentes
-            distanceLines.forEach(line => map.removeLayer(line));
-            distanceMarkers.forEach(marker => map.removeLayer(marker));
-            distanceLines = [];
-            distanceMarkers = [];
+            if (currentMarker) {
+                const mainPoint = turf.point([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]);
+                let colorIndex = 0;
+                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink']; // Lista de colores para las líneas
         
-            const markerLatLng = currentMarker.getLatLng();
-            const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+                markerCompetencias.eachLayer(function(layer) { // Iterar solo sobre los marcadores de competencias
+                    if (layer instanceof L.Marker) {
+                        const markerLatLng = layer.getLatLng();
+                        const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+                        const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
+                        const midpoint = turf.midpoint(mainPoint, markerPoint);
         
-            // Definir colores para las líneas de distancia
-            const distanceColors = {
-                'Bodega Aurrera': 'red',
-                'Bodega Aurrera Express': 'blue',
-                'Chedraui Supercito': 'green',
-                'Tiendas 3B': 'orange',
-                'Tiendas Neto': 'purple'
-            };
+                        // Dibujar línea de distancia
+                        const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
+                        colorIndex++;
         
-            // Iterar sobre las capas de competencia
-            map.eachLayer(layer => {
-                if (layer instanceof L.Marker && layer !== currentMarker) {
-                    const layerLatLng = layer.getLatLng();
-                    const layerPoint = turf.point([layerLatLng.lng, layerLatLng.lat]);
-                    const distance = turf.distance(markerPoint, layerPoint, { units: 'meters' });
-        
-                    // Verificar si el marcador está dentro del radio de 800m
-                    if (distance <= 800) {
-                        const distanceLine = L.polyline([markerLatLng, layerLatLng], { color: distanceColors[layer.options.title] }).addTo(map);
-                        distanceLines.push(distanceLine);
-        
-                        const distanceMarker = L.marker(layerLatLng, {
+                        // Mostrar marcador de distancia
+                        L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
                             icon: L.divIcon({
                                 className: 'distance-marker',
-                                html: `${distance.toFixed(0)}m`,
-                                iconSize: [60, 20]
+                                html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
+                                iconSize: [60, 30],
+                                iconAnchor: [30, 15]
                             })
-                        }).addTo(map);
-                        distanceMarkers.push(distanceMarker);
+                        }).addTo(distanceMarkers);
                     }
-                }
-            });
+                });
+            }
         }
 
         // Botón para activar/desactivar las distancias
