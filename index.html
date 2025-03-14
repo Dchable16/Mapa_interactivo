@@ -151,7 +151,6 @@
                 <button onclick="extractAgebData()">Extraer Datos Ageb</button>
                 <button id="useLocationBtn">Usar Localización</button>
                 <button id="download-report-btn">Descarga Reporte</button>
-                <button id="competencias-button">Competencias comerciales</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
@@ -202,9 +201,9 @@
             'Tiendas Neto': 'Tiendas_Neto.geojson'
         };
 
-        function addCompetenciasMarkers() {
-            markerCompetencias.clearLayers();
-            for (let nombreCompetencia in competenciasGeoJSON) { // Cambiado a competenciasGeoJSON
+        function cargarCompetencias() {
+            markerCompetencias.clearLayers(); // Limpiar marcadores existentes
+            for (let nombreCompetencia in competenciasGeoJSON) {
                 fetch(competenciasGeoJSON[nombreCompetencia])
                     .then(response => response.json())
                     .then(data => {
@@ -221,13 +220,10 @@
         }
         
         document.getElementById('competencias-button').addEventListener('click', function() {
-            if (map.hasLayer(distanceLayers)) {
-                map.removeLayer(distanceLayers);
-                map.removeLayer(distanceMarkers);
+            if (map.hasLayer(markerCompetencias)) {
+                map.removeLayer(markerCompetencias);
             } else {
-                map.addLayer(distanceLayers);
-                map.addLayer(distanceMarkers);
-                calculateAndShowDistances();
+                cargarCompetencias();
             }
         });    
         
@@ -329,42 +325,28 @@
             if (currentMarker) {
                 const mainPoint = turf.point([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]);
                 let colorIndex = 0;
-                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink'];
-                const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
+                const colors = ['blue', 'green', 'purple', 'orange', 'brown', 'pink']; // Lista de colores para las líneas
         
-                const competenciasFiltradas = [
-                    'Bodega Aurrera',
-                    'Bodega Aurrera Express',
-                    'Chedraui Supercito',
-                    'Tiendas 3B',
-                    'Tiendas Neto'
-                ];
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker && layer !== currentMarker) {
+                        const markerLatLng = layer.getLatLng();
+                        const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
+                        const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
+                        const midpoint = turf.midpoint(mainPoint, markerPoint);
         
-                markerCompetencias.eachLayer(function(layer) {
-                    const markerLatLng = layer.getLatLng();
-                    const popup = layer.getPopup();
-                    if (popup) {
-                        const nombreCompetencia = popup.getContent();
-                        if (competenciasFiltradas.includes(nombreCompetencia)) {
-                            // Verificar si el marcador está dentro del radio de 800m
-                            if (turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
-                                const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
-                                const distance = turf.distance(mainPoint, markerPoint, { units: 'meters' });
-                                const midpoint = turf.midpoint(mainPoint, markerPoint);
+                        // Dibujar línea de distancia
+                        const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
+                        colorIndex++;
         
-                                const polyline = L.polyline([currentMarker.getLatLng(), markerLatLng], { color: colors[colorIndex % colors.length] }).addTo(distanceLayers);
-                                colorIndex++;
-        
-                                L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
-                                    icon: L.divIcon({
-                                        className: 'distance-marker',
-                                        html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
-                                        iconSize: [60, 30],
-                                        iconAnchor: [30, 15]
-                                    })
-                                }).addTo(distanceMarkers);
-                            }
-                        }
+                        // Mostrar marcador de distancia
+                        L.marker([midpoint.geometry.coordinates[1], midpoint.geometry.coordinates[0]], {
+                            icon: L.divIcon({
+                                className: 'distance-marker',
+                                html: `<div style="background-color: white; padding: 5px; border-radius: 5px;">${distance.toFixed(2)}m</div>`,
+                                iconSize: [60, 30],
+                                iconAnchor: [30, 15]
+                            })
+                        }).addTo(distanceMarkers);
                     }
                 });
             }
