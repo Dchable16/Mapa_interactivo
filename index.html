@@ -256,13 +256,21 @@
                 if (map.hasLayer(radius800Layer) && radius800Layer.getLayers().length > 0) {
                     const radiusGeometry = radius800Layer.getLayers()[0].feature.geometry;
         
+                    console.log("Geometría del radio:", radiusGeometry); // Para depurar
+                    console.log("capa radius 800:", radius800Layer.toGeoJSON());//para depurar
+        
                     competenciasLayers.forEach(layer => {
+                        console.log("Número de marcadores en la capa:", layer.getLayers().filter(l => l instanceof L.Marker).length); // Para depurar
+        
                         layer.eachLayer(featureLayer => {
                             if (featureLayer instanceof L.Marker) {
                                 const markerLatLng = featureLayer.getLatLng();
                                 const markerPoint = turf.point([markerLatLng.lng, markerLatLng.lat]);
         
-                                if (turf.booleanPointInPolygon(markerPoint, radiusGeometry)) {
+                                const isInside = turf.booleanPointInPolygon(markerPoint, radiusGeometry);
+                                console.log("Punto dentro del radio:", isInside); // Para depurar
+        
+                                if (isInside) {
                                     featureLayer.setOpacity(1); // Mostrar marcadores dentro del radio
                                 }
                             }
