@@ -187,6 +187,15 @@
         let distanceLayers = L.layerGroup().addTo(map); // Grupo para las líneas de distancia
         let distanceMarkers = L.layerGroup().addTo(map); // Grupo para los marcadores de distancia
         
+        // Definir los marcadores de competencias
+        let competenciasGeoJSON = {
+            'Bodega Aurrera': 'Bodega_Aurrera.geojson',
+            'Bodega Aurrera Express': 'Bodega_Aurrera_Express.geojson',
+            'Chedraui Supercito': 'Chedraui_Supercito.geojson',
+            'Tiendas 3B': 'Tiendas_3B.geojson',
+            'Tiendas Neto': 'Tiendas_Neto.geojson'
+        };
+        
         // Activa y desactiva las etiquetas de los Ageb
         let removedMarkers = []; // Almacenar marcadores eliminados
         
