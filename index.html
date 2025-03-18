@@ -765,7 +765,7 @@
         const downloadKMZButton = L.control({ position: 'topright' });
         downloadKMZButton.onAdd = function (map) {
             const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-            div.innerHTML = '<a href="#" title="Descargar KMZ" id="download-kmz-btn">KMZ</a>';
+            div.innerHTML = '<a href="#" title="Descargar KMZ" id="download-kmz-btn.kmz">KMZ</a>';
             return div;
         };
         downloadKMZButton.addTo(map);
