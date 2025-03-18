@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -145,6 +146,7 @@
                 <button onclick="extractAgebData()">Extraer Datos Ageb</button>
                 <button id="useLocationBtn">Usar Localización</button>
                 <button id="download-report-btn">Descarga Reporte</button>
+                <button id="download-kmz-btn">Descarga KMZ</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
@@ -703,6 +705,107 @@
         
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
+
+        function getFilteredCompetencies() {
+            const filteredCompetencies = [];
+            
+            // Supongamos que tienes una capa llamada 'competenciasLayer'
+            competenciasLayer.eachLayer(function(layer) {
+                // Aquí puedes aplicar cualquier filtro que necesites
+                // Por ejemplo, si el layer tiene una propiedad 'visible' que indica si debe ser mostrado
+                if (layer.options.visible) {
+                    const coords = layer.getLatLng();
+                    filteredCompetencies.push({
+                        name: layer.options.name, // Nombre de la competencia
+                        lat: coords.lat,
+                        lng: coords.lng
+                    });
+                }
+            });
+        
+            return filteredCompetencies;
+        }
+        
+        function downloadKMZ() {
+            if (!currentMarker) {
+                alert("Primero debe agregar un marcador.");
+                return;
+            }
+        
+            const markerLatLng = currentMarker.getLatLng();
+            const markerName = document.getElementById('markerName').value;
+        
+            // Crear un KMZ
+            const kmz = new JSZip();
+        
+            // Agregar el marcador
+            const markerKML = `
+                <Placemark>
+                    <name>${markerName}</name>
+                    <Point>
+                        <coordinates>${markerLatLng.lng},${markerLatLng.lat},0</coordinates>
+                    </Point>
+                </Placemark>
+            `;
+            kmz.file("marker.kml", markerKML);
+        
+            // Agregar los radios
+            const radius400KML = `
+                <Placemark>
+                    <name>${markerName} - Radio 400m</name>
+                    <Polygon>
+                        <outerBoundaryIs>
+                            <LinearRing>
+                                <coordinates>${turf.circle([markerLatLng.lng, markerLatLng.lat], 400, { units: 'meters' }).geometry.coordinates[0].map(coord => coord.join(',')).join(' ')}</coordinates>
+                            </LinearRing>
+                        </outerBoundaryIs>
+                    </Polygon>
+                </Placemark>
+            `;
+            kmz.file("radius_400.kml", radius400KML);
+        
+            const radius800KML = `
+                <Placemark>
+                    <name>${markerName} - Radio 800m</name>
+                    <Polygon>
+                        <outerBoundaryIs>
+                            <LinearRing>
+                                <coordinates>${turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' }).geometry.coordinates[0].map(coord => coord.join(',')).join(' ')}</coordinates>
+                            </LinearRing>
+                        </outerBoundaryIs>
+                    </Polygon>
+                </Placemark>
+            `;
+            kmz.file("radius_800.kml", radius800KML);
+        
+            // Obtener competencias filtradas
+            const filteredCompetencies = getFilteredCompetencies();
+            filteredCompetencies.forEach(comp => {
+                const compKML = `
+                    <Placemark>
+                        <name>${comp.name}</name>
+                        <Point>
+                            <coordinates>${comp.lng},${comp.lat},0</coordinates>
+                        </Point>
+                    </Placemark>
+                `;
+                kmz.file(`${comp.name}.kml`, compKML);
+            });
+        
+            // Generar el archivo KMZ
+            kmz.generateAsync({ type: "blob" }).then(function(content) {
+                const url = URL.createObjectURL(content);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `${markerName}.kmz`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        }
+        
+        // Agregar un botón para descargar el KMZ
+        document.getElementById('download-kmz-btn').addEventListener('click', downloadKMZ);
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
