@@ -761,25 +761,27 @@
             `;
             kmz.file("radius_800.kml", radius800KML);
         
-            // Obtener competencias filtradas
-            const filteredCompetencies = getFilteredCompetencies();
+            // Recoger competencias directamente desde las capas
             const radius800 = turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' });
         
-            filteredCompetencies.forEach(comp => {
-                const compPoint = turf.point([comp.lng, comp.lat]);
-                const isInside = turf.booleanPointInPolygon(compPoint, radius800);
+            Object.values(geoJsonLayersCompetencias).forEach(layer => {
+                layer.eachLayer(function(compLayer) {
+                    const compCoords = compLayer.getLatLng();
+                    const compPoint = turf.point([compCoords.lng, compCoords.lat]);
+                    const isInside = turf.booleanPointInPolygon(compPoint, radius800);
         
-                if (isInside) {
-                    const compKML = `
-                        <Placemark>
-                            <name>${comp.name}</name>
-                            <Point>
-                                <coordinates>${comp.lng},${comp.lat},0</coordinates>
-                            </Point>
-                        </Placemark>
-                    `;
-                    kmz.file(`${comp.name}.kml`, compKML);
-                }
+                    if (isInside) {
+                        const compKML = `
+                            <Placemark>
+                                <name>${compLayer.options.name}</name>
+                                <Point>
+                                    <coordinates>${compCoords.lng},${compCoords.lat},0</coordinates>
+                                </Point>
+                            </Placemark>
+                        `;
+                        kmz.file(`${compLayer.options.name}.kml`, compKML);
+                    }
+                });
             });
         
             // Generar el archivo KMZ
