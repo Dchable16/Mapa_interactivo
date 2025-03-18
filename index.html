@@ -777,10 +777,10 @@
         
             // Recoger marcadores dentro del radio de 800m
             const radius800 = turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' });
-            //map.eachLayer(function(layer) {
-               // if (layer instanceof L.Marker) {
-                   // const markerCoords = layer.getLatLng();
-                    //const isInside = turf.booleanPointInPolygon(turf.point([markerCoords.lng, markerCoords.lat]), radius800);
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    const markerCoords = layer.getLatLng();
+                    const isInside = turf.booleanPointInPolygon(turf.point([markerCoords.lng, markerCoords.lat]), radius800);
                     if (isInside) {
                         const markerIcon = layer.options.icon.options.iconUrl; // Obtener la URL del icono
                         const markerKML = `
@@ -817,7 +817,7 @@
         
         // Agregar un botón para descargar el KMZ
         document.getElementById('download-kmz-btn').addEventListener('click', downloadKMZ);
-
+        
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
