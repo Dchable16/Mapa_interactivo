@@ -181,6 +181,14 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
+        const competenciasEspecificas = [
+            'Bodega Aurrera',
+            'Bodega Aurrera Express',
+            'Chedraui Supercito',
+            'Tiendas Neto',
+            'Tiendas 3B'
+        ];
+        
        //Activa y desactiva las etiquetas de los Ageb
        let removedMarkers = []; // Almacenar marcadores eliminados
         let competenciaMarkers = []; // Almacenar los marcadores de competencias
