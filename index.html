@@ -183,6 +183,9 @@
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
 
+        // Definición de la capa de competencias
+        const competenciasLayer = L.layerGroup().addTo(map);
+
        //Activa y desactiva las etiquetas de los Ageb
        let removedMarkers = []; // Almacenar marcadores eliminados
 
