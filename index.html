@@ -728,7 +728,7 @@
             // Agregar marcador principal
             if (currentMarker) {
                 const latLng = currentMarker.getLatLng();
-                kml += `<Placemark><name>Marcador Principal</name><Point><coordinates>${latLng.lng},${latLng.lat}</coordinates></Point></Placemark>\n`;
+                kml += '<Placemark><name>Marcador Principal</name><Point><coordinates>' + latLng.lng + ',' + latLng.lat + '</coordinates></Point></Placemark>\n';
             }
         
             // Agregar radios
