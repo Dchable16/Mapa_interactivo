@@ -709,26 +709,6 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-        function getFilteredCompetencies() {
-            const filteredCompetencies = [];
-            
-            // Supongamos que tienes una capa llamada 'competenciasLayer'
-            competenciasLayer.eachLayer(function(layer) {
-                // Aquí puedes aplicar cualquier filtro que necesites
-                // Por ejemplo, si el layer tiene una propiedad 'visible' que indica si debe ser mostrado
-                if (layer.options.visible) {
-                    const coords = layer.getLatLng();
-                    filteredCompetencies.push({
-                        name: layer.options.name, // Nombre de la competencia
-                        lat: coords.lat,
-                        lng: coords.lng
-                    });
-                }
-            });
-        
-            return filteredCompetencies;
-        }
-        
         function downloadKMZ() {
             if (!currentMarker) {
                 alert("Primero debe agregar un marcador.");
@@ -795,6 +775,34 @@
                 kmz.file(`${comp.name}.kml`, compKML);
             });
         
+            // Recoger marcadores dentro del radio de 800m
+            const radius800 = turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' });
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    const markerCoords = layer.getLatLng();
+                    const isInside = turf.booleanPointInPolygon(turf.point([markerCoords.lng, markerCoords.lat]), radius800);
+                    if (isInside) {
+                        const markerIcon = layer.options.icon.options.iconUrl; // Obtener la URL del icono
+                        const markerKML = `
+                            <Placemark>
+                                <name>${layer.options.name}</name>
+                                <Style>
+                                    <IconStyle>
+                                        <Icon>
+                                            <href>${markerIcon}</href>
+                                        </Icon>
+                                    </IconStyle>
+                                </Style>
+                                <Point>
+                                    <coordinates>${markerCoords.lng},${markerCoords.lat},0</coordinates>
+                                </Point>
+                            </Placemark>
+                        `;
+                        kmz.file(`${layer.options.name}.kml`, markerKML);
+                    }
+                }
+            });
+        
             // Generar el archivo KMZ
             kmz.generateAsync({ type: "blob" }).then(function(content) {
                 const url = URL.createObjectURL(content);
@@ -806,9 +814,6 @@
                 document.body.removeChild(link);
             });
         }
-        
-        // Agregar un botón para descargar el KMZ
-        document.getElementById('download-kmz-btn').addEventListener('click', downloadKMZ);
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
