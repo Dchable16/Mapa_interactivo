@@ -147,7 +147,7 @@
                 <button onclick="extractAgebData()">Extraer Datos Ageb</button>
                 <button id="useLocationBtn">Usar Localización</button>
                 <button id="download-report-btn">Descarga Reporte</button>
-                <button id="download-kmz-btn">Descarga Reporte</button>
+                <button id="download-kmz-btn-kmz">Descarga KMZ</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
@@ -770,7 +770,7 @@
         };
         downloadKMZButton.addTo(map);
         
-        document.getElementById('download-kmz-btn').addEventListener('click', generateKMZ);
+        document.getElementById('download-kmz-btn-kmz').addEventListener('click', generateKMZ);
 
 
         // Crear un icono personalizado usando el logotipo
