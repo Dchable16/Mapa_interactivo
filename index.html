@@ -178,16 +178,23 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script>
+
+        // Función para obtener datos de competencia
+            function obtenerDatosCompetencia(competencia) {
+                // Suponiendo que tienes un objeto con los datos de las competencias
+                const competenciasDatos = {
+                    'Bodega Aurrera': { lat: 19.4326, lng: -99.1332 }, // Coordenadas de ejemplo
+                    'Bodega Aurrera Express': { lat: 19.4320, lng: -99.1340 },
+                    'Chedraui Supercito': { lat: 19.4330, lng: -99.1350 },
+                    'Tiendas Neto': { lat: 19.4315, lng: -99.1360 },
+                    'Tiendas 3B': { lat: 19.4310, lng: -99.1370 }
+                };
+        
+                return competenciasDatos[competencia] || { lat: null, lng: null }; // Devuelve null si no se encuentra la competencia
+            }
+        
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
-
-        const competenciasEspecificas = [
-            'Bodega Aurrera',
-            'Bodega Aurrera Express',
-            'Chedraui Supercito',
-            'Tiendas Neto',
-            'Tiendas 3B'
-        ];
         
        //Activa y desactiva las etiquetas de los Ageb
        let removedMarkers = []; // Almacenar marcadores eliminados
