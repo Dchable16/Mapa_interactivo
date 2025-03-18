@@ -814,6 +814,9 @@
                 document.body.removeChild(link);
             });
         }
+       
+        // Agregar un botón para descargar el KMZ
+        document.getElementById('download-kmz-btn').addEventListener('click', downloadKMZ);
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
