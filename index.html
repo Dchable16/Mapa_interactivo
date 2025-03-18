@@ -764,7 +764,7 @@
             // Filtrar competencias después de eliminar los marcadores fuera del radio
             const radius800 = turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' });
         
-            // Eliminar marcadores fuera del radio de 800m de las capas de competencias
+            // Recoger competencias directamente desde las capas
             Object.values(geoJsonLayersCompetencias).forEach(layer => {
                 layer.eachLayer(function(compLayer) {
                     const compCoords = compLayer.getLatLng();
