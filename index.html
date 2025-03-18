@@ -718,74 +718,89 @@
             const markerLatLng = currentMarker.getLatLng();
             const markerName = document.getElementById('markerName').value;
         
-            // Crear un KMZ
             const kmz = new JSZip();
         
-            // Agregar el marcador
             const markerKML = `
-                <Placemark>
-                    <name>${markerName}</name>
-                    <Point>
-                        <coordinates>${markerLatLng.lng},${markerLatLng.lat},0</coordinates>
-                    </Point>
-                </Placemark>
+                <kml xmlns="http://www.opengis.net/kml/2.2">
+                    <Document>
+                        <Placemark>
+                            <name>${markerName}</name>
+                            <Point>
+                                <coordinates>${markerLatLng.lng},${markerLatLng.lat},0</coordinates>
+                            </Point>
+                        </Placemark>
+                    </Document>
+                </kml>
             `;
             kmz.file("marker.kml", markerKML);
         
-            // Agregar los radios
             const radius400KML = `
-                <Placemark>
-                    <name>${markerName} - Radio 400m</name>
-                    <Polygon>
-                        <outerBoundaryIs>
-                            <LinearRing>
-                                <coordinates>${turf.circle([markerLatLng.lng, markerLatLng.lat], 400, { units: 'meters' }).geometry.coordinates[0].map(coord => coord.join(',')).join(' ')}</coordinates>
-                            </LinearRing>
-                        </outerBoundaryIs>
-                    </Polygon>
-                </Placemark>
+                <kml xmlns="http://www.opengis.net/kml/2.2">
+                    <Document>
+                        <Placemark>
+                            <name>${markerName} - Radio 400m</name>
+                            <Polygon>
+                                <outerBoundaryIs>
+                                    <LinearRing>
+                                        <coordinates>${turf.circle([markerLatLng.lng, markerLatLng.lat], 400, { units: 'meters' }).geometry.coordinates[0].map(coord => coord.join(',')).join(' ')}</coordinates>
+                                    </LinearRing>
+                                </outerBoundaryIs>
+                            </Polygon>
+                        </Placemark>
+                    </Document>
+                </kml>
             `;
             kmz.file("radius_400.kml", radius400KML);
         
             const radius800KML = `
-                <Placemark>
-                    <name>${markerName} - Radio 800m</name>
-                    <Polygon>
-                        <outerBoundaryIs>
-                            <LinearRing>
-                                <coordinates>${turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' }).geometry.coordinates[0].map(coord => coord.join(',')).join(' ')}</coordinates>
-                            </LinearRing>
-                        </outerBoundaryIs>
-                    </Polygon>
-                </Placemark>
+                <kml xmlns="http://www.opengis.net/kml/2.2">
+                    <Document>
+                        <Placemark>
+                            <name>${markerName} - Radio 800m</name>
+                            <Polygon>
+                                <outerBoundaryIs>
+                                    <LinearRing>
+                                        <coordinates>${turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' }).geometry.coordinates[0].map(coord => coord.join(',')).join(' ')}</coordinates>
+                                    </LinearRing>
+                                </outerBoundaryIs>
+                            </Polygon>
+                        </Placemark>
+                    </Document>
+                </kml>
             `;
             kmz.file("radius_800.kml", radius800KML);
         
-            // Filtrar competencias después de eliminar los marcadores fuera del radio
             const radius800 = turf.circle([markerLatLng.lng, markerLatLng.lat], 800, { units: 'meters' });
         
-            // Recoger competencias directamente desde las capas
+            console.log(geoJsonLayersCompetencias); // Depuración
+        
             Object.values(geoJsonLayersCompetencias).forEach(layer => {
                 layer.eachLayer(function(compLayer) {
                     const compCoords = compLayer.getLatLng();
                     const compPoint = turf.point([compCoords.lng, compCoords.lat]);
                     const isInside = turf.booleanPointInPolygon(compPoint, radius800);
         
+                    console.log(compLayer.options.name); // Depuración
+                    console.log(compCoords); // Depuración
+        
                     if (isInside) {
                         const compKML = `
-                            <Placemark>
-                                <name>${compLayer.options.name}</name>
-                                <Point>
-                                    <coordinates>${compCoords.lng},${compCoords.lat},0</coordinates>
-                                </Point>
-                            </Placemark>
+                            <kml xmlns="http://www.opengis.net/kml/2.2">
+                                <Document>
+                                    <Placemark>
+                                        <name>${compLayer.options.name}</name>
+                                        <Point>
+                                            <coordinates>${compCoords.lng},${compCoords.lat},0</coordinates>
+                                        </Point>
+                                    </Placemark>
+                                </Document>
+                            </kml>
                         `;
                         kmz.file(`${compLayer.options.name}.kml`, compKML);
                     }
                 });
             });
         
-            // Generar el archivo KMZ
             kmz.generateAsync({ type: "blob" }).then(function(content) {
                 const url = URL.createObjectURL(content);
                 const link = document.createElement("a");
