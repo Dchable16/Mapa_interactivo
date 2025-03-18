@@ -740,13 +740,17 @@
             }
         
             // Agregar competencias dentro del radio de 800m
-            const bounds800 = radius800Layer.getBounds();
-            for (const layerName in geoJsonLayersCompetencias) {
-                geoJsonLayersCompetencias[layerName].eachLayer(layer => {
-                    if (bounds800.contains(layer.getLatLng())) {
-                        kml += geojsonToKML(layer.toGeoJSON(), layerName);
-                    }
-                });
+            if (radius800Layer && typeof radius800Layer.getBounds === 'function') {
+                const bounds800 = radius800Layer.getBounds();
+                for (const layerName in geoJsonLayersCompetencias) {
+                    geoJsonLayersCompetencias[layerName].eachLayer(layer => {
+                        if (bounds800.contains(layer.getLatLng())) {
+                            kml += geojsonToKML(layer.toGeoJSON(), layerName);
+                        }
+                    });
+                }
+            } else {
+                console.error("radius800Layer no es una capa válida o no se ha inicializado correctamente.");
             }
         
             kml += '</Document>\n</kml>';
