@@ -721,7 +721,7 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
+                    "properties": { "nombre": content || "Marcador" } // Asegúrate de que 'nombre' sea un objeto
                 });
             }
         });
@@ -734,7 +734,7 @@
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
+                "properties": { "nombre": content || "Marcador Principal" } // Asegúrate de que 'nombre' sea un objeto
             });
         }
     
@@ -743,7 +743,7 @@
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 400m" }; // Asegúrate de que 'nombre' sea un objeto
+            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
             radius400GeoJSON = turfCircle;
         }
     
@@ -754,7 +754,7 @@
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 800m" }; // Asegúrate de que 'nombre' sea un objeto
+            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
             radius800GeoJSON = turfCircle;
         }
     
@@ -771,13 +771,9 @@
         // Depuración: Imprimir el array features
         console.log("Features:", features);
     
-        // Validar que todas las propiedades sean válidas antes de llamar a tokml
         const geojsonData = {
             "type": "FeatureCollection",
-            "features": features.map(feature => ({
-                ...feature,
-                properties: feature.properties || {} // Asegúrate de que las propiedades sean un objeto
-            }))
+            "features": features
         };
     
         const kml = tokml(geojsonData, {
@@ -789,7 +785,7 @@
                     style: {
                         stroke: 'red',
                         strokeWidth: 5,
-                        fill: 'none'
+                        fill: 'none' // Sin fondo
                     }
                 },
                 {
@@ -797,7 +793,7 @@
                     style: {
                         stroke: 'red',
                         strokeWidth: 5,
-                        fill: 'none'
+                        fill: 'none' // Sin fondo
                     }
                 }
             ]
@@ -825,7 +821,7 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
+                    "properties": { "nombre": content || "Marcador" } // Asegúrate de que 'nombre' sea un objeto
                 });
             }
         });
@@ -838,7 +834,7 @@
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
+                "properties": { "nombre": content || "Marcador Principal" } // Asegúrate de que 'nombre' sea un objeto
             });
         }
     
@@ -847,7 +843,7 @@
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 400m" }; // Asegúrate de que 'nombre' sea un objeto
+            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
             radius400GeoJSON = turfCircle;
         }
     
@@ -858,7 +854,7 @@
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 800m" }; // Asegúrate de que 'nombre' sea un objeto
+            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
             radius800GeoJSON = turfCircle;
         }
     
@@ -875,13 +871,9 @@
         // Depuración: Imprimir el array features
         console.log("Features:", features);
     
-        // Validar que todas las propiedades sean válidas antes de llamar a tokml
         const geojsonData = {
             "type": "FeatureCollection",
-            "features": features.map(feature => ({
-                ...feature,
-                properties: feature.properties || {} // Asegúrate de que las propiedades sean un objeto
-            }))
+            "features": features
         };
     
         const kml = tokml(geojsonData, {
@@ -893,7 +885,7 @@
                     style: {
                         stroke: 'red',
                         strokeWidth: 5,
-                        fill: 'none'
+                        fill: 'none' // Sin fondo
                     }
                 },
                 {
@@ -901,7 +893,7 @@
                     style: {
                         stroke: 'red',
                         strokeWidth: 5,
-                        fill: 'none'
+                        fill: 'none' // Sin fondo
                     }
                 }
             ]
