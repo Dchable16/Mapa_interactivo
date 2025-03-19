@@ -738,16 +738,23 @@
         
             // Depuración: Imprimir datos GeoJSON de los radios
             const radius400GeoJSON = radius400Layer.toGeoJSON();
-            const radius800GeoJSON = radius800Layer.toGeoJSON();
             console.log("Radio 400 GeoJSON:", radius400GeoJSON);
+        
+            // Crear GeoJSON manual para el radio de 800 metros
+            let radius800GeoJSON = {
+                "type": "Feature",
+                "geometry": radius800m.toGeoJSON().features[0].geometry,
+                "properties": {}
+            };
+        
             console.log("Radio 800 GeoJSON:", radius800GeoJSON);
         
             // Agregar radios al array features
             if (radius400GeoJSON.features.length > 0) {
                 features.push(radius400GeoJSON.features[0]);
             }
-            if (radius800GeoJSON.features.length > 0) {
-                features.push(radius800GeoJSON.features[0]);
+            if (radius800GeoJSON) {
+                features.push(radius800GeoJSON);
             }
         
             // Depuración: Imprimir el array features
@@ -802,16 +809,23 @@
         
             // Depuración: Imprimir datos GeoJSON de los radios
             const radius400GeoJSON = radius400Layer.toGeoJSON();
-            const radius800GeoJSON = radius800Layer.toGeoJSON();
             console.log("Radio 400 GeoJSON:", radius400GeoJSON);
+        
+            // Crear GeoJSON manual para el radio de 800 metros
+            let radius800GeoJSON = {
+                "type": "Feature",
+                "geometry": radius800m.toGeoJSON().features[0].geometry,
+                "properties": {}
+            };
+        
             console.log("Radio 800 GeoJSON:", radius800GeoJSON);
         
             // Agregar radios al array features
             if (radius400GeoJSON.features.length > 0) {
                 features.push(radius400GeoJSON.features[0]);
             }
-            if (radius800GeoJSON.features.length > 0) {
-                features.push(radius800GeoJSON.features[0]);
+            if (radius800GeoJSON) {
+                features.push(radius800GeoJSON);
             }
         
             // Depuración: Imprimir el array features
