@@ -709,10 +709,8 @@
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
         function descargarCapasResultantesKML() {
-            // 1. Recopilar Datos
             let features = [];
         
-            // Marcadores de competencias dentro de los radios
             poiMarkers.eachLayer(marker => {
                 if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
                     radius800Layer.getBounds().contains(marker.getLatLng())) {
@@ -727,7 +725,6 @@
                 }
             });
         
-            // Marcador principal
             if (currentMarker) {
                 features.push({
                     "type": "Feature",
@@ -739,77 +736,23 @@
                 });
             }
         
-            // Radios
-            if (radius400Layer) {
-                features.push(radius400Layer.toGeoJSON().features[0]);
+            // Depuración: Imprimir datos GeoJSON de los radios
+            const radius400GeoJSON = radius400Layer.toGeoJSON();
+            const radius800GeoJSON = radius800Layer.toGeoJSON();
+            console.log("Radio 400 GeoJSON:", radius400GeoJSON);
+            console.log("Radio 800 GeoJSON:", radius800GeoJSON);
+        
+            // Agregar radios al array features
+            if (radius400GeoJSON.features.length > 0) {
+                features.push(radius400GeoJSON.features[0]);
             }
-            if (radius800Layer) {
-                features.push(radius800Layer.toGeoJSON().features[0]);
+            if (radius800GeoJSON.features.length > 0) {
+                features.push(radius800GeoJSON.features[0]);
             }
         
-            // 2. Formato KML
-            const geojsonData = {
-                "type": "FeatureCollection",
-                "features": features
-            };
-        
-            const kml = tokml(geojsonData, { // O tokml(geojsonData, { ... })
-                documentName: 'Capas Resultantes',
-                documentDescription: 'Capas resultantes del análisis espacial'
-            });
-
-            console.log("Radio 400:", radius400Layer.toGeoJSON());
-            console.log("Radio 800:", radius800Layer.toGeoJSON());
-            console.log("Competencias:", poiMarkers.toGeoJSON());
+            // Depuración: Imprimir el array features
             console.log("Features:", features);
-            
-            // 3. Descarga de Archivo KML
-            const dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(kml);
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "capas_resultantes.kml");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
         
-        function descargarCapasResultantesKMZ() {
-            // 1. Recopilar Datos (reutilizando el código de la función anterior)
-            let features = [];
-        
-            poiMarkers.eachLayer(marker => {
-                if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
-                    radius800Layer.getBounds().contains(marker.getLatLng())) {
-                    features.push({
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
-                        },
-                        "properties": marker.getPopup().getContent()
-                    });
-                }
-            });
-        
-            if (currentMarker) {
-                features.push({
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
-                    },
-                    "properties": { "tipo": "Marcador Principal" }
-                });
-            }
-        
-            if (radius400Layer) {
-                features.push(radius400Layer.toGeoJSON().features[0]);
-            }
-            if (radius800Layer) {
-                features.push(radius800Layer.toGeoJSON().features[0]);
-            }
-        
-            // 2. Formato KML
             const geojsonData = {
                 "type": "FeatureCollection",
                 "features": features
@@ -820,11 +763,73 @@
                 documentDescription: 'Capas resultantes del análisis espacial'
             });
         
-            // 3. Crear un archivo ZIP con JSZip
+            const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "capas_resultantes.kml");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+        
+        function descargarCapasResultantesKMZ() {
+            let features = [];
+        
+            poiMarkers.eachLayer(marker => {
+                if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
+                    radius800Layer.getBounds().contains(marker.getLatLng())) {
+                    features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                        },
+                        "properties": marker.getPopup().getContent()
+                    });
+                }
+            });
+        
+            if (currentMarker) {
+                features.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
+                    },
+                    "properties": { "tipo": "Marcador Principal" }
+                });
+            }
+        
+            // Depuración: Imprimir datos GeoJSON de los radios
+            const radius400GeoJSON = radius400Layer.toGeoJSON();
+            const radius800GeoJSON = radius800Layer.toGeoJSON();
+            console.log("Radio 400 GeoJSON:", radius400GeoJSON);
+            console.log("Radio 800 GeoJSON:", radius800GeoJSON);
+        
+            // Agregar radios al array features
+            if (radius400GeoJSON.features.length > 0) {
+                features.push(radius400GeoJSON.features[0]);
+            }
+            if (radius800GeoJSON.features.length > 0) {
+                features.push(radius800GeoJSON.features[0]);
+            }
+        
+            // Depuración: Imprimir el array features
+            console.log("Features:", features);
+        
+            const geojsonData = {
+                "type": "FeatureCollection",
+                "features": features
+            };
+        
+            const kml = tokml(geojsonData, {
+                documentName: 'Capas Resultantes',
+                documentDescription: 'Capas resultantes del análisis espacial'
+            });
+        
             const zip = new JSZip();
             zip.file("capas_resultantes.kml", kml);
         
-            // 4. Generar el archivo KMZ y descargarlo
             zip.generateAsync({ type: "blob" })
                 .then(function (content) {
                     const dataStr = window.URL.createObjectURL(content);
