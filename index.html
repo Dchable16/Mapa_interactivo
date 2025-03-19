@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/geojson2kml@1.0.1/geojson2kml.js"></script>
+    <script src="https://unpkg.com/tokml@0.5.0/tokml.js"></script>
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -753,7 +753,7 @@
                 "features": features
             };
         
-            const kml = geojson2kml.toKML(geojsonData, { // O tokml(geojsonData, { ... })
+            const kml = tokml(geojsonData, { // O tokml(geojsonData, { ... })
                 documentName: 'Capas Resultantes',
                 documentDescription: 'Capas resultantes del análisis espacial'
             });
