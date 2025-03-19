@@ -708,144 +708,105 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-        function limpiarKML(kmlString) {
-        // Eliminar caracteres invisibles y espacios en blanco al principio
-        return kmlString.trimStart();
-    }
-    
-    function descargarCapasResultantesKML() {
-        let features = [];
-        let placemarksKML = '';
-        let stylesKML = `
-            <Style id="radioStyle">
-                <LineStyle>
-                    <color>ff0000ff</color>
-                    <width>5</width>
-                </LineStyle>
-                <PolyStyle>
-                    <fill>0</fill>
-                </PolyStyle>
-            </Style>
-        `;
-    
-        poiMarkers.eachLayer(marker => {
-            if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
-                radius800Layer.getBounds().contains(marker.getLatLng())) {
-                features.push({
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
-                    },
-                    "properties": marker.getPopup().getContent()
-                });
-            }
-        });
-    
-        if (currentMarker) {
-            features.push({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
-                },
-                "properties": { "tipo": "Marcador Principal", "name": document.getElementById('markerName').value }
-            });
-        }
-    
-        // Crear KML manual para el radio de 400 metros usando turf.js
-        if (radius400m) {
-            const latLng = radius400m.getLatLng();
-            const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            const coordinates = turfCircle.geometry.coordinates[0].map(coord => `${coord[0]},${coord[1]},0`).join(' ');
-            placemarksKML += `
-                <Placemark>
-                    <name>Radio 400m</name>
-                    <styleUrl>#radioStyle</styleUrl>
-                    <Polygon>
-                        <outerBoundaryIs>
-                            <LinearRing>
-                                <coordinates>${coordinates}</coordinates>
-                            </LinearRing>
-                        </outerBoundaryIs>
-                    </Polygon>
-                </Placemark>
-            `;
-        }
-    
-        // Crear KML manual para el radio de 800 metros usando turf.js
-        if (radius800m) {
-            const latLng = radius800m.getLatLng();
-            const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            const coordinates = turfCircle.geometry.coordinates[0].map(coord => `${coord[0]},${coord[1]},0`).join(' ');
-            placemarksKML += `
-                <Placemark>
-                    <name>Radio 800m</name>
-                    <styleUrl>#radioStyle</styleUrl>
-                    <Polygon>
-                        <outerBoundaryIs>
-                            <LinearRing>
-                                <coordinates>${coordinates}</coordinates>
-                            </LinearRing>
-                        </outerBoundaryIs>
-                    </Polygon>
-                </Placemark>
-            `;
-        }
-    
-        // Depuración: Imprimir el array features
-        console.log("Features:", features);
-    
-        const geojsonData = {
-            "type": "FeatureCollection",
-            "features": features
-        };
-    
-        // Construir la cadena KML usando un constructor de cadenas
-        let kmlBuilder = [];
-        kmlBuilder.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-        kmlBuilder.push(`<kml xmlns="http://www.opengis.net/kml/2.2">`);
-        kmlBuilder.push(`<Document>`);
-        kmlBuilder.push(`<name>${document.getElementById('markerName').value}</name>`);
-        kmlBuilder.push(`${stylesKML}`);
-        kmlBuilder.push(`${placemarksKML}`);
-        kmlBuilder.push(tokml(geojsonData));
-        kmlBuilder.push(`</Document>`);
-        kmlBuilder.push(`</kml>`);
-    
-        let kml = kmlBuilder.join('');
-    
-        // Limpiar la cadena KML
-        kml = limpiarKML(kml);
-    
-        const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", document.getElementById('markerName').value + ".kml");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
+            function descargarCapasResultantesKML() {
+            let features = [];
         
-        function limpiarKML(kmlString) {
-        // Eliminar caracteres invisibles y espacios en blanco al principio
-        return kmlString.trimStart();
-    }
-    
-    function descargarCapasResultantesKMZ() {
+            poiMarkers.eachLayer(marker => {
+                if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
+                    radius800Layer.getBounds().contains(marker.getLatLng())) {
+                    features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                        },
+                        "properties": marker.getPopup().getContent()
+                    });
+                }
+            });
+        
+            if (currentMarker) {
+                features.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
+                    },
+                    "properties": { "tipo": "Marcador Principal", "name": document.getElementById('markerName').value }
+                });
+            }
+        
+            // Crear GeoJSON manual para el radio de 400 metros usando turf.js
+            let radius400GeoJSON = null;
+            if (radius400m) {
+                const latLng = radius400m.getLatLng();
+                const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                radius400GeoJSON = turfCircle;
+            }
+        
+            console.log("Radio 400 GeoJSON (turf):", radius400GeoJSON);
+        
+            // Crear GeoJSON manual para el radio de 800 metros usando turf.js
+            let radius800GeoJSON = null;
+            if (radius800m) {
+                const latLng = radius800m.getLatLng();
+                const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+                radius800GeoJSON = turfCircle;
+            }
+        
+            console.log("Radio 800 GeoJSON (turf):", radius800GeoJSON);
+        
+            // Agregar radios al array features
+            if (radius400GeoJSON) {
+                radius400GeoJSON.properties = {
+                    name: "Radio 400m",
+                    styleUrl: "#radioStyle"
+                };
+                features.push(radius400GeoJSON);
+            }
+            if (radius800GeoJSON) {
+                radius800GeoJSON.properties = {
+                    name: "Radio 800m",
+                    styleUrl: "#radioStyle"
+                };
+                features.push(radius800GeoJSON);
+            }
+        
+            // Depuración: Imprimir el array features
+            console.log("Features:", features);
+        
+            const geojsonData = {
+                "type": "FeatureCollection",
+                "features": features
+            };
+        
+            const kml = tokml(geojsonData, {
+                documentName: document.getElementById('markerName').value,
+                documentDescription: 'Capas resultantes del análisis espacial',
+                styles: `
+                    <Style id="radioStyle">
+                        <LineStyle>
+                            <color>ff0000ff</color>
+                            <width>5</width>
+                        </LineStyle>
+                        <PolyStyle>
+                            <fill>0</fill>
+                        </PolyStyle>
+                    </Style>
+                `
+            });
+        
+            const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", document.getElementById('markerName').value + ".kml");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+        
+        function descargarCapasResultantesKMZ() {
         let features = [];
-        let placemarksKML = '';
-        let stylesKML = `
-            <Style id="radioStyle">
-                <LineStyle>
-                    <color>ff0000ff</color>
-                    <width>5</width>
-                </LineStyle>
-                <PolyStyle>
-                    <fill>0</fill>
-                </PolyStyle>
-            </Style>
-        `;
     
         poiMarkers.eachLayer(marker => {
             if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
@@ -872,44 +833,40 @@
             });
         }
     
-        // Crear KML manual para el radio de 400 metros usando turf.js
+        // Crear GeoJSON manual para el radio de 400 metros usando turf.js
+        let radius400GeoJSON = null;
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            const coordinates = turfCircle.geometry.coordinates[0].map(coord => `${coord[0]},${coord[1]},0`).join(' ');
-            placemarksKML += `
-                <Placemark>
-                    <name>Radio 400m</name>
-                    <styleUrl>#radioStyle</styleUrl>
-                    <Polygon>
-                        <outerBoundaryIs>
-                            <LinearRing>
-                                <coordinates>${coordinates}</coordinates>
-                            </LinearRing>
-                        </outerBoundaryIs>
-                    </Polygon>
-                </Placemark>
-            `;
+            radius400GeoJSON = turfCircle;
         }
     
-        // Crear KML manual para el radio de 800 metros usando turf.js
+        console.log("Radio 400 GeoJSON (turf):", radius400GeoJSON);
+    
+        // Crear GeoJSON manual para el radio de 800 metros usando turf.js
+        let radius800GeoJSON = null;
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            const coordinates = turfCircle.geometry.coordinates[0].map(coord => `${coord[0]},${coord[1]},0`).join(' ');
-            placemarksKML += `
-                <Placemark>
-                    <name>Radio 800m</name>
-                    <styleUrl>#radioStyle</styleUrl>
-                    <Polygon>
-                        <outerBoundaryIs>
-                            <LinearRing>
-                                <coordinates>${coordinates}</coordinates>
-                            </LinearRing>
-                        </outerBoundaryIs>
-                    </Polygon>
-                </Placemark>
-            `;
+            radius800GeoJSON = turfCircle;
+        }
+    
+        console.log("Radio 800 GeoJSON (turf):", radius800GeoJSON);
+    
+        // Agregar radios al array features
+        if (radius400GeoJSON) {
+            radius400GeoJSON.properties = {
+                name: "Radio 400m",
+                styleUrl: "#radioStyle"
+            };
+            features.push(radius400GeoJSON);
+        }
+        if (radius800GeoJSON) {
+            radius800GeoJSON.properties = {
+                name: "Radio 800m",
+                styleUrl: "#radioStyle"
+            };
+            features.push(radius800GeoJSON);
         }
     
         // Depuración: Imprimir el array features
@@ -920,22 +877,21 @@
             "features": features
         };
     
-        // Construir la cadena KML usando un constructor de cadenas
-        let kmlBuilder = [];
-        kmlBuilder.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-        kmlBuilder.push(`<kml xmlns="http://www.opengis.net/kml/2.2">`);
-        kmlBuilder.push(`<Document>`);
-        kmlBuilder.push(`<name>${document.getElementById('markerName').value}</name>`);
-        kmlBuilder.push(`${stylesKML}`);
-        kmlBuilder.push(`${placemarksKML}`);
-        kmlBuilder.push(tokml(geojsonData));
-        kmlBuilder.push(`</Document>`);
-        kmlBuilder.push(`</kml>`);
-    
-        let kml = kmlBuilder.join('');
-    
-        // Limpiar la cadena KML
-        kml = limpiarKML(kml);
+        const kml = tokml(geojsonData, {
+            documentName: document.getElementById('markerName').value,
+            documentDescription: 'Capas resultantes del análisis espacial',
+            styles: `
+                <Style id="radioStyle">
+                    <LineStyle>
+                        <color>ff0000ff</color>
+                        <width>5</width>
+                    </LineStyle>
+                    <PolyStyle>
+                        <fill>0</fill>
+                    </PolyStyle>
+                </Style>
+            `
+        });
     
         const zip = new JSZip();
         zip.file(document.getElementById('markerName').value + ".kml", kml);
@@ -951,7 +907,6 @@
                 downloadAnchorNode.remove();
             });
     }
-
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
