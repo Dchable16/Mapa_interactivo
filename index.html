@@ -720,7 +720,7 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": marker.getPopup().getContent()
+                    "properties": { "nombre": marker.getPopup().getContent() } // Cambiado a "nombre"
                 });
             }
         });
@@ -732,40 +732,25 @@
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "tipo": "Marcador Principal" }
+                "properties": { "nombre": currentMarkerLabel.html } // Usar el nombre del marcador
             });
         }
     
-        // Crear GeoJSON manual para el radio de 400 metros usando turf.js
-        let radius400GeoJSON = null;
+        // Crear GeoJSON manual para el radio de 400 metros
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            radius400GeoJSON = turfCircle;
+            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
+            features.push(turfCircle);
         }
     
-        console.log("Radio 400 GeoJSON (turf):", radius400GeoJSON);
-    
-        // Crear GeoJSON manual para el radio de 800 metros usando turf.js
-        let radius800GeoJSON = null;
+        // Crear GeoJSON manual para el radio de 800 metros
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            radius800GeoJSON = turfCircle;
+            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
+            features.push(turfCircle);
         }
-    
-        console.log("Radio 800 GeoJSON (turf):", radius800GeoJSON);
-    
-        // Agregar radios al array features
-        if (radius400GeoJSON) {
-            features.push(radius400GeoJSON);
-        }
-        if (radius800GeoJSON) {
-            features.push(radius800GeoJSON);
-        }
-    
-        // Depuración: Imprimir el array features
-        console.log("Features:", features);
     
         const geojsonData = {
             "type": "FeatureCollection",
@@ -774,7 +759,25 @@
     
         const kml = tokml(geojsonData, {
             documentName: 'Capas Resultantes',
-            documentDescription: 'Capas resultantes del análisis espacial'
+            documentDescription: 'Capas resultantes del análisis espacial',
+            styles: [
+                {
+                    id: 'radio400',
+                    style: {
+                        stroke: 'red',
+                        strokeWidth: 5,
+                        fill: 'none'
+                    }
+                },
+                {
+                    id: 'radio800',
+                    style: {
+                        stroke: 'red',
+                        strokeWidth: 5,
+                        fill: 'none'
+                    }
+                }
+            ]
         });
     
         const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
@@ -797,7 +800,7 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": marker.getPopup().getContent()
+                    "properties": { "nombre": marker.getPopup().getContent() } // Cambiado a "nombre"
                 });
             }
         });
@@ -809,40 +812,25 @@
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "tipo": "Marcador Principal" }
+                "properties": { "nombre": currentMarkerLabel.html } // Usar el nombre del marcador
             });
         }
     
-        // Crear GeoJSON manual para el radio de 400 metros usando turf.js
-        let radius400GeoJSON = null;
+        // Crear GeoJSON manual para el radio de 400 metros
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            radius400GeoJSON = turfCircle;
+            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
+            features.push(turfCircle);
         }
     
-        console.log("Radio 400 GeoJSON (turf):", radius400GeoJSON);
-    
-        // Crear GeoJSON manual para el radio de 800 metros usando turf.js
-        let radius800GeoJSON = null;
+        // Crear GeoJSON manual para el radio de 800 metros
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            radius800GeoJSON = turfCircle;
+            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
+            features.push(turfCircle);
         }
-    
-        console.log("Radio 800 GeoJSON (turf):", radius800GeoJSON);
-    
-        // Agregar radios al array features
-        if (radius400GeoJSON) {
-            features.push(radius400GeoJSON);
-        }
-        if (radius800GeoJSON) {
-            features.push(radius800GeoJSON);
-        }
-    
-        // Depuración: Imprimir el array features
-        console.log("Features:", features);
     
         const geojsonData = {
             "type": "FeatureCollection",
@@ -851,7 +839,25 @@
     
         const kml = tokml(geojsonData, {
             documentName: 'Capas Resultantes',
-            documentDescription: 'Capas resultantes del análisis espacial'
+            documentDescription: 'Capas resultantes del análisis espacial',
+            styles: [
+                {
+                    id: 'radio400',
+                    style: {
+                        stroke: 'red',
+                        strokeWidth: 5,
+                        fill: 'none'
+                    }
+                },
+                {
+                    id: 'radio800',
+                    style: {
+                        stroke: 'red',
+                        strokeWidth: 5,
+                        fill: 'none'
+                    }
+                }
+            ]
         });
     
         const zip = new JSZip();
