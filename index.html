@@ -714,25 +714,27 @@
         poiMarkers.eachLayer(marker => {
             if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
                 radius800Layer.getBounds().contains(marker.getLatLng())) {
+                const content = marker.getPopup() ? marker.getPopup().getContent() : "Marcador";
                 features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": marker.getPopup() ? marker.getPopup().getContent() : "Marcador" } // Validación
+                    "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
                 });
             }
         });
     
         if (currentMarker) {
+            const content = currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal";
             features.push({
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal" } // Validación
+                "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
             });
         }
     
@@ -741,7 +743,7 @@
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 400m" }; // Asegúrate de que 'nombre' sea un objeto
             radius400GeoJSON = turfCircle;
         }
     
@@ -752,7 +754,7 @@
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 800m" }; // Asegúrate de que 'nombre' sea un objeto
             radius800GeoJSON = turfCircle;
         }
     
@@ -812,25 +814,27 @@
         poiMarkers.eachLayer(marker => {
             if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
                 radius800Layer.getBounds().contains(marker.getLatLng())) {
+                const content = marker.getPopup() ? marker.getPopup().getContent() : "Marcador";
                 features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": marker.getPopup() ? marker.getPopup().getContent() : "Marcador" } // Validación
+                    "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
                 });
             }
         });
     
         if (currentMarker) {
+            const content = currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal";
             features.push({
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal" } // Validación
+                "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
             });
         }
     
@@ -839,7 +843,7 @@
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 400m" }; // Asegúrate de que 'nombre' sea un objeto
             radius400GeoJSON = turfCircle;
         }
     
@@ -850,7 +854,7 @@
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 800m" }; // Asegúrate de que 'nombre' sea un objeto
             radius800GeoJSON = turfCircle;
         }
     
