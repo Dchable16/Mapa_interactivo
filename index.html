@@ -721,7 +721,7 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                    "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
                 });
             }
         });
@@ -734,7 +734,7 @@
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
             });
         }
     
@@ -771,9 +771,13 @@
         // Depuración: Imprimir el array features
         console.log("Features:", features);
     
+        // Validar que todas las propiedades sean válidas antes de llamar a tokml
         const geojsonData = {
             "type": "FeatureCollection",
-            "features": features
+            "features": features.map(feature => ({
+                ...feature,
+                properties: feature.properties || {} // Asegúrate de que las propiedades sean un objeto
+            }))
         };
     
         const kml = tokml(geojsonData, {
@@ -821,7 +825,7 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                    "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
                 });
             }
         });
@@ -834,7 +838,7 @@
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                "properties": { "nombre": content || "Sin Nombre" } // Asegúrate de que 'nombre' sea un objeto
             });
         }
     
@@ -871,9 +875,13 @@
         // Depuración: Imprimir el array features
         console.log("Features:", features);
     
+        // Validar que todas las propiedades sean válidas antes de llamar a tokml
         const geojsonData = {
             "type": "FeatureCollection",
-            "features": features
+            "features": features.map(feature => ({
+                ...feature,
+                properties: feature.properties || {} // Asegúrate de que las propiedades sean un objeto
+            }))
         };
     
         const kml = tokml(geojsonData, {
