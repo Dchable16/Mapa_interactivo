@@ -757,7 +757,12 @@
                 documentName: 'Capas Resultantes',
                 documentDescription: 'Capas resultantes del análisis espacial'
             });
-        
+
+            console.log("Radio 400:", radius400Layer.toGeoJSON());
+            console.log("Radio 800:", radius800Layer.toGeoJSON());
+            console.log("Competencias:", poiMarkers.toGeoJSON());
+            console.log("Features:", features);
+            
             // 3. Descarga de Archivo KML
             const dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(kml);
             const downloadAnchorNode = document.createElement('a');
