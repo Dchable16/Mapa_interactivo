@@ -796,15 +796,19 @@
             "features": features
         };
     
-        let kml = `<?xml version="1.0" encoding="UTF-8"?>` +
-            `<kml xmlns="http://www.opengis.net/kml/2.2">` +
-                `<Document>` +
-                    `<name>${document.getElementById('markerName').value}</name>` +
-                    `${stylesKML}` +
-                    `${placemarksKML}` +
-                    `${tokml(geojsonData)}` +
-                `</Document>` +
-            `</kml>`;
+        // Construir la cadena KML usando un constructor de cadenas
+        let kmlBuilder = [];
+        kmlBuilder.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+        kmlBuilder.push(`<kml xmlns="http://www.opengis.net/kml/2.2">`);
+        kmlBuilder.push(`<Document>`);
+        kmlBuilder.push(`<name>${document.getElementById('markerName').value}</name>`);
+        kmlBuilder.push(`${stylesKML}`);
+        kmlBuilder.push(`${placemarksKML}`);
+        kmlBuilder.push(tokml(geojsonData));
+        kmlBuilder.push(`</Document>`);
+        kmlBuilder.push(`</kml>`);
+    
+        const kml = kmlBuilder.join('');
     
         const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
         const downloadAnchorNode = document.createElement('a');
@@ -903,15 +907,19 @@
             "features": features
         };
     
-        let kml = `<?xml version="1.0" encoding="UTF-8"?>` +
-            `<kml xmlns="http://www.opengis.net/kml/2.2">` +
-                `<Document>` +
-                    `<name>${document.getElementById('markerName').value}</name>` +
-                    `${stylesKML}` +
-                    `${placemarksKML}` +
-                    `${tokml(geojsonData)}` +
-                `</Document>` +
-            `</kml>`;
+        // Construir la cadena KML usando un constructor de cadenas
+        let kmlBuilder = [];
+        kmlBuilder.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+        kmlBuilder.push(`<kml xmlns="http://www.opengis.net/kml/2.2">`);
+        kmlBuilder.push(`<Document>`);
+        kmlBuilder.push(`<name>${document.getElementById('markerName').value}</name>`);
+        kmlBuilder.push(`${stylesKML}`);
+        kmlBuilder.push(`${placemarksKML}`);
+        kmlBuilder.push(tokml(geojsonData));
+        kmlBuilder.push(`</Document>`);
+        kmlBuilder.push(`</kml>`);
+    
+        const kml = kmlBuilder.join('');
     
         const zip = new JSZip();
         zip.file(document.getElementById('markerName').value + ".kml", kml);
@@ -927,7 +935,6 @@
                 downloadAnchorNode.remove();
             });
     }
-        
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
