@@ -709,63 +709,63 @@
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
         // Función para generar KML
-        function generateKML() {
-            let kml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-                      '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
-                      '<Document>\n' +
-                      '<name>Mapa KMZ</name>\n';
+            function generateKML() {
+                let kml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                          '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
+                          '<Document>\n' +
+                          '<name>Mapa KMZ</name>\n';
         
-            // Agregar marcador principal
-            if (currentMarker) {
-                const latLng = currentMarker.getLatLng();
-                kml += '<Placemark><name>Marcador Principal</name><Point><coordinates>' + latLng.lng + ',' + latLng.lat + '</coordinates></Point></Placemark>\n';
-            }
-        
-            // Agregar radios
-            if (radius400Layer) {
-                kml += geojsonToKML(radius400Layer.toGeoJSON(), 'Radio 400m');
-            }
-            if (radius800Layer) {
-                kml += geojsonToKML(radius800Layer.toGeoJSON(), 'Radio 800m');
-            }
-        
-            // Agregar competencias dentro del radio de 800m
-            if (radius800Layer && typeof radius800Layer.getBounds === 'function') {
-                const bounds800 = radius800Layer.getBounds();
-                for (const layerName in geoJsonLayersCompetencias) {
-                    geoJsonLayersCompetencias[layerName].eachLayer(layer => {
-                        if (bounds800.contains(layer.getLatLng())) {
-                            kml += geojsonToKML(layer.toGeoJSON(), layerName);
-                        }
-                    });
+                // Agregar marcador principal
+                if (currentMarker) {
+                    const latLng = currentMarker.getLatLng();
+                    kml += '<Placemark><name>Marcador Principal</name><Point><coordinates>' + latLng.lng + ',' + latLng.lat + '</coordinates></Point></Placemark>\n';
                 }
-            } else {
-                console.error("radius800Layer no es una capa válida o no se ha inicializado correctamente.");
+        
+                // Agregar radios
+                if (radius400Layer) {
+                    kml += geojsonToKML(radius400Layer.toGeoJSON(), 'Radio 400m');
+                }
+                if (radius800Layer) {
+                    kml += geojsonToKML(radius800Layer.toGeoJSON(), 'Radio 800m');
+                }
+        
+                // Agregar competencias dentro del radio de 800m
+                if (radius800Layer && typeof radius800Layer.getBounds === 'function') {
+                    const bounds800 = radius800Layer.getBounds();
+                    for (const layerName in geoJsonLayersCompetencias) {
+                        geoJsonLayersCompetencias[layerName].eachLayer(layer => {
+                            if (bounds800.contains(layer.getLatLng())) {
+                                kml += geojsonToKML(layer.toGeoJSON(), layerName);
+                            }
+                        });
+                    }
+                } else {
+                    console.error("radius800Layer no es una capa válida o no se ha inicializado correctamente.");
+                }
+        
+                kml += '</Document>\n</kml>';
+                return kml;
             }
         
-            kml += '</Document>\n</kml>';
-            return kml;
-        }
+            // Función para convertir GeoJSON a KML
+            function geojsonToKML(geojson, name) {
+                const kml = tokml(geojson, {
+                    documentName: name,
+                    simplestyle: true
+                });
+                return kml;
+            }
         
-        // Función para convertir GeoJSON a KML
-        function geojsonToKML(geojson, name) {
-            const kml = tokml(geojson, {
-                documentName: name,
-                simplestyle: true
-            });
-            return kml;
-        }
+            // Agregar botón de descarga KMZ
+            const downloadKMZButton = L.control({ position: 'topright' });
+            downloadKMZButton.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                div.innerHTML = '<a href="#" title="Descargar KMZ" id="download-kmz-btn-kmz">KMZ</a>';
+                return div;
+            };
+            downloadKMZButton.addTo(map);
         
-        // Agregar botón de descarga KMZ
-        const downloadKMZButton = L.control({ position: 'topright' });
-        downloadKMZButton.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-            div.innerHTML = '<a href="#" title="Descargar KMZ" id="download-kmz-btn.kmz">KMZ</a>';
-            return div;
-        };
-        downloadKMZButton.addTo(map);
-        
-        document.getElementById('download-kmz-btn-kmz').addEventListener('click', generateKMZ);
+            document.getElementById('download-kmz-btn-kmz').addEventListener('click', generateKMZ);
 
 
         // Crear un icono personalizado usando el logotipo
