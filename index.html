@@ -710,7 +710,7 @@
 
         function descargarCapasResultantesKML() {
         let features = [];
-        let placemarksKML = ''; // Variable para almacenar los Placemarks KML
+        let placemarksKML = '';
         let stylesKML = `
             <Style id="radioStyle">
                 <LineStyle>
@@ -723,7 +723,19 @@
             </Style>
         `;
     
-        // ... (tu código para poiMarkers y currentMarker) ...
+        poiMarkers.eachLayer(marker => {
+            if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
+                radius800Layer.getBounds().contains(marker.getLatLng())) {
+                features.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                    },
+                    "properties": marker.getPopup().getContent()
+                });
+            }
+        });
     
         if (currentMarker) {
             features.push({
@@ -784,16 +796,15 @@
             "features": features
         };
     
-        let kml = `<?xml version="1.0" encoding="UTF-8"?>
-            <kml xmlns="http://www.opengis.net/kml/2.2">
-                <Document>
-                    <name>${document.getElementById('markerName').value}</name>
-                    ${stylesKML}
-                    ${placemarksKML}
-                    ${tokml(geojsonData)}
-                </Document>
-            </kml>
-        `;
+        let kml = `<?xml version="1.0" encoding="UTF-8"?>` +
+            `<kml xmlns="http://www.opengis.net/kml/2.2">` +
+                `<Document>` +
+                    `<name>${document.getElementById('markerName').value}</name>` +
+                    `${stylesKML}` +
+                    `${placemarksKML}` +
+                    `${tokml(geojsonData)}` +
+                `</Document>` +
+            `</kml>`;
     
         const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
         const downloadAnchorNode = document.createElement('a');
@@ -819,7 +830,19 @@
             </Style>
         `;
     
-        // ... (tu código para poiMarkers y currentMarker) ...
+        poiMarkers.eachLayer(marker => {
+            if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
+                radius800Layer.getBounds().contains(marker.getLatLng())) {
+                features.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                    },
+                    "properties": marker.getPopup().getContent()
+                });
+            }
+        });
     
         if (currentMarker) {
             features.push({
@@ -880,16 +903,15 @@
             "features": features
         };
     
-        let kml = `<?xml version="1.0" encoding="UTF-8"?>
-            <kml xmlns="http://www.opengis.net/kml/2.2">
-                <Document>
-                    <name>${document.getElementById('markerName').value}</name>
-                    ${stylesKML}
-                    ${placemarksKML}
-                    ${tokml(geojsonData)}
-                </Document>
-            </kml>
-        `;
+        let kml = `<?xml version="1.0" encoding="UTF-8"?>` +
+            `<kml xmlns="http://www.opengis.net/kml/2.2">` +
+                `<Document>` +
+                    `<name>${document.getElementById('markerName').value}</name>` +
+                    `${stylesKML}` +
+                    `${placemarksKML}` +
+                    `${tokml(geojsonData)}` +
+                `</Document>` +
+            `</kml>`;
     
         const zip = new JSZip();
         zip.file(document.getElementById('markerName').value + ".kml", kml);
