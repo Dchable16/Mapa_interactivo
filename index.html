@@ -708,7 +708,12 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-        function descargarCapasResultantesKML() {
+        function limpiarKML(kmlString) {
+        // Eliminar caracteres invisibles y espacios en blanco al principio
+        return kmlString.trimStart();
+    }
+    
+    function descargarCapasResultantesKML() {
         let features = [];
         let placemarksKML = '';
         let stylesKML = `
@@ -808,7 +813,10 @@
         kmlBuilder.push(`</Document>`);
         kmlBuilder.push(`</kml>`);
     
-        const kml = kmlBuilder.join('');
+        let kml = kmlBuilder.join('');
+    
+        // Limpiar la cadena KML
+        kml = limpiarKML(kml);
     
         const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
         const downloadAnchorNode = document.createElement('a');
@@ -819,7 +827,12 @@
         downloadAnchorNode.remove();
     }
         
-        function descargarCapasResultantesKMZ() {
+        function limpiarKML(kmlString) {
+        // Eliminar caracteres invisibles y espacios en blanco al principio
+        return kmlString.trimStart();
+    }
+    
+    function descargarCapasResultantesKMZ() {
         let features = [];
         let placemarksKML = '';
         let stylesKML = `
@@ -919,7 +932,10 @@
         kmlBuilder.push(`</Document>`);
         kmlBuilder.push(`</kml>`);
     
-        const kml = kmlBuilder.join('');
+        let kml = kmlBuilder.join('');
+    
+        // Limpiar la cadena KML
+        kml = limpiarKML(kml);
     
         const zip = new JSZip();
         zip.file(document.getElementById('markerName').value + ".kml", kml);
