@@ -810,7 +810,7 @@
                 "features": features
             };
         
-            const kml = geojson2kml.toKML(geojsonData, { // O tokml(geojsonData, { ... })
+            const kml = tokml(geojsonData, {
                 documentName: 'Capas Resultantes',
                 documentDescription: 'Capas resultantes del análisis espacial'
             });
