@@ -734,7 +734,10 @@
                         "type": "Point",
                         "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
-                    "properties": { "tipo": "Marcador Principal", "nombre": currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal" } // Asignar nombre al marcador principal
+                    "properties": {
+                        "tipo": "Marcador Principal",
+                        "nombre": currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal" // Asignar nombre al marcador principal
+                    }
                 });
             }
         
@@ -769,11 +772,14 @@
             }
         
             // Depuración: Imprimir el array features
-            console.log("Features:", features);
+            console.log("Features antes de pasar a tokml:", features);
         
             const geojsonData = {
                 "type": "FeatureCollection",
-                "features": features
+                "features": features.map(feature => ({
+                    ...feature,
+                    properties: feature.properties || { nombre: "Sin Nombre" } // Asegúrate de que las propiedades sean un objeto
+                }))
             };
         
             const kml = tokml(geojsonData, {
@@ -834,7 +840,10 @@
                         "type": "Point",
                         "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
-                    "properties": { "tipo": "Marcador Principal", "nombre": currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal" } // Asignar nombre al marcador principal
+                    "properties": {
+                        "tipo": "Marcador Principal",
+                        "nombre": currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal" // Asignar nombre al marcador principal
+                    }
                 });
             }
         
@@ -869,11 +878,14 @@
             }
         
             // Depuración: Imprimir el array features
-            console.log("Features:", features);
+            console.log("Features antes de pasar a tokml:", features);
         
             const geojsonData = {
                 "type": "FeatureCollection",
-                "features": features
+                "features": features.map(feature => ({
+                    ...feature,
+                    properties: feature.properties || { nombre: "Sin Nombre" } // Asegúrate de que las propiedades sean un objeto
+                }))
             };
         
             const kml = tokml(geojsonData, {
@@ -913,7 +925,7 @@
                     downloadAnchorNode.remove();
                 });
         }
-        
+                
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
