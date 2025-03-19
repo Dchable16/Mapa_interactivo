@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
@@ -12,9 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tokml@0.4.0/tokml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -148,7 +145,6 @@
                 <button onclick="extractAgebData()">Extraer Datos Ageb</button>
                 <button id="useLocationBtn">Usar Localización</button>
                 <button id="download-report-btn">Descarga Reporte</button>
-                <button id="download-kmz-btn-kmz">Descarga KMZ</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
@@ -707,68 +703,6 @@
         
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
-
-        // Función para generar KML
-            function generateKML() {
-                let kml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-                          '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
-                          '<Document>\n' +
-                          '<name>Mapa KMZ</name>\n';
-        
-                // Agregar marcador principal
-                if (currentMarker) {
-                    const latLng = currentMarker.getLatLng();
-                    kml += '<Placemark><name>Marcador Principal</name><Point><coordinates>' + latLng.lng + ',' + latLng.lat + '</coordinates></Point></Placemark>\n';
-                }
-        
-                // Agregar radios
-                if (radius400Layer) {
-                    kml += geojsonToKML(radius400Layer.toGeoJSON(), 'Radio 400m');
-                }
-                if (radius800Layer) {
-                    kml += geojsonToKML(radius800Layer.toGeoJSON(), 'Radio 800m');
-                }
-        
-                // Agregar competencias dentro del radio de 800m
-                if (radius800Layer && typeof radius800Layer.getBounds === 'function') {
-                    const bounds800 = radius800Layer.getBounds();
-                    for (const layerName in geoJsonLayersCompetencias) {
-                        geoJsonLayersCompetencias[layerName].eachLayer(layer => {
-                            if (bounds800.contains(layer.getLatLng())) {
-                                kml += geojsonToKML(layer.toGeoJSON(), layerName);
-                            }
-                        });
-                    }
-                } else {
-                    console.error("radius800Layer no es una capa válida o no se ha inicializado correctamente.");
-                }
-        
-                kml += '</Document>\n</kml>';
-                return kml;
-            }
-        
-            // Función para convertir GeoJSON a KML
-            function geojsonToKML(geojson, name) {
-                const kml = tokml(geojson, {
-                    documentName: name,
-                    simplestyle: true
-                });
-                return kml;
-            }
-        
-            // Agregar botón de descarga KMZ
-            const downloadKMZButton = L.control({ position: 'topright' });
-            downloadKMZButton.onAdd = function (map) {
-                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                div.innerHTML = '<a href="#" title="Descargar KMZ" id="download-kmz-btn-kmz">KMZ</a>';
-                return div;
-            };
-            downloadKMZButton.addTo(map);
-        
-            document.getElementById('download-kmz-btn-kmz').addEventListener('click', function() {
-            generateKMZ();
-        });
-
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
