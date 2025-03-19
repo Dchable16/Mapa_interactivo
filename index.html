@@ -708,29 +708,42 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-        // Función para generar KMZ
-        function generateKMZ() {
-            const kml = generateKML(); // Llama a generateKML para obtener el KML
-            const zip = new JSZip();
-            zip.file("mapa.kml", kml);
-            zip.generateAsync({ type: "blob" }).then(function(content) {
-                saveAs(content, "mapa.kmz");
-            });
-        }
-        // Función para generar KMZ
+        // Función para generar KML
         function generateKML() {
             let kml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
                       '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
                       '<Document>\n' +
-                      '<name>Marcador de prueba</name>\n' +
-                      '<Placemark>\n' +
-                      '<name>Punto de prueba</name>\n' +
-                      '<Point>\n' +
-                      '<coordinates>-99.14,19.43</coordinates>\n' +
-                      '</Point>\n' +
-                      '</Placemark>\n' +
-                      '</Document>\n' +
-                      '</kml>';
+                      '<name>Mapa KMZ</name>\n';
+        
+            // Agregar marcador principal
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                kml += '<Placemark><name>Marcador Principal</name><Point><coordinates>' + latLng.lng + ',' + latLng.lat + '</coordinates></Point></Placemark>\n';
+            }
+        
+            // Agregar radios
+            if (radius400Layer) {
+                kml += geojsonToKML(radius400Layer.toGeoJSON(), 'Radio 400m');
+            }
+            if (radius800Layer) {
+                kml += geojsonToKML(radius800Layer.toGeoJSON(), 'Radio 800m');
+            }
+        
+            // Agregar competencias dentro del radio de 800m
+            if (radius800Layer && typeof radius800Layer.getBounds === 'function') {
+                const bounds800 = radius800Layer.getBounds();
+                for (const layerName in geoJsonLayersCompetencias) {
+                    geoJsonLayersCompetencias[layerName].eachLayer(layer => {
+                        if (bounds800.contains(layer.getLatLng())) {
+                            kml += geojsonToKML(layer.toGeoJSON(), layerName);
+                        }
+                    });
+                }
+            } else {
+                console.error("radius800Layer no es una capa válida o no se ha inicializado correctamente.");
+            }
+        
+            kml += '</Document>\n</kml>';
             return kml;
         }
         
