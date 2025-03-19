@@ -709,7 +709,7 @@
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
         function descargarCapasResultantesKML() {
-            let features = [];
+        let features = [];
         
             poiMarkers.eachLayer(marker => {
                 if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
@@ -741,9 +741,12 @@
             console.log("Radio 400 GeoJSON:", radius400GeoJSON);
         
             // Crear GeoJSON manual para el radio de 800 metros
+            console.log("radius800m:", radius800m);
+            console.log("radius800m.toGeoJSON():", radius800m.toGeoJSON());
+        
             let radius800GeoJSON = {
                 "type": "Feature",
-                "geometry": radius800m.toGeoJSON().features[0].geometry,
+                "geometry": radius800m && radius800m.toGeoJSON() && radius800m.toGeoJSON().features && radius800m.toGeoJSON().features[0] ? radius800m.toGeoJSON().features[0].geometry : null,
                 "properties": {}
             };
         
@@ -780,7 +783,7 @@
         }
         
         function descargarCapasResultantesKMZ() {
-            let features = [];
+        let features = [];
         
             poiMarkers.eachLayer(marker => {
                 if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
@@ -812,9 +815,12 @@
             console.log("Radio 400 GeoJSON:", radius400GeoJSON);
         
             // Crear GeoJSON manual para el radio de 800 metros
+            console.log("radius800m:", radius800m);
+            console.log("radius800m.toGeoJSON():", radius800m.toGeoJSON());
+        
             let radius800GeoJSON = {
                 "type": "Feature",
-                "geometry": radius800m.toGeoJSON().features[0].geometry,
+                "geometry": radius800m && radius800m.toGeoJSON() && radius800m.toGeoJSON().features && radius800m.toGeoJSON().features[0] ? radius800m.toGeoJSON().features[0].geometry : null,
                 "properties": {}
             };
         
