@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/tokml@0.5.0/tokml.js"></script>
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -703,6 +704,67 @@
         
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
+
+        function descargarCapasResultantesKMZ() {
+            // 1. Recopilar Datos (igual que antes)
+            let features = [];
+        
+            // Marcadores de competencias dentro de los radios
+            poiMarkers.eachLayer(marker => {
+                if (radius400Layer.getBounds().contains(marker.getLatLng()) ||
+                    radius800Layer.getBounds().contains(marker.getLatLng())) {
+                    features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                        },
+                        "properties": marker.getPopup().getContent() // Obtener información del popup
+                    });
+                }
+            });
+        
+            // Marcador principal
+            if (currentMarker) {
+                features.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
+                    },
+                    "properties": { "tipo": "Marcador Principal" }
+                });
+            }
+        
+            // Radios
+            if (radius400Layer) {
+                features.push(radius400Layer.toGeoJSON().features[0]);
+            }
+            if (radius800Layer) {
+                features.push(radius800Layer.toGeoJSON().features[0]);
+            }
+        
+            // 2. Formato KML
+            const geojsonData = {
+                "type": "FeatureCollection",
+                "features": features
+            };
+        
+            const kml = tokml(geojsonData, {
+                documentName: 'Capas Resultantes',
+                documentDescription: 'Capas resultantes del análisis espacial'
+            });
+        
+            // 3. Descarga de Archivo KML
+            const dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(kml);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "capas_resultantes.kml");
+            document.body.appendChild(downloadAnchorNode); // necesario para Firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+        
 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
