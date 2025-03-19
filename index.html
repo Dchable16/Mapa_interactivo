@@ -721,7 +721,7 @@
                     "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                 },
                 "properties": {
-                    "nombre": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre" // Asignar nombre del marcador
+                    "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre" // Asignar nombre del marcador
                 }
             });
         }
@@ -735,8 +735,7 @@
                 "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
             },
             "properties": {
-                "tipo": "Marcador Principal",
-                "nombre": document.getElementById('markerName').value || "Marcador Principal" // Asignar nombre al marcador principal
+                "name": document.getElementById('markerName').value || "Marcador Principal" // Asignar nombre al marcador principal
             }
         });
     }
@@ -746,11 +745,6 @@
     if (radius400m) {
         const latLng = radius400m.getLatLng();
         const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-        turfCircle.properties = {
-            nombre: "Radio 400m",
-            tipo: "radio",
-            styleUrl: "#radioStyle" // Asignar estilo
-        };
         radius400GeoJSON = turfCircle;
     }
 
@@ -761,11 +755,6 @@
     if (radius800m) {
         const latLng = radius800m.getLatLng();
         const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-        turfCircle.properties = {
-            nombre: "Radio 800m",
-            tipo: "radio",
-            styleUrl: "#radioStyle" // Asignar estilo
-        };
         radius800GeoJSON = turfCircle;
     }
 
@@ -773,9 +762,17 @@
 
     // Agregar radios al array features
     if (radius400GeoJSON) {
+        radius400GeoJSON.properties = {
+            name: "Radio 400m",
+            styleUrl: "#radioStyle"
+        };
         features.push(radius400GeoJSON);
     }
     if (radius800GeoJSON) {
+        radius800GeoJSON.properties = {
+            name: "Radio 800m",
+            styleUrl: "#radioStyle"
+        };
         features.push(radius800GeoJSON);
     }
 
@@ -800,7 +797,8 @@
                     <fill>0</fill>
                 </PolyStyle>
             </Style>
-        `
+        `,
+        name: "name" // Usar la propiedad 'name' para los nombres de las capas
     });
 
     const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
@@ -825,7 +823,7 @@ function descargarCapasResultantesKMZ() {
                     "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                 },
                 "properties": {
-                    "nombre": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre" // Asignar nombre del marcador
+                    "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre" // Asignar nombre del marcador
                 }
             });
         }
@@ -839,8 +837,7 @@ function descargarCapasResultantesKMZ() {
                 "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
             },
             "properties": {
-                "tipo": "Marcador Principal",
-                "nombre": document.getElementById('markerName').value || "Marcador Principal" // Asignar nombre al marcador principal
+                "name": document.getElementById('markerName').value || "Marcador Principal" // Asignar nombre al marcador principal
             }
         });
     }
@@ -850,11 +847,6 @@ function descargarCapasResultantesKMZ() {
     if (radius400m) {
         const latLng = radius400m.getLatLng();
         const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-        turfCircle.properties = {
-            nombre: "Radio 400m",
-            tipo: "radio",
-            styleUrl: "#radioStyle" // Asignar estilo
-        };
         radius400GeoJSON = turfCircle;
     }
 
@@ -865,11 +857,6 @@ function descargarCapasResultantesKMZ() {
     if (radius800m) {
         const latLng = radius800m.getLatLng();
         const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-        turfCircle.properties = {
-            nombre: "Radio 800m",
-            tipo: "radio",
-            styleUrl: "#radioStyle" // Asignar estilo
-        };
         radius800GeoJSON = turfCircle;
     }
 
@@ -877,9 +864,17 @@ function descargarCapasResultantesKMZ() {
 
     // Agregar radios al array features
     if (radius400GeoJSON) {
+        radius400GeoJSON.properties = {
+            name: "Radio 400m",
+            styleUrl: "#radioStyle"
+        };
         features.push(radius400GeoJSON);
     }
     if (radius800GeoJSON) {
+        radius800GeoJSON.properties = {
+            name: "Radio 800m",
+            styleUrl: "#radioStyle"
+        };
         features.push(radius800GeoJSON);
     }
 
@@ -892,7 +887,7 @@ function descargarCapasResultantesKMZ() {
     };
 
     const kml = tokml(geojsonData, {
-        documentName: document.getElementById('markerName').value || "Capas Resultantes", // Usar el nombre del marcador para el archivo KMZ
+        documentName: document.getElementById('markerName').value || "Capas Resultantes", // Usar el nombre del marcador para el archivo KML
         documentDescription: 'Capas resultantes del análisis espacial',
         styles: `
             <Style id="radioStyle">
@@ -904,7 +899,8 @@ function descargarCapasResultantesKMZ() {
                     <fill>0</fill>
                 </PolyStyle>
             </Style>
-        `
+        `,
+        name: "name" // Usar la propiedad 'name' para los nombres de las capas
     });
 
     const zip = new JSZip();
