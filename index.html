@@ -776,10 +776,7 @@
         
             const geojsonData = {
                 "type": "FeatureCollection",
-                "features": features.map(feature => ({
-                    ...feature,
-                    properties: feature.properties || { nombre: "Sin Nombre" } // Asegúrate de que las propiedades sean un objeto
-                }))
+                "features": features
             };
         
             const kml = tokml(geojsonData, {
@@ -882,10 +879,7 @@
         
             const geojsonData = {
                 "type": "FeatureCollection",
-                "features": features.map(feature => ({
-                    ...feature,
-                    properties: feature.properties || { nombre: "Sin Nombre" } // Asegúrate de que las propiedades sean un objeto
-                }))
+                "features": features
             };
         
             const kml = tokml(geojsonData, {
