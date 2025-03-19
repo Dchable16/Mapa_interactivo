@@ -721,20 +721,21 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                    "properties": { "nombre": content || "Sin Nombre" } // Asignar nombre al marcador
                 });
             }
         });
     
+        let markerName = "Marcador Principal"; // Valor por defecto
         if (currentMarker) {
-            const content = currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal";
+            markerName = currentMarkerLabel ? currentMarkerLabel.html : markerName; // Usar el nombre del marcador
             features.push({
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                "properties": { "nombre": markerName } // Asignar nombre al marcador principal
             });
         }
     
@@ -743,7 +744,7 @@
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 400m", tipo: "radio" }; // Asignar propiedades al polígono
             radius400GeoJSON = turfCircle;
         }
     
@@ -754,7 +755,7 @@
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 800m", tipo: "radio" }; // Asignar propiedades al polígono
             radius800GeoJSON = turfCircle;
         }
     
@@ -777,7 +778,7 @@
         };
     
         const kml = tokml(geojsonData, {
-            documentName: 'Capas Resultantes',
+            documentName: markerName, // Usar el nombre del marcador para el archivo KML
             documentDescription: 'Capas resultantes del análisis espacial',
             styles: [
                 {
@@ -802,7 +803,7 @@
         const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "capas_resultantes.kml");
+        downloadAnchorNode.setAttribute("download", `${markerName}.kml`); // Usar el nombre del marcador para el archivo KML
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
@@ -821,20 +822,21 @@
                         "type": "Point",
                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                     },
-                    "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                    "properties": { "nombre": content || "Sin Nombre" } // Asignar nombre al marcador
                 });
             }
         });
     
+        let markerName = "Marcador Principal"; // Valor por defecto
         if (currentMarker) {
-            const content = currentMarkerLabel ? currentMarkerLabel.html : "Marcador Principal";
+            markerName = currentMarkerLabel ? currentMarkerLabel.html : markerName; // Usar el nombre del marcador
             features.push({
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
                     "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                 },
-                "properties": { "nombre": content } // Asegúrate de que 'nombre' sea un objeto
+                "properties": { "nombre": markerName } // Asignar nombre al marcador principal
             });
         }
     
@@ -843,7 +845,7 @@
         if (radius400m) {
             const latLng = radius400m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 400m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 400m", tipo: "radio" }; // Asignar propiedades al polígono
             radius400GeoJSON = turfCircle;
         }
     
@@ -854,7 +856,7 @@
         if (radius800m) {
             const latLng = radius800m.getLatLng();
             const turfCircle = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
-            turfCircle.properties = { nombre: "Radio 800m" }; // Nombre del polígono
+            turfCircle.properties = { nombre: "Radio 800m", tipo: "radio" }; // Asignar propiedades al polígono
             radius800GeoJSON = turfCircle;
         }
     
@@ -877,7 +879,7 @@
         };
     
         const kml = tokml(geojsonData, {
-            documentName: 'Capas Resultantes',
+            documentName: markerName, // Usar el nombre del marcador para el archivo KMZ
             documentDescription: 'Capas resultantes del análisis espacial',
             styles: [
                 {
@@ -907,7 +909,7 @@
                 const dataStr = window.URL.createObjectURL(content);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", "capas_resultantes.kmz");
+                downloadAnchorNode.setAttribute("download", `${markerName}.kmz`); // Usar el nombre del marcador para el archivo KMZ
                 document.body.appendChild(downloadAnchorNode);
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
