@@ -765,7 +765,9 @@
             };
             downloadKMZButton.addTo(map);
         
-            document.getElementById('download-kmz-btn-kmz').addEventListener('click', generateKMZ);
+            document.getElementById('download-kmz-btn-kmz').addEventListener('click', function() {
+            generateKMZ();
+        });
 
 
         // Crear un icono personalizado usando el logotipo
