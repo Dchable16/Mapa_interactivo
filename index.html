@@ -738,19 +738,26 @@
         function descargarCapasResultantes(formato) {
             let features = [];
         
-            // Función para codificar caracteres especiales
-            function codificarCaracteresEspeciales(texto) {
-                return texto
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&apos;');
+            // Función mejorada para limpiar HTML
+            function limpiarHTML(html) {
+                // Eliminar etiquetas HTML
+                let sinEtiquetas = html.replace(/<[^>]+>/g, '');
+                // Eliminar estilos inline
+                sinEtiquetas = sinEtiquetas.replace(/style="[^"]*"/g, '');
+                // Eliminar atributos de estilo
+                sinEtiquetas = sinEtiquetas.replace(/class="[^"]*"/g, '');
+                // Eliminar espacios en blanco extra
+                sinEtiquetas = sinEtiquetas.trim();
+                // Eliminar saltos de línea
+                sinEtiquetas = sinEtiquetas.replace(/\n/g, ' ');
+                // Eliminar múltiples espacios
+                sinEtiquetas = sinEtiquetas.replace(/\s+/g, ' ');
+                return sinEtiquetas || "Sin Nombre";
             }
         
             // Agregar marcador principal
             if (currentMarker) {
-                const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
+                const popupContent = currentMarker.getPopup() ? limpiarHTML(currentMarker.getPopup().getContent()) : "Sin Nombre";
                 const name = document.getElementById('markerName').value || "Marcador Principal";
                 features.push({
                     "type": "Feature",
@@ -760,7 +767,7 @@
                     },
                     "properties": {
                         "name": name,
-                        "description": codificarCaracteresEspeciales(popupContent),
+                        "description": popupContent,
                         "styleUrl": "#principalStyle"
                     }
                 });
@@ -845,13 +852,13 @@
                             if (distance <= radius) {
                                 // Obtener el nombre desde el atributo description del GeoJSON
                                 const name = marker.feature.properties.description || "Sin Nombre";
-                                const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
+                                const popupContent = marker.getPopup() ? limpiarHTML(marker.getPopup().getContent()) : "Sin Nombre";
         
                                 // Crear la descripción con todos los atributos
                                 const descripcion = `
                                     Atributos:
                                     Name: ${marker.feature.properties.Name || 'null'}
-                                    description: ${codificarCaracteresEspeciales(marker.feature.properties.description) || 'null'}
+                                    description: ${limpiarHTML(marker.feature.properties.description) || 'null'}
                                     timestamp: ${marker.feature.properties.timestamp || 'null'}
                                     begin: ${marker.feature.properties.begin || 'null'}
                                     end: ${marker.feature.properties.end || 'null'}
@@ -907,6 +914,7 @@
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
+                <!-- Estilo para el marcador principal -->
                 <Style id="principalStyle">
                     <IconStyle>
                         <Icon>
@@ -919,6 +927,7 @@
                     </LabelStyle>
                 </Style>
         
+                <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
                         <color>ff0000ff</color>
@@ -943,7 +952,7 @@
                             <scale>1.0</scale>
                         </LabelStyle>
                     </Style>
-                `).join('')}
+                        `).join('')}
                 
                 <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
@@ -952,7 +961,7 @@
                         <visibility>1</visibility>
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
-                                                        <name>${feature.properties.name}</name>
+                                <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
