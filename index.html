@@ -199,7 +199,6 @@
         
             const zoomLevel = map.getZoom();
             
-            // Si el zoom no cambió, no hacer nada
             if (zoomLevel === lastZoomLevel) return;
             
             lastZoomLevel = zoomLevel;
@@ -310,12 +309,6 @@
         
         // Función auxiliar para obtener el nombre de la capa
         function getLayerName(layer) {
-            // Usar layerName de las propiedades del marcador
-            return layer.feature.properties.layerName || 'default';
-        }
-        
-        // Función auxiliar para obtener el nombre de la capa
-        function getLayerName(layer) {
             // Primero intentamos obtener el nombre de la capa desde las propiedades del marcador
             if (layer.feature && layer.feature.properties) {
                 return layer.feature.properties.layerName || 'default';
@@ -326,6 +319,20 @@
             }
             // Si nada funciona, usamos un nombre por defecto
             return 'default';
+        }
+        
+        // Función para obtener los marcadores visibles de una capa específica
+        function getVisibleMarkers(layerName) {
+            return visibleMarkersByLayer[layerName] || [];
+        }
+        
+        // Función para obtener el total de marcadores visibles
+        function getTotalVisibleMarkers() {
+            let total = 0;
+            for (const markers of Object.values(visibleMarkersByLayer)) {
+                total += markers.length;
+            }
+            return total;
         }
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
@@ -763,7 +770,8 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-       function descargarCapasResultantes(format) {
+       // Función para descargar capas resultantes
+        function descargarCapasResultantes(format) {
             // Verificar si el documento está listo
             if (!document || !document.createElementNS) {
                 console.error('El documento no está listo');
@@ -827,141 +835,6 @@
                     // Para cada marcador en la capa
                     markers.forEach(marker => {
                         // Crear una marca (placemark) para el marcador
-                        const placemark = kml.createPlacemark();
-                        placemark.name = marker.options.title || 'Marcador';
-                        
-                        // Agregar la descripción si existe
-                        if (marker.options.description) {
-                            placemark.description = marker.options.description;
-                        }
-                        
-                        // Agregar las coordenadas
-                        const coordinates = kml.createCoordinates([
-                            marker.getLatLng().lng,
-                            marker.getLatLng().lat,
-                            0
-                        ]);
-                        placemark.geometry = kml.createPoint(coordinates);
-                        
-                        // Agregar estilo si existe
-                        if (marker.options.icon) {
-                            const style = kml.createStyle();
-                            style.iconStyle = kml.createIconStyle({
-                                href: marker.options.icon.options.iconUrl
-                            });
-                            placemark.styleUrl = '#' + style.id;
-                            document.appendChild(style);
-                        }
-                        
-                        // Agregar la marca a la carpeta
-                        folder.appendChild(placemark);
-                    });
-                }
-            }
-        
-            // Generar el KML
-            const kmlString = kml.serialize();
-        
-            // Si es KMZ, comprimir el KML
-            if (format === 'kmz') {
-                // Crear un archivo ZIP
-                const zip = new JSZip();
-                zip.file('doc.kml', kmlString);
-                
-                // Para cada estilo con icono, agregar la imagen al ZIP
-                document.children.forEach(child => {
-                    if (child.type === 'Style' && child.iconStyle) {
-                        fetch(child.iconStyle.href)
-                            .then(response => response.blob())
-                            .then(blob => {
-                                const filename = child.iconStyle.href.split('/').pop();
-                                zip.file(filename, blob);
-                                
-                                // Generar el KMZ
-                                zip.generateAsync({ type: 'blob' })
-                                    .then(blob => {
-                                        saveAs(blob, `${markerName.value}.kmz`);
-                                    });
-                            });
-                    }
-                });
-            } else {
-                // Generar el KML
-                const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
-                saveAs(blob, `${markerName.value}.kml`);
-            }
-        }
-        
-        // Función auxiliar para crear el archivo KML
-        function KML() {
-            this.root = document.createElementNS('http://www.opengis.net/kml/2.2', 'kml');
-            this.root.setAttribute('xmlns', 'http://www.opengis.net/kml/2.2');
-        }
-        
-        KML.prototype.createElement = function(tagName) {
-            return document.createElementNS('http://www.opengis.net/kml/2.2', tagName);
-        };
-        
-        KML.prototype.createDocument = function(name) {
-            const document = this.createElement('Document');
-            document.appendChild(this.createElement('name')).textContent = name;
-            this.root.appendChild(document);
-            return document;
-        };
-        
-        KML.prototype.createFolder = function(name) {
-            const folder = this.createElement('Folder');
-            folder.appendChild(this.createElement('name')).textContent = name;
-            return folder;
-        };
-        
-        KML.prototype.createPlacemark = function() {
-            return this.createElement('Placemark');
-        };
-        
-        KML.prototype.createStyle = function() {
-            const style = this.createElement('Style');
-            style.id = 'style_' + Math.random().toString(36).substr(2, 9);
-            return style;
-        };
-        
-        KML.prototype.createLineStyle = function(options) {
-            const lineStyle = this.createElement('LineStyle');
-            lineStyle.appendChild(this.createElement('color')).textContent = options.color;
-            lineStyle.appendChild(this.createElement('width')).textContent = options.width;
-            return lineStyle;
-        };
-        
-        KML.prototype.createPolyStyle = function(options) {
-            const polyStyle = this.createElement('PolyStyle');
-            polyStyle.appendChild(this.createElement('color')).textContent = options.color;
-            polyStyle.appendChild(this.createElement('fill')).textContent = options.fill;
-            polyStyle.appendChild(this.createElement('outline')).textContent = options.outline;
-            return polyStyle;
-        };
-        
-        KML.prototype.createIconStyle = function(options) {
-            const iconStyle = this.createElement('IconStyle');
-            const icon = this.createElement('Icon');
-            icon.appendChild(this.createElement('href')).textContent = options.href;
-            iconStyle.appendChild(icon);
-            return iconStyle;
-        };
-        
-        KML.prototype.createPoint = function(coordinates) {
-            const point = this.createElement('Point');
-            point.appendChild(coordinates);
-            return point;
-        };
-        
-        KML.prototype.createCoordinates = function(coords) {
-            const coordinates = this.createElement('coordinates');
-            coordinates.textContent = coords.join(',');
-            return coordinates;
-        };
-        
-        KML.prototype.serialize = function() {
-            return new XMLSerializer().serializeToString(this.root);
                 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
