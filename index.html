@@ -734,6 +734,7 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
+        // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
             let features = [];
         
@@ -753,7 +754,6 @@
             let radius400GeoJSON = null;
             if (radius400m) {
                 const latLng = radius400m.getLatLng();
-                // Usar Circle en lugar de Polygon para mejor compatibilidad
                 radius400GeoJSON = {
                     "type": "Feature",
                     "geometry": {
@@ -771,7 +771,6 @@
             let radius800GeoJSON = null;
             if (radius800m) {
                 const latLng = radius800m.getLatLng();
-                // Usar Circle en lugar de Polygon para mejor compatibilidad
                 radius800GeoJSON = {
                     "type": "Feature",
                     "geometry": {
@@ -809,8 +808,8 @@
                 
                 <Style id="radioStyle">
                     <LineStyle>
-                        <color>ff0000ff</color>  <!-- Rojo sólido -->
-                        <width>2</width>
+                        <color>ff0000ff</color>  <!-- Rojo sólido y más intenso -->
+                        <width>5</width>         <!-- Grosor de 5 píxeles -->
                     </LineStyle>
                     <PolyStyle>
                         <color>00ffffff</color>  <!-- Sin relleno -->
