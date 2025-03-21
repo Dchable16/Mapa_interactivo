@@ -193,7 +193,7 @@
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             const zoomLevel = map.getZoom();
             
-            // Limpiar las etiquetas de AGEB existentes
+            // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker && layer !== currentMarker) {
@@ -209,11 +209,22 @@
             });
         
             if (zoomLevel >= 15) {
-                // Calcular tamaño base para las etiquetas
-                const baseSize = 100;
-                const sizeMultiplier = Math.pow(2, 15 - zoomLevel);
-                const labelWidth = baseSize * sizeMultiplier;
-                
+                // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
+                if (currentMarker) { // Verificar si hay un marcador principal
+                    const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker && layer !== currentMarker) {
+                            const markerLatLng = layer.getLatLng();
+                            // Verificar si el marcador está dentro del radio de 800m
+                            if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
+                                removedMarkers.push(layer); // Almacenar marcador eliminado
+                                map.removeLayer(layer); // Eliminar el marcador si está fuera del radio
+                            }
+                        }
+                    });
+                }
+        
+                // Mostrar etiquetas AGEB solo si hay capas AGEB activas y no están activas las capas de buffer o diferencia
                 if ((map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) && !(map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup))) {
                     features.forEach(feature => {
                         if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
@@ -225,7 +236,7 @@
                                         icon: L.divIcon({
                                             className: 'ageb-label',
                                             html: feature.properties.POB1.toString(),
-                                            iconSize: [labelWidth, 20 * sizeMultiplier]
+                                            iconSize: [100, 20]
                                         })
                                     }).addTo(map);
                                 }
@@ -246,7 +257,7 @@
                                             icon: L.divIcon({
                                                 className: 'ageb-label',
                                                 html: feature.properties.POB1.toString(),
-                                                iconSize: [labelWidth, 20 * sizeMultiplier]
+                                                iconSize: [100, 20]
                                             })
                                         }).addTo(map);
                                     }
