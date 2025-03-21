@@ -228,7 +228,6 @@
                     });
         
                     if (zoomLevel >= 15) {
-                        // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
                         if (currentMarker) {
                             const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
                             map.eachLayer(function(layer) {
@@ -291,32 +290,28 @@
                             });
                         }
                     } else {
-                        // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
+                        // Si el zoom es menor a 15, mostrar todos los marcadores
                         map.eachLayer(function(layer) {
                             if (layer instanceof L.Marker && layer !== currentMarker) {
-                                layer.addTo(map); // Asegúrate de que se muestre el marcador
+                                layer.addTo(map);
                             }
                         });
                         // Restaurar marcadores eliminados
                         removedMarkers.forEach(marker => {
                             marker.addTo(map);
                         });
-                        removedMarkers = []; // Limpiar la lista de marcadores eliminados
-                        // Limpiar el registro de marcadores visibles
-                        visibleMarkersByLayer = {};
+                        removedMarkers = [];
                     }
                 } finally {
                     isRendering = false;
                 }
-            }, 50); // Reducir el delay a 50ms para una respuesta más rápida
+            }, 50);
         });
         
         // Función auxiliar para obtener el nombre de la capa
         function getLayerName(layer) {
-            // Aquí puedes implementar la lógica para obtener el nombre de la capa
-            // Por ejemplo, podrías usar una propiedad del marcador o el nombre de la capa padre
-            // Esto dependerá de cómo estés organizando tus capas
-            return layer.options.layerName || 'default';
+            // Usar layerName de las propiedades del marcador
+            return layer.feature.properties.layerName || 'default';
         }
         
         // Función para obtener los marcadores visibles de una capa específica
