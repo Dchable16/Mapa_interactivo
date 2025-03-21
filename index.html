@@ -785,6 +785,9 @@
                 };
             }
         
+            // Crear un objeto para almacenar features por capa
+            const featuresPorCapa = {};
+        
             // Agregar marcadores de competencias dentro del radio de 800m
             if (radius800m) {
                 const center = radius800m.getLatLng();
@@ -793,6 +796,14 @@
                 for (const competencia in geoJsonLayersCompetencias) {
                     const layer = geoJsonLayersCompetencias[competencia];
                     if (layer) {
+                        // Crear una carpeta para esta capa si no existe
+                        if (!featuresPorCapa[competencia]) {
+                            featuresPorCapa[competencia] = {
+                                name: competencia,
+                                features: []
+                            };
+                        }
+        
                         layer.eachLayer(marker => {
                             // Calcular la distancia entre el marcador y el centro
                             const markerLat = marker.getLatLng().lat;
@@ -817,14 +828,18 @@
         
                             // Si el marcador está dentro del radio de 800m
                             if (distance <= radius) {
-                                features.push({
+                                const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
+                                const name = popupContent.split('<br>')[0]; // Tomar solo la primera línea del popup
+        
+                                featuresPorCapa[competencia].features.push({
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
                                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                                     },
                                     "properties": {
-                                        "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
+                                        "name": name,
+                                        "description": popupContent,
                                         "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
                                     }
                                 });
@@ -832,6 +847,11 @@
                         });
                     }
                 }
+            }
+        
+            // Agregar todos los features a la lista principal
+            for (const capa in featuresPorCapa) {
+                features = features.concat(featuresPorCapa[capa].features);
             }
         
             if (radius400GeoJSON) {
@@ -882,35 +902,40 @@
                     </Style>
                 `).join('')}
                 
-                ${geojsonData.features.map(feature => {
-                    if (feature.geometry.type === 'Circle') {
-                        return `
+                <!-- Carpetas por capa -->
+                ${Object.keys(featuresPorCapa).map(capa => `
+                    <Folder>
+                        <name>${capa}</name>
+                        <visibility>1</visibility>
+                        ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
-                                <styleUrl>#radioStyle</styleUrl>
-                                <visibility>1</visibility>
-                                <LineString>
-                                    <coordinates>
-                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                    </coordinates>
-                                </LineString>
-                            </Placemark>
-                        `;
-                    } else {
-                        return `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
+                                <description>${feature.properties.description}</description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
-                                <${feature.geometry.type}>
-                                    <coordinates>${feature.geometry.coordinates.map(coord => 
-                                        Array.isArray(coord) ? coord.join(',') : coord
-                                    ).join(' ')}</coordinates>
-                                </${feature.geometry.type}>
+                                <Point>
+                                    <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                </Point>
                             </Placemark>
-                        `;
-                    }
-                }).join('')}
+                        `).join('')}
+                    </Folder>
+                `).join('')}
+        
+                <!-- Radios -->
+                ${geojsonData.features
+                    .filter(feature => feature.geometry.type === 'Circle')
+                    .map(feature => `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <styleUrl>#radioStyle</styleUrl>
+                            <visibility>1</visibility>
+                            <LineString>
+                                <coordinates>
+                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                </coordinates>
+                            </LineString>
+                        </Placemark>
+                    `).join('')}
                 
             </Document>
         </kml>`;
@@ -927,7 +952,7 @@
                 return coordinates.join(' ');
             }
         
-            if (formato === 'kml') {
+                if (formato === 'kml') {
                 const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
