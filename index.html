@@ -186,34 +186,11 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
               
         //Activa y desactiva las etiquetas de los Ageb
-        // Variables para el marcador y los radios
         let removedMarkers = []; // Almacenar marcadores eliminados
         let isRendering = false;
         let timeoutId;
-        let lastZoomLevel = 14;
+        let lastZoomLevel = 14; // Mantener el último nivel de zoom
         
-        // Variables para almacenar marcadores de competencia por capa
-        const competenciaMarkers = {}; // Objeto para almacenar marcadores por capa
-        
-        // Función para obtener el nombre de la capa de un marcador
-        function getLayerNameForMarker(marker) {
-            let layerName = '';
-            map.eachLayer(function(controlLayer) {
-                if (controlLayer instanceof L.Control.Layers) {
-                    const baseLayers = controlLayer.getBaseLayers();
-                    const overlays = controlLayer.getOverlays();
-                    for (const [name, overlay] of Object.entries(overlays)) {
-                        if (overlay === marker) {
-                            layerName = name;
-                            break;
-                        }
-                    }
-                }
-            });
-            return layerName;
-        }
-        
-        // Modificación de la función que maneja el zoom
         map.on('zoomend', function() {
             if (timeoutId) {
                 clearTimeout(timeoutId);
@@ -221,6 +198,7 @@
         
             const zoomLevel = map.getZoom();
             
+            // Si el zoom no cambió, no hacer nada
             if (zoomLevel === lastZoomLevel) return;
             
             lastZoomLevel = zoomLevel;
@@ -252,29 +230,10 @@
                         // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
                         if (currentMarker) {
                             const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
-                            
-                            // Limpiar los marcadores de competencia guardados
-                            for (const layerName in competenciaMarkers) {
-                                competenciaMarkers[layerName] = [];
-                            }
-                            
-                            // Recorrer todas las capas de competencia
                             map.eachLayer(function(layer) {
                                 if (layer instanceof L.Marker && layer !== currentMarker) {
                                     const markerLatLng = layer.getLatLng();
-                                    if (turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
-                                        // Obtener el nombre de la capa
-                                        const layerName = getLayerNameForMarker(layer);
-                                        
-                                        // Guardar el marcador en la capa correspondiente
-                                        if (layerName) {
-                                            if (!competenciaMarkers[layerName]) {
-                                                competenciaMarkers[layerName] = [];
-                                            }
-                                            competenciaMarkers[layerName].push(layer);
-                                        }
-                                    } else {
-                                        // Eliminar marcadores fuera del radio
+                                    if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
                                         removedMarkers.push(layer);
                                         map.removeLayer(layer);
                                     }
@@ -282,7 +241,6 @@
                             });
                         }
         
-                        // Mostrar etiquetas de población para AGEB
                         if ((map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) && !(map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup))) {
                             features.forEach(feature => {
                                 if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
@@ -322,7 +280,6 @@
                                 }
                             });
                         }
-        
                     } else {
                         // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
                         map.eachLayer(function(layer) {
@@ -339,7 +296,7 @@
                 } finally {
                     isRendering = false;
                 }
-            }, 50);
+            }, 50); // Reducir el delay a 50ms para una respuesta más rápida
         });
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
@@ -780,8 +737,7 @@
         // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
             let features = [];
-            
-            // Agregar el marcador principal
+        
             if (currentMarker) {
                 features.push({
                     "type": "Feature",
@@ -795,7 +751,6 @@
                 });
             }
         
-            // Agregar los radios
             let radius400GeoJSON = null;
             if (radius400m) {
                 const latLng = radius400m.getLatLng();
@@ -837,26 +792,7 @@
                 features.push(radius800GeoJSON);
             }
         
-            // Agregar los marcadores de competencia activos
-            console.log("Marcadores por capa:", competenciaMarkers); // Log para depuración
-            for (const [layerName, markers] of Object.entries(competenciaMarkers)) {
-                console.log(`Capa: ${layerName}, Marcadores: ${markers.length}`); // Log para depuración
-                markers.forEach(marker => {
-                    features.push({
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
-                        },
-                        "properties": {
-                            "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
-                            "capa": layerName
-                        }
-                    });
-                });
-            }
-        
-            console.log("Features totales:", features.length); // Log para depuración
+            console.log("Features:", features);
         
             const geojsonData = {
                 "type": "FeatureCollection",
