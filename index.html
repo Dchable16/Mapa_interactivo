@@ -192,7 +192,7 @@
             const bounds = map.getBounds();
             const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
             const zoomLevel = map.getZoom();
-            
+        
             // Limpiar las etiquetas de AGEB existentes, pero mantener el marcador manual
             const agebLabelsToRemove = [];
             map.eachLayer(function(layer) {
@@ -242,16 +242,8 @@
                                 }
                             } else if (feature.geometry.type === 'MultiPolygon') {
                                 feature.geometry.coordinates.forEach(polygon => {
-                                    // Encontrar el punto más central dentro del polígono
-                                    const allPoints = polygon[0].flat(1); // Aplanar las coordenadas
-                                    const xCoords = allPoints.filter((_, i) => i % 2 === 0);
-                                    const yCoords = allPoints.filter((_, i) => i % 2 === 1);
-                                    
-                                    // Calcular el punto medio
-                                    const centerX = Math.min(...xCoords) + (Math.max(...xCoords) - Math.min(...xCoords)) / 2;
-                                    const centerY = Math.min(...yCoords) + (Math.max(...yCoords) - Math.min(...yCoords)) / 2;
-                                    
-                                    const latLng = L.latLng(centerY, centerX);
+                                    const centroid = turf.centroid(feature);
+                                    const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
                                     if (bounds.contains(latLng)) {
                                         const marker = L.marker(latLng, {
                                             icon: L.divIcon({
