@@ -753,7 +753,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0]
                     },
                     "properties": {
                         "name": name,
@@ -770,7 +770,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat],
+                        "coordinates": [latLng.lng, latLng.lat, 0],
                         "radius": 400
                     },
                     "properties": {
@@ -787,7 +787,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat],
+                        "coordinates": [latLng.lng, latLng.lat, 0],
                         "radius": 800
                     },
                     "properties": {
@@ -864,7 +864,7 @@
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0]
                                     },
                                     "properties": {
                                         "name": name,
@@ -968,7 +968,7 @@
                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
                             <Point>
-                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
                             </Point>
                         </Placemark>
                     `).join('')}
@@ -999,7 +999,7 @@
                     const angle = i * Math.PI / 180;
                     const lat = center[1] + (radius * Math.cos(angle) / 111320);
                     const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
-                    coordinates.push(`${lng},${lat}`);
+                    coordinates.push(`${lng},${lat},0`); // Añadimos altitud 0
                 }
                 return coordinates.join(' ');
             }
