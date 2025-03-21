@@ -198,7 +198,6 @@
         
             const zoomLevel = map.getZoom();
             
-            // Si el zoom no cambió, no hacer nada
             if (zoomLevel === lastZoomLevel) return;
             
             lastZoomLevel = zoomLevel;
@@ -230,10 +229,41 @@
                         // Si el zoom es 15 o más, ocultar marcadores fuera del radio de 800m
                         if (currentMarker) {
                             const radius800 = turf.circle([currentMarker.getLatLng().lng, currentMarker.getLatLng().lat], 800, { units: 'meters' });
+                            
+                            // Limpiar los marcadores de competencia guardados
+                            for (const layerName in competenciaMarkers) {
+                                competenciaMarkers[layerName] = [];
+                            }
+                            
+                            // Recorrer todas las capas de competencia
                             map.eachLayer(function(layer) {
                                 if (layer instanceof L.Marker && layer !== currentMarker) {
                                     const markerLatLng = layer.getLatLng();
-                                    if (!turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
+                                    if (turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
+                                        // Obtener el nombre de la capa
+                                        let layerName = '';
+                                        map.eachLayer(function(controlLayer) {
+                                            if (controlLayer instanceof L.Control.Layers) {
+                                                const baseLayers = controlLayer.getBaseLayers();
+                                                const overlays = controlLayer.getOverlays();
+                                                for (const [name, overlay] of Object.entries(overlays)) {
+                                                    if (overlay === layer) {
+                                                        layerName = name;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        
+                                        // Guardar el marcador en la capa correspondiente
+                                        if (layerName) {
+                                            if (!competenciaMarkers[layerName]) {
+                                                competenciaMarkers[layerName] = [];
+                                            }
+                                            competenciaMarkers[layerName].push(layer);
+                                        }
+                                    } else {
+                                        // Eliminar marcadores fuera del radio
                                         removedMarkers.push(layer);
                                         map.removeLayer(layer);
                                     }
@@ -241,6 +271,7 @@
                             });
                         }
         
+                        // Mostrar etiquetas de población para AGEB
                         if ((map.hasLayer(agebCDMXLayer) || map.hasLayer(agebEdoMexLayer)) && !(map.hasLayer(bufferLayerGroup) || map.hasLayer(differenceExtractionLayerGroup))) {
                             features.forEach(feature => {
                                 if (feature.properties.POB1 && feature.geometry && feature.geometry.coordinates) {
@@ -280,6 +311,7 @@
                                 }
                             });
                         }
+        
                     } else {
                         // Si el zoom es menor a 15, mostrar todos los marcadores de las capas de competencia activas
                         map.eachLayer(function(layer) {
@@ -296,7 +328,7 @@
                 } finally {
                     isRendering = false;
                 }
-            }, 50); // Reducir el delay a 50ms para una respuesta más rápida
+            }, 50);
         });
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
@@ -737,7 +769,8 @@
         // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
             let features = [];
-        
+            
+            // Agregar el marcador principal
             if (currentMarker) {
                 features.push({
                     "type": "Feature",
@@ -751,6 +784,7 @@
                 });
             }
         
+            // Agregar los radios
             let radius400GeoJSON = null;
             if (radius400m) {
                 const latLng = radius400m.getLatLng();
@@ -790,6 +824,23 @@
             }
             if (radius800GeoJSON) {
                 features.push(radius800GeoJSON);
+            }
+        
+            // Agregar los marcadores de competencia activos
+            for (const [layerName, markers] of Object.entries(competenciaMarkers)) {
+                markers.forEach(marker => {
+                    features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                        },
+                        "properties": {
+                            "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
+                            "capa": layerName
+                        }
+                    });
+                });
             }
         
             console.log("Features:", features);
