@@ -917,6 +917,7 @@
                 <name>${limpiarYCodificarNombre(document.getElementById('markerName').value) || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
+                <!-- Estilo para el marcador principal -->
                 <Style id="principalStyle">
                     <IconStyle>
                         <Icon>
@@ -929,6 +930,7 @@
                     </LabelStyle>
                 </Style>
         
+                <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
                         <color>ff0000ff</color>
@@ -941,6 +943,7 @@
                     </PolyStyle>
                 </Style>
         
+                <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
                     <Style id="${competencia}Style">
                         <IconStyle>
@@ -951,9 +954,10 @@
                         <LabelStyle>
                             <scale>1.0</scale>
                         </LabelStyle>
-                    </Style>
-                `).join('')}
+                                        </Style>
+                    `).join('')}
                 
+                <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${limpiarYCodificarNombre(capa)}</name>
@@ -961,7 +965,7 @@
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${limpiarYCodificarNombre(feature.properties.name)}</name>
-                                <description>${feature.properties.description}</description> 
+                                <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <Point>
@@ -972,12 +976,13 @@
                     </Folder>
                 `).join('')}
         
+                <!-- Marcador principal -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
                     .map(feature => `
                         <Placemark>
                             <name>${limpiarYCodificarNombre(feature.properties.name)}</name>
-                            <description>${feature.properties.description}</description> 
+                            <description><![CDATA[${feature.properties.description}]]></description>
                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
                             <Point>
@@ -986,6 +991,7 @@
                         </Placemark>
                     `).join('')}
         
+                <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.geometry.type === 'Circle')
                     .map(feature => `
