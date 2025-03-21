@@ -952,7 +952,7 @@
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${capa}</name>
-                        <visibility>1</visibility
+                        <visibility>1</visibility>
                                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
@@ -1014,7 +1014,15 @@
             }
         
             if (formato === 'kml') {
-                const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
+                // Limpiar y codificar el KML antes de descargar
+                const kmlClean = kml
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+                
+                const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kmlClean);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
                 downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
