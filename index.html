@@ -760,7 +760,7 @@
                     },
                     "properties": {
                         "name": name,
-                        "description": codificarCaracteresEspeciales(popupContent), // Codificamos el contenido del popup
+                        "description": codificarCaracteresEspeciales(popupContent),
                         "styleUrl": "#principalStyle"
                     }
                 });
@@ -784,7 +784,7 @@
             }
         
             let radius800GeoJSON = null;
-            if (radius808m) {
+            if (radius800m) {
                 const latLng = radius800m.getLatLng();
                 radius800GeoJSON = {
                     "type": "Feature",
@@ -851,7 +851,7 @@
                                 const descripcion = `
                                     Atributos:
                                     Name: ${marker.feature.properties.Name || 'null'}
-                                    description: ${codificarCaracteresEspeciales(marker.feature.properties.description) || 'null'} // Codificamos la descripción
+                                    description: ${codificarCaracteresEspeciales(marker.feature.properties.description) || 'null'}
                                     timestamp: ${marker.feature.properties.timestamp || 'null'}
                                     begin: ${marker.feature.properties.begin || 'null'}
                                     end: ${marker.feature.properties.end || 'null'}
@@ -931,8 +931,9 @@
                     </PolyStyle>
                 </Style>
         
-                <span class="math-inline">\{Object\.keys\(geoJsonLayersCompetencias\)\.map\(competencia \=\> \`
-        <Style id\="</span>{competencia}Style">
+                <!-- Estilos para cada competencia -->
+                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
+                    <Style id="${competencia}Style">
                         <IconStyle>
                             <Icon>
                                 <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>
@@ -944,14 +945,15 @@
                     </Style>
                 `).join('')}
                 
+                <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${capa}</name>
                         <visibility>1</visibility>
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <description>${feature.properties.description}</description> 
+                                                        <name>${feature.properties.name}</name>
+                                <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <Point>
@@ -962,12 +964,13 @@
                     </Folder>
                 `).join('')}
         
+                <!-- Marcador principal -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
                     .map(feature => `
                         <Placemark>
                             <name>${feature.properties.name}</name>
-                            <description>${feature.properties.description}</description> 
+                            <description><![CDATA[${feature.properties.description}]]></description>
                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
                             <Point>
@@ -976,6 +979,7 @@
                         </Placemark>
                     `).join('')}
         
+                <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.geometry.type === 'Circle')
                     .map(feature => `
