@@ -738,9 +738,19 @@
         function descargarCapasResultantes(formato) {
             let features = [];
         
+            // Función para limpiar el contenido del popup
+            function limpiarContenido(contenido) {
+                // Eliminar etiquetas HTML
+                const sinEtiquetas = contenido.replace(/<[^>]+>/g, '');
+                // Eliminar estilos inline
+                const sinEstilos = sinEtiquetas.replace(/style="[^"]*"/g, '');
+                // Eliminar espacios en blanco extra
+                return sinEstilos.trim();
+            }
+        
             // Agregar marcador principal
             if (currentMarker) {
-                const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
+                const popupContent = currentMarker.getPopup() ? limpiarContenido(currentMarker.getPopup().getContent()) : "Sin Nombre";
                 const name = document.getElementById('markerName').value || "Marcador Principal"; // Usar el nombre del archivo
                 features.push({
                     "type": "Feature",
@@ -835,7 +845,8 @@
                             if (distance <= radius) {
                                 // Obtener el nombre desde el atributo description del GeoJSON
                                 const name = marker.feature.properties.description || "Sin Nombre";
-                                const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
+                                // Limpiar el contenido del popup
+                                const popupContent = marker.getPopup() ? limpiarContenido(marker.getPopup().getContent()) : "Sin Nombre";
         
                                 // Crear la descripción con todos los atributos
                                 const descripcion = `
@@ -941,8 +952,8 @@
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${capa}</name>
-                        <visibility>1</visibility>
-                        ${featuresPorCapa[capa].features.map(feature => `
+                        <visibility>1</visibility
+                                        ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
@@ -951,8 +962,8 @@
                                 <Point>
                                     <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                                 </Point>
-                                        </Placemark>
-                `).join('')}
+                            </Placemark>
+                        `).join('')}
                     </Folder>
                 `).join('')}
         
