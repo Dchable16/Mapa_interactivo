@@ -769,9 +769,22 @@
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
        function descargarCapasResultantes(format) {
+            // Verificar si el documento está listo
+            if (!document || !document.getElementById) {
+                console.error('El documento no está listo');
+                return;
+            }
+        
+            // Verificar si existe el elemento markerName
+            const markerName = document.getElementById('markerName');
+            if (!markerName) {
+                console.error('No se encontró el elemento markerName');
+                return;
+            }
+        
             // Crear el documento KML base
             const kml = new KML();
-            const document = kml.createDocument(document.getElementById('markerName').value || "Capas Resultantes");
+            const document = kml.createDocument(markerName.value || "Capas Resultantes");
             document.appendChild(kml.createElement('description')).textContent = 'Capas resultantes del análisis espacial';
         
             // Agregar estilo para los radios
@@ -872,7 +885,7 @@
                                 // Generar el KMZ
                                 zip.generateAsync({ type: 'blob' })
                                     .then(blob => {
-                                        saveAs(blob, `${document.getElementById('markerName').value}.kmz`);
+                                        saveAs(blob, `${markerName.value}.kmz`);
                                     });
                             });
                     }
@@ -880,7 +893,7 @@
             } else {
                 // Generar el KML
                 const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
-                saveAs(blob, `${document.getElementById('markerName').value}.kml`);
+                saveAs(blob, `${markerName.value}.kml`);
             }
         }
         
