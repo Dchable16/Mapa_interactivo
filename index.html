@@ -743,10 +743,10 @@
                 if (!nombre || nombre.trim() === "") {
                     return "Sin Nombre";
                 }
-                // Eliminar etiquetas HTML
-                nombre = nombre.replace(/<[^>]+>/g, '');
+                // Eliminar etiquetas HTML y extraer la primera línea
+                const primeraLinea = nombre.replace(/<[^>]+>/g, '').split('\n')[0];
                 // Limpiar y limitar la longitud del nombre
-                return nombre.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
+                return primeraLinea.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
             }
         
             // Función para codificar caracteres especiales
@@ -931,7 +931,7 @@
         
                 <Style id="radioStyle">
                     <LineStyle>
-                        <color>ff0000ff</color>
+                    <color>ff0000ff</color>
                         <width>5</width>
                     </LineStyle>
                     <PolyStyle>
