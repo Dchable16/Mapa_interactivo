@@ -186,12 +186,37 @@
         const map = L.map("map").setView([19.4326, -99.1332], 12);
               
         //Activa y desactiva las etiquetas de los Ageb
-        const competenciaMarkers = {};
+        // Conjunto para rastrear capas ya cargadas
+        const loadedLayers = new Set();
+        
+        // Variables para el marcador y los radios
         let removedMarkers = []; // Almacenar marcadores eliminados
         let isRendering = false;
         let timeoutId;
-        let lastZoomLevel = 14; // Mantener el último nivel de zoom
+        let lastZoomLevel = 14;
         
+        // Variables para almacenar marcadores de competencia por capa
+        const competenciaMarkers = {}; // Objeto para almacenar marcadores por capa
+        
+        // Función para obtener el nombre de la capa de un marcador
+        function getLayerNameForMarker(marker) {
+            let layerName = '';
+            map.eachLayer(function(controlLayer) {
+                if (controlLayer instanceof L.Control.Layers) {
+                    const baseLayers = controlLayer.getBaseLayers();
+                    const overlays = controlLayer.getOverlays();
+                    for (const [name, overlay] of Object.entries(overlays)) {
+                        if (overlay === marker) {
+                            layerName = name;
+                            break;
+                        }
+                    }
+                }
+            });
+            return layerName;
+        }
+        
+        // Modificación de la función que maneja el zoom
         map.on('zoomend', function() {
             if (timeoutId) {
                 clearTimeout(timeoutId);
@@ -242,19 +267,7 @@
                                     const markerLatLng = layer.getLatLng();
                                     if (turf.booleanPointInPolygon(turf.point([markerLatLng.lng, markerLatLng.lat]), radius800)) {
                                         // Obtener el nombre de la capa
-                                        let layerName = '';
-                                        map.eachLayer(function(controlLayer) {
-                                            if (controlLayer instanceof L.Control.Layers) {
-                                                const baseLayers = controlLayer.getBaseLayers();
-                                                const overlays = controlLayer.getOverlays();
-                                                for (const [name, overlay] of Object.entries(overlays)) {
-                                                    if (overlay === layer) {
-                                                        layerName = name;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        });
+                                        const layerName = getLayerNameForMarker(layer);
                                         
                                         // Guardar el marcador en la capa correspondiente
                                         if (layerName) {
@@ -828,7 +841,9 @@
             }
         
             // Agregar los marcadores de competencia activos
+            console.log("Marcadores por capa:", competenciaMarkers); // Log para depuración
             for (const [layerName, markers] of Object.entries(competenciaMarkers)) {
+                console.log(`Capa: ${layerName}, Marcadores: ${markers.length}`); // Log para depuración
                 markers.forEach(marker => {
                     features.push({
                         "type": "Feature",
@@ -844,7 +859,7 @@
                 });
             }
         
-            console.log("Features:", features);
+            console.log("Features totales:", features.length); // Log para depuración
         
             const geojsonData = {
                 "type": "FeatureCollection",
