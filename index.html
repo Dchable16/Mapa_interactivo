@@ -182,10 +182,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar el mapa centrado en las coordenadas especificadas
+        // Inicializar el mapa centrado en las coordenadas especificadas
             const map = L.map("map").setView([19.4326, -99.1332], 12);
-                      
+        
+        document.addEventListener('DOMContentLoaded', function() {                        
             //Activa y desactiva las etiquetas de los Ageb
             let removedMarkers = []; // Almacenar marcadores eliminados
             let isRendering = false;
