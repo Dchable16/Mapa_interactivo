@@ -745,10 +745,8 @@
                 }
                 // Eliminar etiquetas HTML
                 nombre = nombre.replace(/<[^>]+>/g, '');
-                // Extraer la primera línea o el nombre completo si no hay saltos de línea
-                const primeraLinea = nombre.split('\n')[0] || nombre;
                 // Limpiar y limitar la longitud del nombre
-                return primeraLinea.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
+                return nombre.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
             }
         
             // Función para codificar caracteres especiales
@@ -914,7 +912,7 @@
         
             // Crear el KML con una estructura más estándar
             const kml = `<?xml version="1.0" encoding="UTF-8"?>
-            <kml xmlns="http://www.opengis.net/kml/2.2">
+        <kml xmlns="http://www.opengis.net/kml/2.2">
             <Document>
                 <name>${limpiarYCodificarNombre(document.getElementById('markerName').value) || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
