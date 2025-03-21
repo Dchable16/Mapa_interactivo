@@ -738,41 +738,15 @@
         function descargarCapasResultantes(formato) {
             let features = [];
         
-            // Función para limpiar y codificar nombres
-            function limpiarYCodificarNombre(nombre) {
-                if (!nombre || nombre.trim() === "") {
-                    return "Sin Nombre";
-                }
-                // Eliminar etiquetas HTML
-                nombre = nombre.replace(/<[^>]+>/g, '');
-                // Limpiar y limitar la longitud del nombre
-                return nombre.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
-            }
-        
-            // Función para codificar caracteres especiales
-            function codificarCaracteresEspeciales(texto) {
-                return texto
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&apos;');
-            }
-        
-            // Agregar marcador principal
             if (currentMarker) {
-                const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
-                const name = document.getElementById('markerName').value || "Marcador Principal";
                 features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0]
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
                     "properties": {
-                        "name": limpiarYCodificarNombre(name),
-                        "description": codificarCaracteresEspeciales(popupContent),
-                        "styleUrl": "#principalStyle"
+                        "name": document.getElementById('markerName').value || "Marcador Principal"
                     }
                 });
             }
@@ -784,7 +758,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0],
+                        "coordinates": [latLng.lng, latLng.lat],
                         "radius": 400
                     },
                     "properties": {
@@ -801,7 +775,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0],
+                        "coordinates": [latLng.lng, latLng.lat],
                         "radius": 800
                     },
                     "properties": {
@@ -811,9 +785,6 @@
                 };
             }
         
-            // Crear un objeto para almacenar features por capa
-            const featuresPorCapa = {};
-        
             // Agregar marcadores de competencias dentro del radio de 800m
             if (radius800m) {
                 const center = radius800m.getLatLng();
@@ -822,14 +793,6 @@
                 for (const competencia in geoJsonLayersCompetencias) {
                     const layer = geoJsonLayersCompetencias[competencia];
                     if (layer) {
-                        // Crear una carpeta para esta capa si no existe
-                        if (!featuresPorCapa[competencia]) {
-                            featuresPorCapa[competencia] = {
-                                name: limpiarYCodificarNombre(competencia),
-                                features: []
-                            };
-                        }
-        
                         layer.eachLayer(marker => {
                             // Calcular la distancia entre el marcador y el centro
                             const markerLat = marker.getLatLng().lat;
@@ -846,54 +809,29 @@
                             // Calcular la distancia usando la fórmula de Haversine
                             const dLat = radLat2 - radLat1;
                             const dLng = radLng2 - radLng1;
-                            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                                Math.cos(radLat1) * Math.cos(radLat2) *
-                                Math.sin(dLng / 2) * Math.sin(dLng / 2);
-                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                      Math.cos(radLat1) * Math.cos(radLat2) *
+                                      Math.sin(dLng/2) * Math.sin(dLng/2);
+                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
                             const distance = 6371000 * c; // 6371000 es el radio de la Tierra en metros
         
                             // Si el marcador está dentro del radio de 800m
                             if (distance <= radius) {
-                                // Obtener el nombre desde el atributo description del GeoJSON
-                                const name = marker.feature.properties.description || "Sin Nombre";
-                                const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
-        
-                                // Crear la descripción con todos los atributos
-                                const descripcion = `
-                                    Name: ${marker.feature.properties.Name ? limpiarYCodificarNombre(marker.feature.properties.Name) : 'null'},
-                                    description: ${marker.feature.properties.description ? codificarCaracteresEspeciales(marker.feature.properties.description) : 'null'},
-                                    timestamp: ${marker.feature.properties.timestamp || 'null'},
-                                    begin: ${marker.feature.properties.begin || 'null'},
-                                    end: ${marker.feature.properties.end || 'null'},
-                                    altitudeMode: ${marker.feature.properties.altitudeMode || 'clampToGround'},
-                                    tessellate: ${marker.feature.properties.tessellate || '-1'},
-                                    extrude: ${marker.feature.properties.extrude || '0'},
-                                    visibility: ${marker.feature.properties.visibility || '-1'},
-                                    drawOrder: ${marker.feature.properties.drawOrder || 'null'},
-                                    icon: ${marker.feature.properties.icon || 'null'}
-                                `;
-        
-                                featuresPorCapa[competencia].features.push({
+                                features.push({
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0]
+                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                                     },
                                     "properties": {
-                                        "name": limpiarYCodificarNombre(name),
-                                        "description": descripcion,
-                                        "styleUrl": `#${competencia}Style`
+                                        "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
+                                        "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
                                     }
                                 });
                             }
                         });
                     }
                 }
-            }
-        
-            // Agregar todos los features a la lista principal
-            for (const capa in featuresPorCapa) {
-                features = features.concat(featuresPorCapa[capa].features);
             }
         
             if (radius400GeoJSON) {
@@ -914,30 +852,17 @@
             const kml = `<?xml version="1.0" encoding="UTF-8"?>
         <kml xmlns="http://www.opengis.net/kml/2.2">
             <Document>
-                <name>${limpiarYCodificarNombre(document.getElementById('markerName').value) || "Capas Resultantes"}</name>
+                <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
-                <!-- Estilo para el marcador principal -->
-                <Style id="principalStyle">
-                    <IconStyle>
-                        <Icon>
-                            <href>https://maps.google.com/mapfiles/ms/icons/blue-dot.png</href>
-                        </Icon>
-                        <scale>1.5</scale>
-                    </IconStyle>
-                    <LabelStyle>
-                        <scale>1.0</scale>
-                    </LabelStyle>
-                </Style>
-        
                 <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
-                        <color>ff0000ff</color>
-                        <width>5</width>
+                        <color>ff0000ff</color>  <!-- Rojo sólido y más intenso -->
+                        <width>5</width>         <!-- Grosor de 5 píxeles -->
                     </LineStyle>
                     <PolyStyle>
-                        <color>00ffffff</color>
+                        <color>00ffffff</color>  <!-- Sin relleno -->
                         <fill>0</fill>
                         <outline>1</outline>
                     </PolyStyle>
@@ -948,64 +873,44 @@
                     <Style id="${competencia}Style">
                         <IconStyle>
                             <Icon>
-                                <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>
+                                <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>  <!-- Icono por defecto -->
                             </Icon>
                         </IconStyle>
                         <LabelStyle>
                             <scale>1.0</scale>
                         </LabelStyle>
-                                        </Style>
-                    `).join('')}
+                    </Style>
+                `).join('')}
                 
-                <!-- Carpetas por capa -->
-                ${Object.keys(featuresPorCapa).map(capa => `
-                    <Folder>
-                        <name>${limpiarYCodificarNombre(capa)}</name>
-                        <visibility>1</visibility>
-                        ${featuresPorCapa[capa].features.map(feature => `
+                ${geojsonData.features.map(feature => {
+                    if (feature.geometry.type === 'Circle') {
+                        return `
                             <Placemark>
-                                <name>${limpiarYCodificarNombre(feature.properties.name)}</name>
-                                <description><![CDATA[${feature.properties.description}]]></description>
+                                <name>${feature.properties.name}</name>
+                                <styleUrl>#radioStyle</styleUrl>
+                                <visibility>1</visibility>
+                                <LineString>
+                                    <coordinates>
+                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                    </coordinates>
+                                </LineString>
+                            </Placemark>
+                        `;
+                    } else {
+                        return `
+                            <Placemark>
+                                <name>${feature.properties.name}</name>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
-                                </Point>
+                                <${feature.geometry.type}>
+                                    <coordinates>${feature.geometry.coordinates.map(coord => 
+                                        Array.isArray(coord) ? coord.join(',') : coord
+                                    ).join(' ')}</coordinates>
+                                </${feature.geometry.type}>
                             </Placemark>
-                        `).join('')}
-                    </Folder>
-                `).join('')}
-        
-                <!-- Marcador principal -->
-                ${geojsonData.features
-                    .filter(feature => feature.properties.styleUrl === '#principalStyle')
-                    .map(feature => `
-                        <Placemark>
-                            <name>${limpiarYCodificarNombre(feature.properties.name)}</name>
-                            <description><![CDATA[${feature.properties.description}]]></description>
-                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                            <visibility>1</visibility>
-                            <Point>
-                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
-                            </Point>
-                        </Placemark>
-                    `).join('')}
-        
-                <!-- Radios -->
-                ${geojsonData.features
-                    .filter(feature => feature.geometry.type === 'Circle')
-                    .map(feature => `
-                        <Placemark>
-                            <name>${feature.properties.name}</name>
-                            <styleUrl>#radioStyle</styleUrl>
-                            <visibility>1</visibility>
-                            <LineString>
-                                <coordinates>
-                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                </coordinates>
-                            </LineString>
-                        </Placemark>
-                    `).join('')}
+                        `;
+                    }
+                }).join('')}
                 
             </Document>
         </kml>`;
@@ -1017,21 +922,13 @@
                     const angle = i * Math.PI / 180;
                     const lat = center[1] + (radius * Math.cos(angle) / 111320);
                     const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
-                    coordinates.push(`${lng},${lat},0`); // Añadimos altitud 0
+                    coordinates.push(`${lng},${lat}`);
                 }
                 return coordinates.join(' ');
             }
         
             if (formato === 'kml') {
-                // Limpiar y codificar el KML antes de descargar
-                const kmlClean = kml
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&apos;');
-        
-                const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kmlClean);
+                const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
                 downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
