@@ -786,24 +786,51 @@
             }
         
             // Agregar marcadores de competencias dentro del radio de 800m
-            for (const competencia in geoJsonLayersCompetencias) {
-                const layer = geoJsonLayersCompetencias[competencia];
-                if (layer) {
-                    layer.eachLayer(marker => {
-                        if (radius800Layer.getBounds().contains(marker.getLatLng())) {
-                            features.push({
-                                "type": "Feature",
-                                "geometry": {
-                                    "type": "Point",
-                                    "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
-                                },
-                                "properties": {
-                                    "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
-                                    "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
-                                }
-                            });
-                        }
-                    });
+            if (radius800m) {
+                const center = radius800m.getLatLng();
+                const radius = 800; // en metros
+        
+                for (const competencia in geoJsonLayersCompetencias) {
+                    const layer = geoJsonLayersCompetencias[competencia];
+                    if (layer) {
+                        layer.eachLayer(marker => {
+                            // Calcular la distancia entre el marcador y el centro
+                            const markerLat = marker.getLatLng().lat;
+                            const markerLng = marker.getLatLng().lng;
+                            const centerLat = center.lat;
+                            const centerLng = center.lng;
+        
+                            // Convertir grados a radianes
+                            const radLat1 = markerLat * Math.PI / 180;
+                            const radLat2 = centerLat * Math.PI / 180;
+                            const radLng1 = markerLng * Math.PI / 180;
+                            const radLng2 = centerLng * Math.PI / 180;
+        
+                            // Calcular la distancia usando la fórmula de Haversine
+                            const dLat = radLat2 - radLat1;
+                            const dLng = radLng2 - radLng1;
+                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                      Math.cos(radLat1) * Math.cos(radLat2) *
+                                      Math.sin(dLng/2) * Math.sin(dLng/2);
+                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                            const distance = 6371000 * c; // 6371000 es el radio de la Tierra en metros
+        
+                            // Si el marcador está dentro del radio de 800m
+                            if (distance <= radius) {
+                                features.push({
+                                    "type": "Feature",
+                                    "geometry": {
+                                        "type": "Point",
+                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                                    },
+                                    "properties": {
+                                        "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
+                                        "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
+                                    }
+                                });
+                            }
+                        });
+                    }
                 }
             }
         
