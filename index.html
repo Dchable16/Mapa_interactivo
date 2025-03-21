@@ -737,7 +737,7 @@
         // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
             let features = [];
-        
+            
             // Agregar marcador principal
             if (currentMarker) {
                 const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
@@ -951,6 +951,8 @@
                                     <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                                 </Point>
                                         </Placemark>
+                `).join('')}
+                    </Folder>
                 `).join('')}
         
                 <!-- Marcador principal -->
