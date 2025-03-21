@@ -738,9 +738,14 @@
         function descargarCapasResultantes(formato) {
             let features = [];
         
-            // Función para limpiar HTML (versión simplificada)
-            function limpiarHTML(html) {
-                return html.replace(/<[^>]+>/g, '');
+            // Función para codificar caracteres especiales
+            function codificarCaracteresEspeciales(texto) {
+                return texto
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
             }
         
             // Agregar marcador principal
@@ -755,7 +760,7 @@
                     },
                     "properties": {
                         "name": name,
-                        "description": limpiarHTML(popupContent), // Limpiamos el contenido del popup
+                        "description": codificarCaracteresEspeciales(popupContent), // Codificamos el contenido del popup
                         "styleUrl": "#principalStyle"
                     }
                 });
@@ -779,7 +784,7 @@
             }
         
             let radius800GeoJSON = null;
-            if (radius800m) {
+            if (radius808m) {
                 const latLng = radius800m.getLatLng();
                 radius800GeoJSON = {
                     "type": "Feature",
@@ -846,7 +851,7 @@
                                 const descripcion = `
                                     Atributos:
                                     Name: ${marker.feature.properties.Name || 'null'}
-                                    description: ${limpiarHTML(marker.feature.properties.description) || 'null'} // Limpiamos la descripción
+                                    description: ${codificarCaracteresEspeciales(marker.feature.properties.description) || 'null'} // Codificamos la descripción
                                     timestamp: ${marker.feature.properties.timestamp || 'null'}
                                     begin: ${marker.feature.properties.begin || 'null'}
                                     end: ${marker.feature.properties.end || 'null'}
@@ -916,7 +921,7 @@
         
                 <Style id="radioStyle">
                     <LineStyle>
-                    <color>ff0000ff</color>
+                        <color>ff0000ff</color>
                         <width>5</width>
                     </LineStyle>
                     <PolyStyle>
@@ -926,8 +931,8 @@
                     </PolyStyle>
                 </Style>
         
-                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
-                    <Style id="${competencia}Style">
+                <span class="math-inline">\{Object\.keys\(geoJsonLayersCompetencias\)\.map\(competencia \=\> \`
+        <Style id\="</span>{competencia}Style">
                         <IconStyle>
                             <Icon>
                                 <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>
