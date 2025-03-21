@@ -951,19 +951,20 @@
                 `).join('')}
         
                 <!-- Marcador principal -->
+                // Marcador principal
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
-                    .map(feature =>
-                                            <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <description><![CDATA[${feature.properties.description}]]></description>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
-                                </Point>
-                            </Placemark>
-                        `).join('')}
+                    .map(feature => `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <description><![CDATA[${feature.properties.description}]]></description>
+                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                            <visibility>1</visibility>
+                            <Point>
+                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
+                            </Point>
+                        </Placemark>
+                    `).join('')}
         
                 <!-- Radios -->
                 ${geojsonData.features
