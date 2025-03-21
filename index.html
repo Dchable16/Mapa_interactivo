@@ -915,6 +915,9 @@
                     <LabelStyle>
                         <scale>1.0</scale>
                     </LabelStyle>
+                    <BalloonStyle>
+                        <text><![CDATA[$[description]]]></text>
+                    </BalloonStyle>
                 </Style>
         
                 <!-- Estilo para los radios -->
@@ -941,19 +944,27 @@
                         <LabelStyle>
                             <scale>1.0</scale>
                         </LabelStyle>
+                        <BalloonStyle>
+                            <text><![CDATA[$[description]]]></text>
+                        </BalloonStyle>
                     </Style>
                 `).join('')}
                 
                 <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
-                    <Folder>
+                                <Folder>
                         <name>${capa}</name>
                         <visibility>1</visibility>
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
-                                                    </Placemark>
+                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                <visibility>1</visibility>
+                                <Point>
+                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
+                                </Point>
+                            </Placemark>
                         `).join('')}
                     </Folder>
                 `).join('')}
@@ -968,7 +979,7 @@
                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
                             <Point>
-                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
                             </Point>
                         </Placemark>
                     `).join('')}
@@ -999,7 +1010,7 @@
                     const angle = i * Math.PI / 180;
                     const lat = center[1] + (radius * Math.cos(angle) / 111320);
                     const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
-                    coordinates.push(`${lng},${lat}`);
+                    coordinates.push(`${lng},${lat},0`);
                 }
                 return coordinates.join(' ');
             }
