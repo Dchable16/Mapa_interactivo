@@ -737,7 +737,7 @@
         // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
             let features = [];
-            
+        
             // Agregar marcador principal
             if (currentMarker) {
                 const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
@@ -833,8 +833,9 @@
         
                             // Si el marcador está dentro del radio de 800m
                             if (distance <= radius) {
+                                // Obtener el nombre desde el atributo description
+                                const name = marker.options.description || "Sin Nombre";
                                 const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
-                                const name = marker.options.description || "Sin Nombre"; // Usar el atributo description
         
                                 // Crear la descripción con todos los atributos
                                 const descripcion = `
