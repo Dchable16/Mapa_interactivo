@@ -753,20 +753,13 @@
             let radius400GeoJSON = null;
             if (radius400m) {
                 const latLng = radius400m.getLatLng();
-                // Generar coordenadas del círculo manualmente para mejor compatibilidad
-                const coordinates = [];
-                for (let i = 0; i < 360; i += 1) {
-                    const angle = i * Math.PI / 180;
-                    const lat = latLng.lat + (400 * Math.cos(angle) / 111320);
-                    const lng = latLng.lng + (400 * Math.sin(angle) / (111320 * Math.cos(latLng.lat * Math.PI / 180)));
-                    coordinates.push([lng, lat]);
-                }
-                coordinates.push(coordinates[0]); // Cerrar el círculo
+                // Usar Circle en lugar de Polygon para mejor compatibilidad
                 radius400GeoJSON = {
                     "type": "Feature",
                     "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [coordinates]
+                        "type": "Circle",
+                        "coordinates": [latLng.lng, latLng.lat],
+                        "radius": 400
                     },
                     "properties": {
                         "name": "Radio 400m",
@@ -775,25 +768,16 @@
                 };
             }
         
-            console.log("Radio 400 GeoJSON (turf):", radius400GeoJSON);
-        
             let radius800GeoJSON = null;
             if (radius800m) {
                 const latLng = radius800m.getLatLng();
-                // Generar coordenadas del círculo manualmente para mejor compatibilidad
-                const coordinates = [];
-                for (let i = 0; i < 360; i += 1) {
-                    const angle = i * Math.PI / 180;
-                    const lat = latLng.lat + (800 * Math.cos(angle) / 111320);
-                    const lng = latLng.lng + (800 * Math.sin(angle) / (111320 * Math.cos(latLng.lat * Math.PI / 180)));
-                    coordinates.push([lng, lat]);
-                }
-                coordinates.push(coordinates[0]); // Cerrar el círculo
+                // Usar Circle en lugar de Polygon para mejor compatibilidad
                 radius800GeoJSON = {
                     "type": "Feature",
                     "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [coordinates]
+                        "type": "Circle",
+                        "coordinates": [latLng.lng, latLng.lat],
+                        "radius": 800
                     },
                     "properties": {
                         "name": "Radio 800m",
@@ -801,8 +785,6 @@
                     }
                 };
             }
-        
-            console.log("Radio 800 GeoJSON (turf):", radius800GeoJSON);
         
             if (radius400GeoJSON) {
                 features.push(radius400GeoJSON);
@@ -838,22 +820,49 @@
                 </Style>
                 
                 ${geojsonData.features.map(feature => {
-                    return `
-                        <Placemark>
-                            <name>${feature.properties.name}</name>
-                            <styleUrl>#radioStyle</styleUrl>
-                            <visibility>1</visibility>  <!-- Asegurar que esté visible -->
-                            <${feature.geometry.type}>
-                                <coordinates>${feature.geometry.coordinates.map(coord => 
-                                    Array.isArray(coord) ? coord.join(',') : coord
-                                ).join(' ')}</coordinates>
-                            </${feature.geometry.type}>
-                        </Placemark>
-                    `;
+                    if (feature.geometry.type === 'Circle') {
+                        return `
+                            <Placemark>
+                                <name>${feature.properties.name}</name>
+                                <styleUrl>#radioStyle</styleUrl>
+                                <visibility>1</visibility>
+                                <LineString>
+                                    <coordinates>
+                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                    </coordinates>
+                                </LineString>
+                            </Placemark>
+                        `;
+                    } else {
+                        return `
+                            <Placemark>
+                                <name>${feature.properties.name}</name>
+                                <styleUrl>#radioStyle</styleUrl>
+                                <visibility>1</visibility>
+                                <${feature.geometry.type}>
+                                    <coordinates>${feature.geometry.coordinates.map(coord => 
+                                        Array.isArray(coord) ? coord.join(',') : coord
+                                    ).join(' ')}</coordinates>
+                                </${feature.geometry.type}>
+                            </Placemark>
+                        `;
+                    }
                 }).join('')}
                 
             </Document>
         </kml>`;
+        
+            // Función para generar coordenadas de círculo
+            function generateCircleCoordinates(center, radius) {
+                const coordinates = [];
+                for (let i = 0; i < 360; i += 1) {
+                    const angle = i * Math.PI / 180;
+                    const lat = center[1] + (radius * Math.cos(angle) / 111320);
+                    const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
+                    coordinates.push(`${lng},${lat}`);
+                }
+                return coordinates.join(' ');
+            }
         
             if (formato === 'kml') {
                 const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
