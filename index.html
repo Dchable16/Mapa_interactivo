@@ -768,11 +768,11 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
-        function descargarCapasResultantes(format) {
+       function descargarCapasResultantes(format) {
             // Crear el documento KML base
             const kml = new KML();
             const document = kml.createDocument(document.getElementById('markerName').value || "Capas Resultantes");
-            document.appendChild(document.createElement('description')).textContent = 'Capas resultantes del análisis espacial';
+            document.appendChild(kml.createElement('description')).textContent = 'Capas resultantes del análisis espacial';
         
             // Agregar estilo para los radios
             const radioStyle = kml.createStyle();
@@ -886,64 +886,68 @@
         
         // Función auxiliar para crear el archivo KML
         function KML() {
-            this.root = document.createElement('kml');
+            this.root = document.createElementNS('http://www.opengis.net/kml/2.2', 'kml');
             this.root.setAttribute('xmlns', 'http://www.opengis.net/kml/2.2');
         }
         
+        KML.prototype.createElement = function(tagName) {
+            return document.createElementNS('http://www.opengis.net/kml/2.2', tagName);
+        };
+        
         KML.prototype.createDocument = function(name) {
-            const document = document.createElement('Document');
-            document.appendChild(document.createElement('name')).textContent = name;
+            const document = this.createElement('Document');
+            document.appendChild(this.createElement('name')).textContent = name;
             this.root.appendChild(document);
             return document;
         };
         
         KML.prototype.createFolder = function(name) {
-            const folder = document.createElement('Folder');
-            folder.appendChild(document.createElement('name')).textContent = name;
+            const folder = this.createElement('Folder');
+            folder.appendChild(this.createElement('name')).textContent = name;
             return folder;
         };
         
         KML.prototype.createPlacemark = function() {
-            return document.createElement('Placemark');
+            return this.createElement('Placemark');
         };
         
         KML.prototype.createStyle = function() {
-            const style = document.createElement('Style');
+            const style = this.createElement('Style');
             style.id = 'style_' + Math.random().toString(36).substr(2, 9);
             return style;
         };
         
         KML.prototype.createLineStyle = function(options) {
-            const lineStyle = document.createElement('LineStyle');
-            lineStyle.appendChild(document.createElement('color')).textContent = options.color;
-            lineStyle.appendChild(document.createElement('width')).textContent = options.width;
+            const lineStyle = this.createElement('LineStyle');
+            lineStyle.appendChild(this.createElement('color')).textContent = options.color;
+            lineStyle.appendChild(this.createElement('width')).textContent = options.width;
             return lineStyle;
         };
         
         KML.prototype.createPolyStyle = function(options) {
-            const polyStyle = document.createElement('PolyStyle');
-            polyStyle.appendChild(document.createElement('color')).textContent = options.color;
-            polyStyle.appendChild(document.createElement('fill')).textContent = options.fill;
-            polyStyle.appendChild(document.createElement('outline')).textContent = options.outline;
+            const polyStyle = this.createElement('PolyStyle');
+            polyStyle.appendChild(this.createElement('color')).textContent = options.color;
+            polyStyle.appendChild(this.createElement('fill')).textContent = options.fill;
+            polyStyle.appendChild(this.createElement('outline')).textContent = options.outline;
             return polyStyle;
         };
         
         KML.prototype.createIconStyle = function(options) {
-            const iconStyle = document.createElement('IconStyle');
-            const icon = document.createElement('Icon');
-            icon.appendChild(document.createElement('href')).textContent = options.href;
+            const iconStyle = this.createElement('IconStyle');
+            const icon = this.createElement('Icon');
+            icon.appendChild(this.createElement('href')).textContent = options.href;
             iconStyle.appendChild(icon);
             return iconStyle;
         };
         
         KML.prototype.createPoint = function(coordinates) {
-            const point = document.createElement('Point');
+            const point = this.createElement('Point');
             point.appendChild(coordinates);
             return point;
         };
         
         KML.prototype.createCoordinates = function(coords) {
-            const coordinates = document.createElement('coordinates');
+            const coordinates = this.createElement('coordinates');
             coordinates.textContent = coords.join(',');
             return coordinates;
         };
