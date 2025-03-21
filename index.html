@@ -743,8 +743,10 @@
                 if (!nombre || nombre.trim() === "") {
                     return "Sin Nombre";
                 }
-                // Eliminar etiquetas HTML y extraer la primera línea
-                const primeraLinea = nombre.replace(/<[^>]+>/g, '').split('\n')[0];
+                // Eliminar etiquetas HTML
+                nombre = nombre.replace(/<[^>]+>/g, '');
+                // Extraer la primera línea o el nombre completo si no hay saltos de línea
+                const primeraLinea = nombre.split('\n')[0] || nombre;
                 // Limpiar y limitar la longitud del nombre
                 return primeraLinea.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
             }
@@ -912,7 +914,7 @@
         
             // Crear el KML con una estructura más estándar
             const kml = `<?xml version="1.0" encoding="UTF-8"?>
-        <kml xmlns="http://www.opengis.net/kml/2.2">
+            <kml xmlns="http://www.opengis.net/kml/2.2">
             <Document>
                 <name>${limpiarYCodificarNombre(document.getElementById('markerName').value) || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
@@ -931,7 +933,7 @@
         
                 <Style id="radioStyle">
                     <LineStyle>
-                    <color>ff0000ff</color>
+                        <color>ff0000ff</color>
                         <width>5</width>
                     </LineStyle>
                     <PolyStyle>
