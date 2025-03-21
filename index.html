@@ -738,17 +738,22 @@
        function descargarCapasResultantes(formato) {
             let features = [];
         
-            // Función para limpiar y obtener solo el nombre principal
-            function obtenerNombrePrincipal(nombre) {
-                if (!nombre || nombre.trim() === "") {
+            // Función para extraer los primeros td de una tabla HTML
+            function extraerPrimerosTd(html) {
+                if (!html || html.trim() === "") {
                     return "Sin Nombre";
                 }
-                // Eliminar etiquetas HTML
-                nombre = nombre.replace(/<[^>]+>/g, '');
-                // Buscar el nombre principal (primera línea o contenido antes de la tabla)
-                const nombrePrincipal = nombre.match(/^(.*?)(?:\n|$)/)[1] || nombre;
-                // Limpiar y limitar la longitud del nombre
-                return nombrePrincipal.replace(/[^a-zA-Z0-9\s]/g, '').trim().substring(0, 50);
+                // Crear un elemento temporal para parsear el HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // Buscar los primeros td
+                const tds = tempDiv.getElementsByTagName('td');
+                if (tds.length >= 2) {
+                    // Tomar el segundo td (el primero es la etiqueta)
+                    return tds[1].textContent.trim();
+                }
+                return "Sin Nombre";
             }
         
             // Función para codificar caracteres especiales
@@ -772,7 +777,7 @@
                         "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0]
                     },
                     "properties": {
-                        "name": obtenerNombrePrincipal(name),
+                        "name": name,
                         "description": codificarCaracteresEspeciales(popupContent),
                         "styleUrl": "#principalStyle"
                     }
@@ -827,7 +832,7 @@
                         // Crear una carpeta para esta capa si no existe
                         if (!featuresPorCapa[competencia]) {
                             featuresPorCapa[competencia] = {
-                                name: obtenerNombrePrincipal(competencia),
+                                name: extraerPrimerosTd(competencia),
                                 features: []
                             };
                         }
@@ -860,8 +865,8 @@
                                 const name = marker.feature.properties.description || "Sin Nombre";
                                 const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
         
-                                // Crear la descripción con solo el nombre principal
-                                const nombrePrincipal = obtenerNombrePrincipal(name);
+                                // Extraer el nombre principal de la tabla
+                                const nombrePrincipal = extraerPrimerosTd(name);
                                 const descripcion = `
                                     Nombre: ${nombrePrincipal}
                                 `;
@@ -907,7 +912,7 @@
             const kml = `<?xml version="1.0" encoding="UTF-8"?>
         <kml xmlns="http://www.opengis.net/kml/2.2">
             <Document>
-                <name>${obtenerNombrePrincipal(document.getElementById('markerName').value) || "Capas Resultantes"}</name>
+                <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
                 <Style id="principalStyle">
@@ -948,12 +953,12 @@
                 `).join('')}
                 
                 ${Object.keys(featuresPorCapa).map(capa => `
-                    <Folder>
-                        <name>${obtenerNombrePrincipal(capa)}</name>
+                                <Folder>
+                        <name>${extraerPrimerosTd(capa)}</name>
                         <visibility>1</visibility>
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
-                                                        <name>${feature.properties.name}</name>
+                                <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
