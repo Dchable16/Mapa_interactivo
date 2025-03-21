@@ -738,10 +738,17 @@
         function descargarCapasResultantes(formato) {
             let features = [];
         
+            // Función para limpiar HTML
+            function limpiarHTML(html) {
+                const temporalDiv = document.createElement("div");
+                temporalDiv.innerHTML = html;
+                return temporalDiv.textContent || temporalDiv.innerText || "";
+            }
+        
             // Agregar marcador principal
             if (currentMarker) {
                 const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
-                const name = document.getElementById('markerName').value || "Marcador Principal"; // Usar el nombre del archivo
+                const name = document.getElementById('markerName').value || "Marcador Principal";
                 features.push({
                     "type": "Feature",
                     "geometry": {
@@ -751,7 +758,7 @@
                     "properties": {
                         "name": name,
                         "description": popupContent,
-                        "styleUrl": "#principalStyle" // Estilo para el marcador principal
+                        "styleUrl": "#principalStyle"
                     }
                 });
             }
@@ -862,7 +869,7 @@
                                     "properties": {
                                         "name": name,
                                         "description": descripcion,
-                                        "styleUrl": `#${competencia}Style` // Usar estilo específico por competencia
+                                        "styleUrl": `#${competencia}Style`
                                     }
                                 });
                             }
@@ -896,62 +903,62 @@
             <Document>
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
-        
+                
+                <!-- Estilo para el marcador principal -->
                 <Style id="principalStyle">
                     <IconStyle>
                         <Icon>
-                            <href>https://maps.google.com/mapfiles/ms/icons/blue-dot.png</href> </Icon>
-                        <scale>1.5</scale> </IconStyle>
+                            <href>https://maps.google.com/mapfiles/ms/icons/blue-dot.png</href>
+                        </Icon>
+                        <scale>1.5</scale>
+                    </IconStyle>
                     <LabelStyle>
                         <scale>1.0</scale>
                     </LabelStyle>
                 </Style>
         
+                <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
-                        <color>ff0000ff</color> <width>5</width> </LineStyle>
+                        <color>ff0000ff</color>
+                        <width>5</width>
+                    </LineStyle>
                     <PolyStyle>
-                        <color>00ffffff</color> <fill>0</fill>
+                        <color>00ffffff</color>
+                        <fill>0</fill>
                         <outline>1</outline>
                     </PolyStyle>
                 </Style>
         
+                <!-- Estilos para cada competencia -->
+                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
+                    <Style id="${competencia}Style">
+                        <IconStyle>
+                            <Icon>
+                                <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>
+                            </Icon>
+                        </IconStyle>
+                        <LabelStyle>
+                            <scale>1.0</scale>
+                        </LabelStyle>
+                    </Style>
+                `).join('')}
+                
+                <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${capa}</name>
-                        <visibility>1</visibility
+                        <visibility>1</visibility>
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
-                                </Point>
-                            </Placemark>
+                                                    </Placemark>
                         `).join('')}
                     </Folder>
                 `).join('')}
         
-                <span class="math-inline">\{Object\.keys\(featuresPorCapa\)\.map\(capa \=\> \`
-        <Folder\>
-        <name\></span>{capa}</name>
-        <visibility>1</visibility>
-                        ${featuresPorCapa[capa].features.map(feature => `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <description><![CDATA[${feature.properties.description}]]></description>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
-                                </Point>
-                            </Placemark>
-                        `).join('')}
-                    </Folder>
-                `).join('')}
-        
+                <!-- Marcador principal -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
                     .map(feature => `
@@ -966,6 +973,7 @@
                         </Placemark>
                     `).join('')}
         
+                <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.geometry.type === 'Circle')
                     .map(feature => `
@@ -980,7 +988,7 @@
                             </LineString>
                         </Placemark>
                     `).join('')}
-        
+                
             </Document>
         </kml>`;
         
@@ -996,15 +1004,16 @@
                 return coordinates.join(' ');
             }
         
-            // Función para limpiar HTML
-            function limpiarHTML(html) {
-                const temporalDiv = document.createElement("div");
-                temporalDiv.innerHTML = html;
-                return temporalDiv.textContent || temporalDiv.innerText || "";
-            }
-        
             if (formato === 'kml') {
-                const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
+                // Limpiar y codificar el KML antes de descargar
+                const kmlClean = kml
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+                
+                const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kmlClean);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
                 downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
