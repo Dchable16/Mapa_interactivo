@@ -836,6 +836,22 @@
                                 const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
                                 const name = marker.options.description || "Sin Nombre"; // Usar el atributo description
         
+                                // Crear la descripción con todos los atributos
+                                const descripcion = `
+                                    Atributos:
+                                    Name: ${marker.options.name || 'null'}
+                                    description: ${marker.options.description || 'null'}
+                                    timestamp: ${marker.options.timestamp || 'null'}
+                                    begin: ${marker.options.begin || 'null'}
+                                    end: ${marker.options.end || 'null'}
+                                    altitudeMode: ${marker.options.altitudeMode || 'clampToGround'}
+                                    tessellate: ${marker.options.tessellate || '-1'}
+                                    extrude: ${marker.options.extrude || '0'}
+                                    visibility: ${marker.options.visibility || '-1'}
+                                    drawOrder: ${marker.options.drawOrder || 'null'}
+                                    icon: ${marker.options.icon || 'null'}
+                                `;
+        
                                 featuresPorCapa[competencia].features.push({
                                     "type": "Feature",
                                     "geometry": {
@@ -844,7 +860,7 @@
                                     },
                                     "properties": {
                                         "name": name,
-                                        "description": popupContent,
+                                        "description": descripcion,
                                         "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
                                     }
                                 });
@@ -928,15 +944,13 @@
                         ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
-                                <description>${feature.properties.description}</description>
+                                <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <Point>
                                     <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                                 </Point>
-                            </Placemark>
-                        `).join('')}
-                    </Folder>
+                                        </Placemark>
                 `).join('')}
         
                 <!-- Marcador principal -->
@@ -945,14 +959,14 @@
                     .map(feature => `
                         <Placemark>
                             <name>${feature.properties.name}</name>
-                            <description>${feature.properties.description}</description>
+                            <description><![CDATA[${feature.properties.description}]]></description>
                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
                             <Point>
                                 <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                             </Point>
-                                    </Placemark>
-                `).join('')}
+                        </Placemark>
+                    `).join('')}
         
                 <!-- Radios -->
                 ${geojsonData.features
