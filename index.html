@@ -738,7 +738,10 @@
         function descargarCapasResultantes(formato) {
             let features = [];
         
+            // Agregar marcador principal
             if (currentMarker) {
+                const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
+                const name = popupContent.split('<br>')[0]; // Tomar solo la primera línea del popup
                 features.push({
                     "type": "Feature",
                     "geometry": {
@@ -746,7 +749,9 @@
                         "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
                     "properties": {
-                        "name": document.getElementById('markerName').value || "Marcador Principal"
+                        "name": name,
+                        "description": popupContent,
+                        "styleUrl": "#principalStyle"  // Estilo para el marcador principal
                     }
                 });
             }
@@ -875,6 +880,19 @@
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
+                <!-- Estilo para el marcador principal -->
+                <Style id="principalStyle">
+                    <IconStyle>
+                        <Icon>
+                            <href>https://maps.google.com/mapfiles/ms/icons/blue-dot.png</href>  <!-- Punto azul para el principal -->
+                        </Icon>
+                        <scale>1.5</scale>  <!-- Un poco más grande -->
+                    </IconStyle>
+                    <LabelStyle>
+                        <scale>1.0</scale>
+                    </LabelStyle>
+                </Style>
+        
                 <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
@@ -921,6 +939,21 @@
                     </Folder>
                 `).join('')}
         
+                <!-- Marcador principal -->
+                ${geojsonData.features
+                    .filter(feature => feature.properties.styleUrl === '#principalStyle')
+                    .map(feature => `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <description>${feature.properties.description}</description>
+                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                            <visibility>1</visibility>
+                            <Point>
+                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                            </Point>
+                                    </Placemark>
+                `).join('')}
+        
                 <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.geometry.type === 'Circle')
@@ -952,7 +985,7 @@
                 return coordinates.join(' ');
             }
         
-                if (formato === 'kml') {
+            if (formato === 'kml') {
                 const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
