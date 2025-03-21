@@ -753,7 +753,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0] // Añadimos altitud 0
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0]
                     },
                     "properties": {
                         "name": name,
@@ -770,7 +770,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0], // Añadimos altitud 0
+                        "coordinates": [latLng.lng, latLng.lat, 0],
                         "radius": 400
                     },
                     "properties": {
@@ -787,7 +787,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0], // Añadimos altitud 0
+                        "coordinates": [latLng.lng, latLng.lat, 0],
                         "radius": 800
                     },
                     "properties": {
@@ -845,13 +845,13 @@
                                 const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
         
                                 // Crear la descripción con todos los atributos
-                                const descripcion = `Nombre: ${name}`; // Simplificamos la descripción
+                                const descripcion = `Nombre: ${name}`;
         
                                 featuresPorCapa[competencia].features.push({
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0] // Añadimos altitud 0
+                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0]
                                     },
                                     "properties": {
                                         "name": name,
@@ -890,7 +890,8 @@
             <Document>
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
-        
+                
+                <!-- Estilo para el marcador principal -->
                 <Style id="principalStyle">
                     <IconStyle>
                         <Icon>
@@ -903,6 +904,7 @@
                     </LabelStyle>
                 </Style>
         
+                <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
                         <color>ff0000ff</color>
@@ -915,19 +917,21 @@
                     </PolyStyle>
                 </Style>
         
-                <span class="math-inline">\{Object\.keys\(geoJsonLayersCompetencias\)\.map\(competencia \=\> \`
-        <Style id\="</span>{competencia}Style">
+                <!-- Estilos para cada competencia -->
+                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
+                    <Style id="${competencia}Style">
                         <IconStyle>
                             <Icon>
-                                <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png
-                                </Icon>
+                                <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>
+                            </Icon>
                         </IconStyle>
                         <LabelStyle>
                             <scale>1.0</scale>
                         </LabelStyle>
                     </Style>
                 `).join('')}
-        
+                
+                <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${capa}</name>
@@ -946,20 +950,22 @@
                     </Folder>
                 `).join('')}
         
+                <!-- Marcador principal -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
-                    .map(feature => `
-                        <Placemark>
-                            <name>${feature.properties.name}</name>
-                            <description><![CDATA[${feature.properties.description}]]></description>
-                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                            <visibility>1</visibility>
-                            <Point>
-                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
-                            </Point>
-                        </Placemark>
-                    `).join('')}
+                    .map(feature =>'
+                                            <Placemark>
+                                <name>${feature.properties.name}</name>
+                                <description><![CDATA[${feature.properties.description}]]></description>
+                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                <visibility>1</visibility>
+                                <Point>
+                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
+                                </Point>
+                            </Placemark>
+                        `).join('')}
         
+                <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.geometry.type === 'Circle')
                     .map(feature => `
@@ -974,7 +980,7 @@
                             </LineString>
                         </Placemark>
                     `).join('')}
-        
+                
             </Document>
         </kml>`;
         
