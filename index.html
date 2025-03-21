@@ -190,11 +190,24 @@
         let isRendering = false;
         let timeoutId;
         
+        //Activa y desactiva las etiquetas de los Ageb
+        let removedMarkers = []; // Almacenar marcadores eliminados
+        let isRendering = false;
+        let timeoutId;
+        let lastZoomLevel = 14; // Mantener el último nivel de zoom
+        
         map.on('zoomend', function() {
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }
         
+            const zoomLevel = map.getZoom();
+            
+            // Si el zoom no cambió, no hacer nada
+            if (zoomLevel === lastZoomLevel) return;
+            
+            lastZoomLevel = zoomLevel;
+            
             timeoutId = setTimeout(() => {
                 if (isRendering) return;
                 isRendering = true;
@@ -202,9 +215,8 @@
                 try {
                     const bounds = map.getBounds();
                     const features = agebCDMXLayer.toGeoJSON().features.concat(agebEdoMexLayer.toGeoJSON().features);
-                    const zoomLevel = map.getZoom();
                     
-                    // Limpiar las etiquetas de AGEB existentes
+                    // Limpiar solo las etiquetas nuevas, no todos los marcadores
                     const agebLabelsToRemove = [];
                     map.eachLayer(function(layer) {
                         if (layer instanceof L.Marker && layer !== currentMarker) {
@@ -289,7 +301,7 @@
                 } finally {
                     isRendering = false;
                 }
-            }, 100); // Pequeño delay de 100ms
+            }, 50); // Reducir el delay a 50ms para una respuesta más rápida
         });
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
