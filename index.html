@@ -953,7 +953,12 @@
                             <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
-                                                    </Placemark>
+                                                        <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                <visibility>1</visibility>
+                                <Point>
+                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
+                                </Point>
+                            </Placemark>
                         `).join('')}
                     </Folder>
                 `).join('')}
