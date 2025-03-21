@@ -753,7 +753,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0]
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0] // Añadimos altitud 0
                     },
                     "properties": {
                         "name": name,
@@ -770,7 +770,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0],
+                        "coordinates": [latLng.lng, latLng.lat, 0], // Añadimos altitud 0
                         "radius": 400
                     },
                     "properties": {
@@ -787,7 +787,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0],
+                        "coordinates": [latLng.lng, latLng.lat, 0], // Añadimos altitud 0
                         "radius": 800
                     },
                     "properties": {
@@ -864,7 +864,7 @@
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0]
+                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0] // Añadimos altitud 0
                                     },
                                     "properties": {
                                         "name": name,
@@ -904,7 +904,6 @@
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
-                <!-- Estilo para el marcador principal -->
                 <Style id="principalStyle">
                     <IconStyle>
                         <Icon>
@@ -916,8 +915,6 @@
                         <scale>1.0</scale>
                     </LabelStyle>
                 </Style>
-        
-                <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
                         <color>ff0000ff</color>
@@ -930,7 +927,6 @@
                     </PolyStyle>
                 </Style>
         
-                <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
                     <Style id="${competencia}Style">
                         <IconStyle>
@@ -944,7 +940,6 @@
                     </Style>
                 `).join('')}
                 
-                <!-- Carpetas por capa -->
                 ${Object.keys(featuresPorCapa).map(capa => `
                     <Folder>
                         <name>${capa}</name>
@@ -953,7 +948,7 @@
                             <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
-                                                        <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <Point>
                                     <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
@@ -963,7 +958,6 @@
                     </Folder>
                 `).join('')}
         
-                <!-- Marcador principal -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
                     .map(feature => `
@@ -978,7 +972,6 @@
                         </Placemark>
                     `).join('')}
         
-                <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.geometry.type === 'Circle')
                     .map(feature => `
