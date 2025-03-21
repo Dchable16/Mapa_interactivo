@@ -770,6 +770,7 @@
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
+        // Función para descargar capas resultantes
         function descargarCapasResultantes(format) {
             // Verificar si el documento está listo
             if (!document || !document.createElementNS) {
@@ -969,6 +970,7 @@
         
         KML.prototype.serialize = function() {
             return new XMLSerializer().serializeToString(this.root);
+        };
                 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
