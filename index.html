@@ -770,7 +770,7 @@
 
        function descargarCapasResultantes(format) {
             // Verificar si el documento está listo
-            if (!document || !document.getElementById) {
+            if (typeof document === 'undefined' || !document.createElementNS) {
                 console.error('El documento no está listo');
                 return;
             }
