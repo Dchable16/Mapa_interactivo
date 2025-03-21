@@ -785,6 +785,28 @@
                 };
             }
         
+            // Agregar marcadores de competencias dentro del radio de 800m
+            for (const competencia in geoJsonLayersCompetencias) {
+                const layer = geoJsonLayersCompetencias[competencia];
+                if (layer) {
+                    layer.eachLayer(marker => {
+                        if (radius800Layer.getBounds().contains(marker.getLatLng())) {
+                            features.push({
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                                },
+                                "properties": {
+                                    "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
+                                    "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        
             if (radius400GeoJSON) {
                 features.push(radius400GeoJSON);
             }
@@ -806,6 +828,7 @@
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
+                <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
                         <color>ff0000ff</color>  <!-- Rojo sólido y más intenso -->
@@ -817,6 +840,20 @@
                         <outline>1</outline>
                     </PolyStyle>
                 </Style>
+        
+                <!-- Estilos para cada competencia -->
+                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
+                    <Style id="${competencia}Style">
+                        <IconStyle>
+                            <Icon>
+                                <href>https://maps.google.com/mapfiles/ms/icons/red-dot.png</href>  <!-- Icono por defecto -->
+                            </Icon>
+                        </IconStyle>
+                        <LabelStyle>
+                            <scale>1.0</scale>
+                        </LabelStyle>
+                    </Style>
+                `).join('')}
                 
                 ${geojsonData.features.map(feature => {
                     if (feature.geometry.type === 'Circle') {
@@ -836,7 +873,7 @@
                         return `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
-                                <styleUrl>#radioStyle</styleUrl>
+                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <${feature.geometry.type}>
                                     <coordinates>${feature.geometry.coordinates.map(coord => 
