@@ -741,7 +741,7 @@
             // Agregar marcador principal
             if (currentMarker) {
                 const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
-                const name = popupContent.split('<br>')[0]; // Tomar solo la primera línea del popup
+                const name = document.getElementById('markerName').value || "Marcador Principal"; // Usar el nombre del archivo
                 features.push({
                     "type": "Feature",
                     "geometry": {
@@ -834,7 +834,7 @@
                             // Si el marcador está dentro del radio de 800m
                             if (distance <= radius) {
                                 const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
-                                const name = popupContent.split('<br>')[0]; // Tomar solo la primera línea del popup
+                                const name = marker.options.description || "Sin Nombre"; // Usar el atributo description
         
                                 featuresPorCapa[competencia].features.push({
                                     "type": "Feature",
