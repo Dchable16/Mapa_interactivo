@@ -743,7 +743,10 @@
                 if (!nombre || nombre.trim() === "") {
                     return "Sin Nombre";
                 }
-                return nombre.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50); // Limitar a 50 caracteres
+                // Eliminar etiquetas HTML
+                nombre = nombre.replace(/<[^>]+>/g, '');
+                // Limpiar y limitar la longitud del nombre
+                return nombre.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
             }
         
             // Función para codificar caracteres especiales
