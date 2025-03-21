@@ -314,18 +314,18 @@
             return layer.feature.properties.layerName || 'default';
         }
         
-        // Función para obtener los marcadores visibles de una capa específica
-        function getVisibleMarkers(layerName) {
-            return visibleMarkersByLayer[layerName] || [];
-        }
-        
-        // Función para obtener el total de marcadores visibles
-        function getTotalVisibleMarkers() {
-            let total = 0;
-            for (const markers of Object.values(visibleMarkersByLayer)) {
-                total += markers.length;
+        // Función auxiliar para obtener el nombre de la capa
+        function getLayerName(layer) {
+            // Primero intentamos obtener el nombre de la capa desde las propiedades del marcador
+            if (layer.feature && layer.feature.properties) {
+                return layer.feature.properties.layerName || 'default';
             }
-            return total;
+            // Si no hay feature, intentamos obtenerlo desde las opciones del marcador
+            if (layer.options) {
+                return layer.options.layerName || 'default';
+            }
+            // Si nada funciona, usamos un nombre por defecto
+            return 'default';
         }
         
         const formToggleBtn = document.getElementById('form-toggle-btn');
@@ -765,7 +765,7 @@
 
        function descargarCapasResultantes(format) {
             // Verificar si el documento está listo
-            if (typeof document === 'undefined' || !document.createElementNS) {
+            if (!document || !document.createElementNS) {
                 console.error('El documento no está listo');
                 return;
             }
@@ -962,7 +962,6 @@
         
         KML.prototype.serialize = function() {
             return new XMLSerializer().serializeToString(this.root);
-        };
                 
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
