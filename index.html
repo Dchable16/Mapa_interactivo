@@ -737,8 +737,11 @@
         // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
             let features = [];
-        
+            
+            // Agregar marcador principal
             if (currentMarker) {
+                const popupContent = currentMarker.getPopup() ? currentMarker.getPopup().getContent() : "Sin Nombre";
+                const name = document.getElementById('markerName').value || "Marcador Principal"; // Usar el nombre del archivo
                 features.push({
                     "type": "Feature",
                     "geometry": {
@@ -746,7 +749,9 @@
                         "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
                     "properties": {
-                        "name": document.getElementById('markerName').value || "Marcador Principal"
+                        "name": name,
+                        "description": popupContent,
+                        "styleUrl": "#principalStyle"  // Estilo para el marcador principal
                     }
                 });
             }
@@ -785,6 +790,9 @@
                 };
             }
         
+            // Crear un objeto para almacenar features por capa
+            const featuresPorCapa = {};
+        
             // Agregar marcadores de competencias dentro del radio de 800m
             if (radius800m) {
                 const center = radius800m.getLatLng();
@@ -793,6 +801,14 @@
                 for (const competencia in geoJsonLayersCompetencias) {
                     const layer = geoJsonLayersCompetencias[competencia];
                     if (layer) {
+                        // Crear una carpeta para esta capa si no existe
+                        if (!featuresPorCapa[competencia]) {
+                            featuresPorCapa[competencia] = {
+                                name: competencia,
+                                features: []
+                            };
+                        }
+        
                         layer.eachLayer(marker => {
                             // Calcular la distancia entre el marcador y el centro
                             const markerLat = marker.getLatLng().lat;
@@ -817,14 +833,34 @@
         
                             // Si el marcador está dentro del radio de 800m
                             if (distance <= radius) {
-                                features.push({
+                                const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
+                                const name = marker.options.description || "Sin Nombre"; // Usar el atributo description
+        
+                                // Crear la descripción con todos los atributos
+                                const descripcion = `
+                                    Atributos:
+                                    Name: ${marker.options.name || 'null'}
+                                    description: ${marker.options.description || 'null'}
+                                    timestamp: ${marker.options.timestamp || 'null'}
+                                    begin: ${marker.options.begin || 'null'}
+                                    end: ${marker.options.end || 'null'}
+                                    altitudeMode: ${marker.options.altitudeMode || 'clampToGround'}
+                                    tessellate: ${marker.options.tessellate || '-1'}
+                                    extrude: ${marker.options.extrude || '0'}
+                                    visibility: ${marker.options.visibility || '-1'}
+                                    drawOrder: ${marker.options.drawOrder || 'null'}
+                                    icon: ${marker.options.icon || 'null'}
+                                `;
+        
+                                featuresPorCapa[competencia].features.push({
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
                                         "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                                     },
                                     "properties": {
-                                        "name": marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre",
+                                        "name": name,
+                                        "description": descripcion,
                                         "styleUrl": `#${competencia}Style`  // Usar estilo específico por competencia
                                     }
                                 });
@@ -832,6 +868,11 @@
                         });
                     }
                 }
+            }
+        
+            // Agregar todos los features a la lista principal
+            for (const capa in featuresPorCapa) {
+                features = features.concat(featuresPorCapa[capa].features);
             }
         
             if (radius400GeoJSON) {
@@ -855,6 +896,19 @@
                 <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
                 <description>Capas resultantes del análisis espacial</description>
                 
+                <!-- Estilo para el marcador principal -->
+                <Style id="principalStyle">
+                    <IconStyle>
+                        <Icon>
+                            <href>https://maps.google.com/mapfiles/ms/icons/blue-dot.png</href>  <!-- Punto azul para el principal -->
+                        </Icon>
+                        <scale>1.5</scale>  <!-- Un poco más grande -->
+                    </IconStyle>
+                    <LabelStyle>
+                        <scale>1.0</scale>
+                    </LabelStyle>
+                </Style>
+        
                 <!-- Estilo para los radios -->
                 <Style id="radioStyle">
                     <LineStyle>
@@ -882,35 +936,55 @@
                     </Style>
                 `).join('')}
                 
-                ${geojsonData.features.map(feature => {
-                    if (feature.geometry.type === 'Circle') {
-                        return `
+                <!-- Carpetas por capa -->
+                ${Object.keys(featuresPorCapa).map(capa => `
+                    <Folder>
+                        <name>${capa}</name>
+                        <visibility>1</visibility>
+                        ${featuresPorCapa[capa].features.map(feature => `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
-                                <styleUrl>#radioStyle</styleUrl>
-                                <visibility>1</visibility>
-                                <LineString>
-                                    <coordinates>
-                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                    </coordinates>
-                                </LineString>
-                            </Placemark>
-                        `;
-                    } else {
-                        return `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
+                                <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
-                                <${feature.geometry.type}>
-                                    <coordinates>${feature.geometry.coordinates.map(coord => 
-                                        Array.isArray(coord) ? coord.join(',') : coord
-                                    ).join(' ')}</coordinates>
-                                </${feature.geometry.type}>
-                            </Placemark>
-                        `;
-                    }
-                }).join('')}
+                                <Point>
+                                    <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                </Point>
+                                        </Placemark>
+                `).join('')}
+                    </Folder>
+                `).join('')}
+        
+                <!-- Marcador principal -->
+                ${geojsonData.features
+                    .filter(feature => feature.properties.styleUrl === '#principalStyle')
+                    .map(feature => `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <description><![CDATA[${feature.properties.description}]]></description>
+                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                            <visibility>1</visibility>
+                            <Point>
+                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                            </Point>
+                        </Placemark>
+                    `).join('')}
+        
+                <!-- Radios -->
+                ${geojsonData.features
+                    .filter(feature => feature.geometry.type === 'Circle')
+                    .map(feature => `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <styleUrl>#radioStyle</styleUrl>
+                            <visibility>1</visibility>
+                            <LineString>
+                                <coordinates>
+                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                </coordinates>
+                            </LineString>
+                        </Placemark>
+                    `).join('')}
                 
             </Document>
         </kml>`;
