@@ -953,8 +953,8 @@
                 <!-- Marcador principal -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
-                    .map(feature =>
-                                            <Placemark>
+                    .map(feature =>'
+                    <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
                                 <styleUrl>${feature.properties.styleUrl}</styleUrl>
