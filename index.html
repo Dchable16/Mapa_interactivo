@@ -967,17 +967,16 @@
         
                 <!-- Radios -->
                 ${geojsonData.features
-                    .filter(feature => feature.geometry.type === 'Circle')
+                    .filter(feature => feature.properties.styleUrl === '#principalStyle')
                     .map(feature => `
                         <Placemark>
                             <name>${feature.properties.name}</name>
-                            <styleUrl>#radioStyle</styleUrl>
+                            <description><![CDATA[${feature.properties.description}]]></description>
+                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
-                            <LineString>
-                                <coordinates>
-                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                </coordinates>
-                            </LineString>
+                            <Point>
+                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
+                            </Point>
                         </Placemark>
                     `).join('')}
                 
