@@ -826,9 +826,9 @@
                             const distance = calcularDistanciaHaversine(markerLat, markerLng, centerLat, centerLng);
                             
                             if (distance <= radius) {
-                                // Obtener el nombre y otros atributos del GeoJSON
+                                // Obtener los atributos directamente del GeoJSON
                                 const nombre = marker.feature.properties.Nombre || 
-                                              marker.getPopup() ? marker.getPopup().getContent() : 
+                                              marker.feature.properties.name || 
                                               "Sin Nombre";
                                 
                                 // Obtener todos los atributos del GeoJSON
