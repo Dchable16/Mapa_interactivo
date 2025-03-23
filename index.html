@@ -989,10 +989,7 @@
             // Agregar el archivo KML
             zip.file("capas_resultantes.kml", kml);
             
-            // Crear un array de promesas para los iconos
-            const iconPromises = [];
-            
-            // Agregar los iconos para cada tipo de competencia
+            // Agregar los iconos directamente desde el KML
             Object.keys(iconosPersonalizados).forEach(competencia => {
                 const icon = iconosPersonalizados[competencia];
                 const iconUrl = icon.options.iconUrl;
@@ -1000,36 +997,17 @@
                 // Extraer el nombre del archivo del URL
                 const filename = iconUrl.split('/').pop();
                 
-                // Crear una promesa para cada icono
-                const iconPromise = fetch(iconUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Error al cargar el icono ${iconUrl}`);
-                        }
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        // Agregar el icono al archivo KMZ
-                        zip.file(filename, blob);
-                    })
+                // Agregar el icono al archivo KMZ
+                fetch(iconUrl)
+                    .then(response => response.blob())
+                    .then(blob => zip.file(filename, blob))
                     .catch(error => {
                         console.error(`Error al cargar el icono para ${competencia}:`, error);
-                        // Usar un icono por defecto si hay error
-                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                        return fetch(defaultIconUrl)
-                            .then(response => response.blob())
-                            .then(blob => zip.file('default-marker.png', blob));
                     });
-                
-                iconPromises.push(iconPromise);
             });
             
-            // Esperar que todos los iconos se descarguen
-            Promise.all(iconPromises)
-                .then(() => {
-                    // Generar el archivo KMZ
-                    return zip.generateAsync({ type: "blob" });
-                })
+            // Generar el archivo KMZ
+            zip.generateAsync({ type: "blob" })
                 .then(content => {
                     const dataStr = window.URL.createObjectURL(content);
                     const downloadAnchorNode = document.createElement('a');
@@ -1043,7 +1021,6 @@
                     console.error('Error al generar el archivo KMZ:', error);
                     alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
                 });
-        }
         }
                 
         // Crear un icono personalizado usando el logotipo
