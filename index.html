@@ -756,7 +756,9 @@
             
             for (let i = 0; i < 360; i += 2) {
                 const angle = i * Math.PI / 180;
-                coordinates.push(`${lng + (radius * Math.sin(angle) / (R_DEG * Math.cos(lat * Math.PI / 180))),${lat + (radius * Math.cos(angle) / R_DEG)}`);
+                const newLng = lng + (radius * Math.sin(angle) / (R_DEG * Math.cos(lat * Math.PI / 180)));
+                const newLat = lat + (radius * Math.cos(angle) / R_DEG);
+                coordinates.push(`${newLng},${newLat}`);
             }
             
             return coordinates.join(' ');
