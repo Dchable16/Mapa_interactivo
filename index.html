@@ -839,8 +839,7 @@
                                     },
                                     "properties": {
                                         "name": nombre,
-                                        "styleUrl": `#${competencia}Style`,
-                                        "iconUrl": iconosPersonalizados[competencia].options.iconUrl
+                                        "styleUrl": `#${competencia}Style`
                                     }
                                 });
                             }
@@ -896,20 +895,26 @@
                 </Style>
         
                 <!-- Estilos para cada competencia -->
-                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
-                    <Style id="${competencia}Style">
-                        <IconStyle>
-                            <Icon>
-                                <href>${iconosPersonalizados[competencia].options.iconUrl}</href>
+                ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
+                    // Obtener el icono para esta competencia
+                    const icon = iconosPersonalizados[competencia];
+                    const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                    
+                    return `
+                        <Style id="${competencia}Style">
+                            <IconStyle>
+                                <Icon>
+                                    <href>${iconUrl}</href>
+                                    <scale>1.0</scale>
+                                </Icon>
+                                <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
+                            </IconStyle>
+                            <LabelStyle>
                                 <scale>1.0</scale>
-                            </Icon>
-                            <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
-                        </IconStyle>
-                        <LabelStyle>
-                            <scale>1.0</scale>
-                        </LabelStyle>
-                    </Style>
-                `).join('')}
+                            </LabelStyle>
+                        </Style>
+                    `;
+                }).join('')}
                 
                 ${geojsonData.features.map(feature => {
                     if (feature.geometry.type === 'Circle') {
@@ -940,11 +945,12 @@
                         return `
                             <Folder>
                                 <name>${feature.properties.name}</name>
+                                                       <name>${feature.properties.name}</name>
                                 ${feature.properties.features.map(subFeature => `
                                     <Placemark>
                                         <name>${subFeature.properties.name}</name>
                                         <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
-                                                                        <visibility>1</visibility>
+                                        <visibility>1</visibility>
                                         <Point>
                                             <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
                                         </Point>
@@ -985,8 +991,10 @@
             zip.file("capas_resultantes.kml", kml);
             
             // Agregar los iconos para cada tipo de competencia
-            for (const competencia in iconosPersonalizados) {
-                const iconUrl = iconosPersonalizados[competencia].options.iconUrl;
+            Object.keys(iconosPersonalizados).forEach(competencia => {
+                const icon = iconosPersonalizados[competencia];
+                const iconUrl = icon.options.iconUrl;
+                
                 // Extraer el nombre del archivo del URL
                 const filename = iconUrl.split('/').pop();
                 
@@ -1009,7 +1017,7 @@
                                 downloadAnchorNode.remove();
                             });
                     });
-            }
+            });
         }
         }
                 
