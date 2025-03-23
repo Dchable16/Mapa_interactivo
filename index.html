@@ -752,14 +752,25 @@
                 });
             }
         
-            // Agregar el círculo de 400m
+            // Crear y agregar el círculo de 400m
             if (radius400m) {
                 const latLng = radius400m.getLatLng();
+                const coordinates = [latLng.lng, latLng.lat];
+                
+                // Crear el círculo usando L.circle
+                const circle400 = L.circle(coordinates, {
+                    radius: 400,
+                    color: '#ff0000',
+                    weight: 5,
+                    opacity: 1,
+                    fillOpacity: 0
+                }).addTo(map);
+                
                 features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat],
+                        "coordinates": coordinates,
                         "radius": 400
                     },
                     "properties": {
@@ -769,14 +780,25 @@
                 });
             }
         
-            // Agregar el círculo de 800m
+            // Crear y agregar el círculo de 800m
             if (radius800m) {
                 const latLng = radius800m.getLatLng();
+                const coordinates = [latLng.lng, latLng.lat];
+                
+                // Crear el círculo usando L.circle
+                const circle800 = L.circle(coordinates, {
+                    radius: 800,
+                    color: '#ff0000',
+                    weight: 5,
+                    opacity: 1,
+                    fillOpacity: 0
+                }).addTo(map);
+                
                 features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat],
+                        "coordinates": coordinates,
                         "radius": 800
                     },
                     "properties": {
@@ -804,7 +826,14 @@
                             const distance = calcularDistanciaHaversine(markerLat, markerLng, centerLat, centerLng);
                             
                             if (distance <= radius) {
-                                const nombre = marker.feature.properties.Nombre || marker.feature.properties.nombre || "Sin Nombre";
+                                // Obtener el nombre y otros atributos del GeoJSON
+                                const nombre = marker.feature.properties.Nombre || 
+                                              marker.getPopup() ? marker.getPopup().getContent() : 
+                                              "Sin Nombre";
+                                
+                                // Obtener todos los atributos del GeoJSON
+                                const atributos = marker.feature.properties;
+                                
                                 const icono = iconosPersonalizados[competencia];
                                 
                                 features.push({
@@ -817,7 +846,9 @@
                                         "name": nombre,
                                         "styleUrl": `#${competencia}Style`,
                                         "Folder": competencia,
-                                        "Icon": icono ? icono.options.iconUrl : 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png'
+                                        "Icon": icono ? icono.options.iconUrl : 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png',
+                                        // Agregar todos los atributos del GeoJSON
+                                        ...atributos
                                     }
                                 });
                             }
@@ -877,10 +908,17 @@
                         <visibility>1</visibility>
                         ${geojsonData.features.filter(f => f.properties.Folder === competencia)
                             .map(feature => {
+                                // Crear descripción con todos los atributos
+                                const description = Object.entries(feature.properties)
+                                    .filter(([key]) => key !== 'name' && key !== 'styleUrl' && key !== 'Folder' && key !== 'Icon')
+                                    .map(([key, value]) => `<b>${key}:</b> ${value}<br>`)
+                                    .join('');
+                                
                                 if (feature.geometry.type === 'Circle') {
                                     return `
                                         <Placemark>
                                             <name>${feature.properties.name}</name>
+                                            <description>${description}</description>
                                             <styleUrl>#radioStyle</styleUrl>
                                             <visibility>1</visibility>
                                             <LineString>
@@ -894,6 +932,19 @@
                                     return `
                                         <Placemark>
                                             <name>${feature.properties.name}</name>
+                                            <description>${description}</description>
+                                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                            <visibility>1</visibility>
+                                            <Point>
+                                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                            </Point>
+                                        </Placemark>
+                                    `;
+                                                            } else {
+                                    return `
+                                        <Placemark>
+                                            <name>${feature.properties.name}</name>
+                                            <description>${description}</description>
                                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                                             <visibility>1</visibility>
                                             <Point>
@@ -943,10 +994,13 @@
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
             } else if (formato === 'kmz') {
-                        const zip = new JSZip();
+                const zip = new JSZip();
                 
                 // Agregar KML
                 zip.file("capas_resultantes.kml", kml);
+                
+                // Crear carpeta para iconos
+                zip.folder('icons');
                 
                 // Agregar iconos
                 Object.keys(geoJsonLayersCompetencias).forEach(competencia => {
