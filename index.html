@@ -753,7 +753,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat, 0]
+                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
                     "properties": {
                         "name": name,
@@ -770,7 +770,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0],
+                        "coordinates": [latLng.lng, latLng.lat],
                         "radius": 400
                     },
                     "properties": {
@@ -787,7 +787,7 @@
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat, 0],
+                        "coordinates": [latLng.lng, latLng.lat],
                         "radius": 800
                     },
                     "properties": {
@@ -845,13 +845,26 @@
                                 const popupContent = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
         
                                 // Crear la descripción con todos los atributos
-                                const descripcion = `Nombre: ${name}`;
+                                const descripcion = `
+                                    Atributos:
+                                    Name: ${marker.feature.properties.Name || 'null'}
+                                    description: ${limpiarHTML(marker.feature.properties.description) || 'null'}
+                                    timestamp: ${marker.feature.properties.timestamp || 'null'}
+                                    begin: ${marker.feature.properties.begin || 'null'}
+                                    end: ${marker.feature.properties.end || 'null'}
+                                    altitudeMode: ${marker.feature.properties.altitudeMode || 'clampToGround'}
+                                    tessellate: ${marker.feature.properties.tessellate || '-1'}
+                                    extrude: ${marker.feature.properties.extrude || '0'}
+                                    visibility: ${marker.feature.properties.visibility || '-1'}
+                                    drawOrder: ${marker.feature.properties.drawOrder || 'null'}
+                                    icon: ${marker.feature.properties.icon || 'null'}
+                                `;
         
                                 featuresPorCapa[competencia].features.push({
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat, 0]
+                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
                                     },
                                     "properties": {
                                         "name": name,
@@ -940,32 +953,12 @@
                             <Placemark>
                                 <name>${feature.properties.name}</name>
                                 <description><![CDATA[${feature.properties.description}]]></description>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
-                                </Point>
-                            </Placemark>
+                                                    </Placemark>
                         `).join('')}
                     </Folder>
                 `).join('')}
         
                 <!-- Marcador principal -->
-                ${geojsonData.features
-                    .filter(feature => feature.properties.styleUrl === '#principalStyle')
-                    .map(feature =>'
-                    <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <description><![CDATA[${feature.properties.description}]]></description>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
-                                </Point>
-                            </Placemark>
-                        `).join('')}
-        
-                <!-- Radios -->
                 ${geojsonData.features
                     .filter(feature => feature.properties.styleUrl === '#principalStyle')
                     .map(feature => `
@@ -975,8 +968,24 @@
                             <styleUrl>${feature.properties.styleUrl}</styleUrl>
                             <visibility>1</visibility>
                             <Point>
-                                <coordinates>${feature.geometry.coordinates.join(',')},0</coordinates>
+                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                             </Point>
+                        </Placemark>
+                    `).join('')}
+        
+                <!-- Radios -->
+                ${geojsonData.features
+                    .filter(feature => feature.geometry.type === 'Circle')
+                    .map(feature => `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <styleUrl>#radioStyle</styleUrl>
+                            <visibility>1</visibility>
+                            <LineString>
+                                <coordinates>
+                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                </coordinates>
+                            </LineString>
                         </Placemark>
                     `).join('')}
                 
@@ -990,7 +999,7 @@
                     const angle = i * Math.PI / 180;
                     const lat = center[1] + (radius * Math.cos(angle) / 111320);
                     const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
-                    coordinates.push(`${lng},${lat},0`); // Añadimos altitud 0
+                    coordinates.push(`${lng},${lat}`);
                 }
                 return coordinates.join(' ');
             }
@@ -1003,7 +1012,7 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&apos;');
-        
+                
                 const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kmlClean);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
