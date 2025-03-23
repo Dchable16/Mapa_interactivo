@@ -944,8 +944,7 @@
                     } else if (feature.geometry.type === 'Folder') {
                         return `
                             <Folder>
-                                <name>${feature.properties.name}</name>
-                                                       <name>${feature.properties.name}</name>
+                                                        <name>${feature.properties.name}</name>
                                 ${feature.properties.features.map(subFeature => `
                                     <Placemark>
                                         <name>${subFeature.properties.name}</name>
@@ -990,6 +989,9 @@
             // Agregar el archivo KML
             zip.file("capas_resultantes.kml", kml);
             
+            // Crear un array de promesas para los iconos
+            const iconPromises = [];
+            
             // Agregar los iconos para cada tipo de competencia
             Object.keys(iconosPersonalizados).forEach(competencia => {
                 const icon = iconosPersonalizados[competencia];
@@ -998,26 +1000,49 @@
                 // Extraer el nombre del archivo del URL
                 const filename = iconUrl.split('/').pop();
                 
-                // Hacer la solicitud para obtener el icono
-                fetch(iconUrl)
-                    .then(response => response.blob())
+                // Crear una promesa para cada icono
+                const iconPromise = fetch(iconUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error al cargar el icono ${iconUrl}`);
+                        }
+                        return response.blob();
+                    })
                     .then(blob => {
                         // Agregar el icono al archivo KMZ
                         zip.file(filename, blob);
-                        
-                        // Generar el archivo KMZ cuando todos los iconos estén listos
-                        zip.generateAsync({ type: "blob" })
-                            .then(function (content) {
-                                const dataStr = window.URL.createObjectURL(content);
-                                const downloadAnchorNode = document.createElement('a');
-                                downloadAnchorNode.setAttribute("href", dataStr);
-                                downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kmz`);
-                                document.body.appendChild(downloadAnchorNode);
-                                downloadAnchorNode.click();
-                                downloadAnchorNode.remove();
-                            });
+                    })
+                    .catch(error => {
+                        console.error(`Error al cargar el icono para ${competencia}:`, error);
+                        // Usar un icono por defecto si hay error
+                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                        return fetch(defaultIconUrl)
+                            .then(response => response.blob())
+                            .then(blob => zip.file('default-marker.png', blob));
                     });
+                
+                iconPromises.push(iconPromise);
             });
+            
+            // Esperar que todos los iconos se descarguen
+            Promise.all(iconPromises)
+                .then(() => {
+                    // Generar el archivo KMZ
+                    return zip.generateAsync({ type: "blob" });
+                })
+                .then(content => {
+                    const dataStr = window.URL.createObjectURL(content);
+                    const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kmz`);
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                })
+                .catch(error => {
+                    console.error('Error al generar el archivo KMZ:', error);
+                    alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
+                });
         }
         }
                 
