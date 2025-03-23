@@ -847,7 +847,6 @@
                                         "styleUrl": `#${competencia}Style`,
                                         "Folder": competencia,
                                         "Icon": icono ? icono.options.iconUrl : 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png',
-                                        // Agregar todos los atributos del GeoJSON
                                         ...atributos
                                     }
                                 });
@@ -914,6 +913,17 @@
                                     .map(([key, value]) => `<b>${key}:</b> ${value}<br>`)
                                     .join('');
                                 
+                                const placemark = `
+                                        <Placemark>
+                                            <name>${feature.properties.name}</name>
+                                            <description>${description}</description>
+                                            <visibility>1</visibility>
+                                            <Point>
+                                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                            </Point>
+                                        </Placemark>
+                                    `;
+        
                                 if (feature.geometry.type === 'Circle') {
                                     return `
                                         <Placemark>
@@ -928,33 +938,11 @@
                                             </LineString>
                                         </Placemark>
                                     `;
-                                } else {
-                                    return `
-                                        <Placemark>
-                                            <name>${feature.properties.name}</name>
-                                            <description>${description}</description>
-                                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                            <visibility>1</visibility>
-                                            <Point>
-                                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
-                                            </Point>
-                                        </Placemark>
-                                    `;
-                                                            } else {
-                                    return `
-                                        <Placemark>
-                                            <name>${feature.properties.name}</name>
-                                            <description>${description}</description>
-                                            <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                            <visibility>1</visibility>
-                                            <Point>
-                                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
-                                            </Point>
-                                        </Placemark>
-                                    `;
                                 }
+        
+                                return placemark;
                             }).join('')}
-                    </Folder>
+                                </Folder>
                 `).join('')}
                 
             </Document>
