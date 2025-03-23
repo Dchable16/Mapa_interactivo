@@ -753,10 +753,9 @@
             }
         
             // Agregar el círculo de 400m
-            let radius400GeoJSON = null;
             if (radius400m) {
                 const latLng = radius400m.getLatLng();
-                radius400GeoJSON = {
+                features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
@@ -767,14 +766,13 @@
                         "name": "Radio 400m",
                         "styleUrl": "#radioStyle"
                     }
-                };
+                });
             }
         
             // Agregar el círculo de 800m
-            let radius800GeoJSON = null;
             if (radius800m) {
                 const latLng = radius800m.getLatLng();
-                radius800GeoJSON = {
+                features.push({
                     "type": "Feature",
                     "geometry": {
                         "type": "Circle",
@@ -785,7 +783,7 @@
                         "name": "Radio 800m",
                         "styleUrl": "#radioStyle"
                     }
-                };
+                });
             }
         
             // Agregar marcadores de competencias dentro del radio de 800m
@@ -806,7 +804,7 @@
                             const distance = calcularDistanciaHaversine(markerLat, markerLng, centerLat, centerLng);
                             
                             if (distance <= radius) {
-                                const nombre = marker.feature.properties.Nombre || marker.feature.properties.name || "Sin Nombre";
+                                const nombre = marker.feature.properties.Nombre || marker.feature.properties.nombre || "Sin Nombre";
                                 const icono = iconosPersonalizados[competencia];
                                 
                                 features.push({
@@ -826,14 +824,6 @@
                         });
                     }
                 }
-            }
-        
-            // Agregar los círculos a features
-            if (radius400GeoJSON) {
-                features.push(radius400GeoJSON);
-            }
-            if (radius800GeoJSON) {
-                features.push(radius800GeoJSON);
             }
         
             const geojsonData = {
@@ -944,7 +934,7 @@
             }
         
             // Proceso de descarga
-                if (formato === 'kml') {
+            if (formato === 'kml') {
                 const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
@@ -953,7 +943,7 @@
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
             } else if (formato === 'kmz') {
-                const zip = new JSZip();
+                        const zip = new JSZip();
                 
                 // Agregar KML
                 zip.file("capas_resultantes.kml", kml);
