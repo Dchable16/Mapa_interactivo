@@ -984,38 +984,76 @@
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
         } else if (formato === 'kmz') {
-            const zip = new JSZip();
-            
-            // Agregar el archivo KML
-            zip.file("capas_resultantes.kml", kml);
-            
-            // Crear una carpeta para los iconos
-            const iconFolder = zip.folder("icons");
-            
-            // Agregar los iconos para cada tipo de competencia
-            Object.keys(iconosPersonalizados).forEach(competencia => {
-                const icon = iconosPersonalizados[competencia];
-                const iconUrl = icon.options.iconUrl;
+    const zip = new JSZip();
+    
+    // Agregar el archivo KML
+    zip.file("capas_resultantes.kml", kml);
+    
+    // Crear una carpeta para los iconos
+    const iconFolder = zip.folder("icons");
+    
+    // Crear un objeto para mapear los estilos a sus iconos
+    const styleToIcon = {};
+    
+    // Extraer los estilos del KML y mapearlos a sus iconos
+    const kmlStyles = kml.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/g);
+    
+    if (kmlStyles) {
+        kmlStyles.forEach(style => {
+            const matches = style.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/);
+            if (matches) {
+                const styleId = matches[1];
+                const iconUrl = matches[2];
                 
-                // Extraer el nombre del archivo del URL
-                const filename = iconUrl.split('/').pop();
+                // Extraer el nombre de la competencia del styleId
+                const competencia = styleId.replace('Style', '');
                 
-                // Agregar el icono al archivo KMZ
-                fetch(iconUrl)
+                // Verificar si el icono existe en iconosPersonalizados
+                if (iconosPersonalizados[competencia]) {
+                    styleToIcon[styleId] = iconosPersonalizados[competencia];
+                }
+            }
+        });
+    }
+    
+    // Agregar los iconos necesarios al KMZ
+    Object.values(styleToIcon).forEach(icon => {
+        const iconUrl = icon.options.iconUrl;
+        const filename = iconUrl.split('/').pop();
+        
+        // Agregar el icono al archivo KMZ
+        fetch(iconUrl)
+            .then(response => response.blob())
+            .then(blob => {
+                // Guardar el icono en la carpeta de iconos
+                iconFolder.file(filename, blob);
+            })
+            .catch(error => {
+                console.error(`Error al cargar el icono:`, error);
+                // Usar un icono por defecto si hay error
+                const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                fetch(defaultIconUrl)
                     .then(response => response.blob())
-                    .then(blob => {
-                        // Guardar el icono en la carpeta de iconos
-                        iconFolder.file(filename, blob);
-                    })
-                    .catch(error => {
-                        console.error(`Error al cargar el icono para ${competencia}:`, error);
-                        // Usar un icono por defecto si hay error
-                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                        fetch(defaultIconUrl)
-                            .then(response => response.blob())
-                            .then(blob => iconFolder.file('default-marker.png', blob));
-                    });
+                    .then(blob => iconFolder.file('default-marker.png', blob));
             });
+    });
+    
+    // Generar el archivo KMZ
+    zip.generateAsync({ type: "blob" })
+        .then(content => {
+            const dataStr = window.URL.createObjectURL(content);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kmz`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        })
+        .catch(error => {
+            console.error('Error al generar el archivo KMZ:', error);
+            alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
+        });
+}
             
             // Generar el archivo KMZ
             zip.generateAsync({ type: "blob" })
@@ -1446,9 +1484,7 @@
         loadLayer('Primarias', 'Competencias'); 
         loadLayer('Tiendas 3B', 'Competencias'); 
         loadLayer('Tiendas Neto', 'Competencias'); 
-        
-        
-
+     
         // Localización en tiempo real
         let watchId = null;
         let realtimeMarker = null;
