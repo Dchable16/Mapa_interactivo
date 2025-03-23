@@ -873,14 +873,14 @@
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
                     const icono = iconosPersonalizados[competencia];
-                    const fileName = icono.options.iconUrl.substring(icono.options.iconUrl.lastIndexOf('/') + 1);
-                    const iconUrl = icono ? fileName : 'marker.png';
+                    const iconUrl = icono ? (icono.options ? icono.options.iconUrl : icono.iconUrl) : 'marker.png';
+                    const fileName = iconUrl ? iconUrl.substring(iconUrl.lastIndexOf('/') + 1) : 'marker.png';
                     
                     return `
                         <Style id="${competencia}Style">
                             <IconStyle>
                                 <Icon>
-                                    <href>${iconUrl}</href>
+                                    <href>${fileName}</href>
                                 </Icon>
                                 <scale>1.0</scale>
                             </IconStyle>
@@ -974,14 +974,17 @@
                 // Agregar los íconos necesarios
                 Object.keys(iconosPersonalizados).forEach(competencia => {
                     const icono = iconosPersonalizados[competencia];
-                    if (icono && icono.options.iconUrl) {
-                        const fileName = icono.options.iconUrl.substring(icono.options.iconUrl.lastIndexOf('/') + 1);
-                        fetch(icono.options.iconUrl)
-                            .then(response => response.blob())
-                            .then(blob => {
-                                zip.file(fileName, blob);
-                            })
-                            .catch(error => console.error(`Error al descargar ícono ${competencia}:`, error));
+                    if (icono) {
+                        const iconUrl = icono.options ? icono.options.iconUrl : icono.iconUrl;
+                        if (iconUrl) {
+                            const fileName = iconUrl.substring(iconUrl.lastIndexOf('/') + 1);
+                            fetch(iconUrl)
+                                .then(response => response.blob())
+                                .then(blob => {
+                                    zip.file(fileName, blob);
+                                })
+                                .catch(error => console.error(`Error al descargar ícono ${competencia}:`, error));
+                        }
                     }
                 });
         
