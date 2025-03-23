@@ -943,8 +943,8 @@
                         `;
                     } else if (feature.geometry.type === 'Folder') {
                         return `
-                            <Folder>
-                                                        <name>${feature.properties.name}</name>
+                                                <Folder>
+                                <name>${feature.properties.name}</name>
                                 ${feature.properties.features.map(subFeature => `
                                     <Placemark>
                                         <name>${subFeature.properties.name}</name>
@@ -989,7 +989,7 @@
             // Agregar el archivo KML
             zip.file("capas_resultantes.kml", kml);
             
-            // Agregar los iconos directamente desde el KML
+            // Agregar los iconos para cada tipo de competencia
             Object.keys(iconosPersonalizados).forEach(competencia => {
                 const icon = iconosPersonalizados[competencia];
                 const iconUrl = icon.options.iconUrl;
@@ -1003,6 +1003,11 @@
                     .then(blob => zip.file(filename, blob))
                     .catch(error => {
                         console.error(`Error al cargar el icono para ${competencia}:`, error);
+                        // Usar un icono por defecto si hay error
+                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                        fetch(defaultIconUrl)
+                            .then(response => response.blob())
+                            .then(blob => zip.file('default-marker.png', blob));
                     });
             });
             
@@ -1021,6 +1026,7 @@
                     console.error('Error al generar el archivo KMZ:', error);
                     alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
                 });
+        }
         }
                 
         // Crear un icono personalizado usando el logotipo
