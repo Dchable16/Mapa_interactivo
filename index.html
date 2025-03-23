@@ -819,7 +819,7 @@
                                         "name": nombre,
                                         "styleUrl": `#${competencia}Style`,
                                         "Folder": competencia,
-                                        "Icon": icono ? icono.options.iconUrl : null
+                                        "Icon": icono ? icono.options.iconUrl : 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png'
                                     }
                                 });
                             }
@@ -862,19 +862,23 @@
                 </Style>
         
                 <!-- Estilos para cada competencia -->
-                ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
-                    <Style id="${competencia}Style">
-                        <IconStyle>
-                            <Icon>
-                                <href>${iconosPersonalizados[competencia].options.iconUrl}</href>
-                            </Icon>
-                            <scale>1.0</scale>
-                        </IconStyle>
-                        <LabelStyle>
-                            <scale>1.0</scale>
-                        </LabelStyle>
-                    </Style>
-                `).join('')}
+                ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
+                    const icon = iconosPersonalizados[competencia];
+                    const iconUrl = icon && icon.options ? icon.options.iconUrl : 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png';
+                    return `
+                        <Style id="${competencia}Style">
+                            <IconStyle>
+                                <Icon>
+                                    <href>${iconUrl}</href>
+                                </Icon>
+                                <scale>1.0</scale>
+                            </IconStyle>
+                            <LabelStyle>
+                                <scale>1.0</scale>
+                            </LabelStyle>
+                        </Style>
+                    `;
+                }).join('')}
                 
                 <!-- Carpetas por tipo de competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => `
@@ -940,11 +944,11 @@
             }
         
             // Proceso de descarga
-            if (formato === 'kml') {
+                if (formato === 'kml') {
                 const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
+                downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
                 document.body.appendChild(downloadAnchorNode);
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
@@ -955,14 +959,17 @@
                 zip.file("capas_resultantes.kml", kml);
                 
                 // Agregar iconos
-                Object.keys(iconosPersonalizados).forEach(competencia => {
+                Object.keys(geoJsonLayersCompetencias).forEach(competencia => {
                     const icon = iconosPersonalizados[competencia];
-                    if (icon && icon.options.iconUrl) {
+                    if (icon && icon.options && icon.options.iconUrl) {
                         fetch(icon.options.iconUrl)
                             .then(response => response.blob())
                             .then(blob => {
                                 const filename = icon.options.iconUrl.split('/').pop();
                                 zip.file(`icons/${filename}`, blob);
+                            })
+                            .catch(error => {
+                                console.error(`Error al descargar icono para ${competencia}:`, error);
                             });
                     }
                 });
@@ -976,6 +983,9 @@
                         document.body.appendChild(downloadAnchorNode);
                         downloadAnchorNode.click();
                         downloadAnchorNode.remove();
+                    })
+                    .catch(error => {
+                        console.error('Error al generar el archivo KMZ:', error);
                     });
             }
         }
