@@ -806,7 +806,7 @@
                             const distance = calcularDistanciaHaversine(markerLat, markerLng, centerLat, centerLng);
                             
                             if (distance <= radius) {
-                                const nombre = marker.getPopup() ? marker.getPopup().getContent() : "Sin Nombre";
+                                const nombre = marker.feature.properties.Nombre || marker.feature.properties.name || "Sin Nombre";
                                 const icono = iconosPersonalizados[competencia];
                                 
                                 features.push({
