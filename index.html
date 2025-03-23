@@ -945,21 +945,20 @@
                 return `
                     <Folder>
                         <name>${feature.properties.name}</name>
-                        ${feature.properties.features.map(subFeature =>
-                                                    <Folder>
-                            <name>${feature.properties.name}</name>
-                            ${feature.properties.features.map(subFeature => `
-                                <Placemark>
-                                    <name>${subFeature.properties.name}</name>
-                                    <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
-                                    <visibility>1</visibility>
-                                    <Point>
-                                        <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
-                                    </Point>
-                                </Placemark>
-                            `).join('')}
-                        </Folder>
-                    `;
+                        ${feature.properties.features.map(subFeature =>                    <Folder>
+                        <name>${feature.properties.name}</name>
+                        ${feature.properties.features.map(subFeature => `
+                            <Placemark>
+                                <name>${subFeature.properties.name}</name>
+                                <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
+                                <visibility>1</visibility>
+                                <Point>
+                                    <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
+                                </Point>
+                            </Placemark>
+                        `).join('')}
+                    </Folder>
+                `;
             }
         }).join('')}
         
