@@ -989,6 +989,9 @@
             // Agregar el archivo KML
             zip.file("capas_resultantes.kml", kml);
             
+            // Crear una carpeta para los iconos
+            const iconFolder = zip.folder("icons");
+            
             // Agregar los iconos para cada tipo de competencia
             Object.keys(iconosPersonalizados).forEach(competencia => {
                 const icon = iconosPersonalizados[competencia];
@@ -1000,14 +1003,17 @@
                 // Agregar el icono al archivo KMZ
                 fetch(iconUrl)
                     .then(response => response.blob())
-                    .then(blob => zip.file(filename, blob))
+                    .then(blob => {
+                        // Guardar el icono en la carpeta de iconos
+                        iconFolder.file(filename, blob);
+                    })
                     .catch(error => {
                         console.error(`Error al cargar el icono para ${competencia}:`, error);
                         // Usar un icono por defecto si hay error
                         const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
                         fetch(defaultIconUrl)
                             .then(response => response.blob())
-                            .then(blob => zip.file('default-marker.png', blob));
+                            .then(blob => iconFolder.file('default-marker.png', blob));
                     });
             });
             
