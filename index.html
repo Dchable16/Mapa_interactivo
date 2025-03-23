@@ -747,7 +747,8 @@
                         "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
                     },
                     "properties": {
-                        "name": document.getElementById('markerName').value || "Marcador Principal"
+                        "name": document.getElementById('markerName').value || "Marcador Principal",
+                        "styleUrl": "#markerStyle"
                     }
                 });
             }
@@ -856,6 +857,19 @@
                     </PolyStyle>
                 </Style>
         
+                <!-- Estilo para el marcador principal -->
+                <Style id="markerStyle">
+                    <IconStyle>
+                        <Icon>
+                            <href>https://github.com/Dchable16/Mapa_interactivo/raw/77c9376848e01d5ce6ce89c08572ce51bf200f2e/Captura-removebg-preview.png</href>
+                        </Icon>
+                        <scale>1.0</scale>
+                    </IconStyle>
+                    <LabelStyle>
+                        <scale>1.0</scale>
+                    </LabelStyle>
+                </Style>
+        
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
                     // Verificar si el ícono existe
@@ -895,17 +909,23 @@
                     </Folder>
                 `).join('')}
         
-                <!-- Agregar los radios fuera de las carpetas -->
-                ${geojsonData.features.filter(f => f.geometry.type === 'Circle').map(circle => `
+                <!-- Agregar los radios y el marcador principal -->
+                ${geojsonData.features.filter(f => f.geometry.type === 'Circle' || f.properties.styleUrl === '#markerStyle').map(feature => `
                     <Placemark>
-                        <name>${circle.properties.name}</name>
-                        <styleUrl>#radioStyle</styleUrl>
+                        <name>${feature.properties.name}</name>
+                        <styleUrl>${feature.properties.styleUrl}</styleUrl>
                         <visibility>1</visibility>
-                        <LineString>
-                            <coordinates>
-                                ${generateCircleCoordinates(circle.geometry.coordinates, circle.geometry.radius)}
-                            </coordinates>
-                        </LineString>
+                        ${feature.geometry.type === 'Circle' ? `
+                            <LineString>
+                                <coordinates>
+                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                </coordinates>
+                            </LineString>
+                        ` : `
+                            <Point>
+                                <coordinates>${feature.geometry.coordinates[0]},${feature.geometry.coordinates[1]}</coordinates>
+                            </Point>
+                        `}
                     </Placemark>
                 `).join('')}
                 
@@ -924,7 +944,7 @@
                 return coordinates.join(' ');
             }
         
-            // Función para calcular distancia usando Haversine
+                // Función para calcular distancia usando Haversine
             function calcularDistancia(lat1, lon1, lat2, lon2) {
                 const R = 6371000; // Radio de la Tierra en metros
                 const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -947,10 +967,29 @@
                 downloadAnchorNode.remove();
             } else if (formato === 'kmz') {
                 const zip = new JSZip();
+                
+                // Agregar el KML
                 zip.file("capas_resultantes.kml", kml);
                 
+                // Agregar los íconos necesarios
+                Object.keys(iconosPersonalizados).forEach(competencia => {
+                    const icono = iconosPersonalizados[competencia];
+                    if (icono && icono.iconUrl) {
+                        // Crear un nombre de archivo seguro
+                        const fileName = competencia.replace(/[^a-zA-Z0-9]/g, '_') + '.png';
+                        // Agregar el ícono al archivo KMZ
+                        fetch(icono.iconUrl)
+                            .then(response => response.blob())
+                            .then(blob => {
+                                zip.file(fileName, blob);
+                            })
+                            .catch(error => console.error(`Error al descargar ícono ${competencia}:`, error));
+                    }
+                });
+                
+                // Generar el archivo KMZ
                 zip.generateAsync({ type: "blob" })
-                                .then(function (content) {
+                    .then(function (content) {
                         const dataStr = window.URL.createObjectURL(content);
                         const downloadAnchorNode = document.createElement('a');
                         downloadAnchorNode.setAttribute("href", dataStr);
@@ -961,7 +1000,7 @@
                     });
             }
         }
-                
+                        
         // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://github.com/Dchable16/Mapa_interactivo/raw/main/Captura-removebg-preview.png',
