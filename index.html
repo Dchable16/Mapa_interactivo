@@ -241,64 +241,16 @@
                                         feature.geometry.coordinates.forEach(polygon => {
                                             const turfPolygon = turf.polygon(polygon);
                                             const centroid = turf.centroid(turfPolygon);
-                                            
-                                            // Calcular el centro del polígono visible
-                                            const visiblePolygon = turf.intersect(turfPolygon, turf.bboxPolygon(bounds.toBBoxArray()));
-                                            const visibleCentroid = visiblePolygon ? turf.centroid(visiblePolygon) : centroid;
-                                            
-                                            const latLng = L.latLng(visibleCentroid.geometry.coordinates[1], visibleCentroid.geometry.coordinates[0]);
-                                            
-                                            // Asegurarse de que la etiqueta esté siempre visible
-                                            if (bounds.contains(latLng)) {
+                                            const latLng = L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+        
+                                            // Verificar si el polígono está visible
+                                            if (turf.booleanIntersects(turfPolygon, turf.bboxPolygon(bounds.toBBoxArray()))) {
                                                 const marker = L.marker(latLng, {
                                                     icon: L.divIcon({
                                                         className: 'ageb-label',
                                                         html: feature.properties.POB1.toString(),
                                                         iconSize: [100, 20]
-                                                    }),
-                                                    // Ajustar la posición de la etiqueta para que siempre esté visible
-                                                    addTo: function(map) {
-                                                        const bounds = map.getBounds();
-                                                        const latLng = this.getLatLng();
-                                                        const point = map.latLngToContainerPoint(latLng);
-                                                        const container = map.getContainer();
-                                                        
-                                                        // Ajustar horizontalmente
-                                                        if (point.x < 20) {
-                                                            this.setIcon(L.divIcon({
-                                                                className: 'ageb-label',
-                                                                html: feature.properties.POB1.toString(),
-                                                                iconSize: [100, 20],
-                                                                iconAnchor: [100, 10]
-                                                            }));
-                                                        } else if (point.x > container.clientWidth - 120) {
-                                                            this.setIcon(L.divIcon({
-                                                                className: 'ageb-label',
-                                                                html: feature.properties.POB1.toString(),
-                                                                iconSize: [100, 20],
-                                                                iconAnchor: [0, 10]
-                                                            }));
-                                                        }
-                                                        
-                                                        // Ajustar verticalmente
-                                                        if (point.y < 20) {
-                                                            this.setIcon(L.divIcon({
-                                                                className: 'ageb-label',
-                                                                html: feature.properties.POB1.toString(),
-                                                                iconSize: [100, 20],
-                                                                iconAnchor: [50, 20]
-                                                            }));
-                                                        } else if (point.y > container.clientHeight - 40) {
-                                                            this.setIcon(L.divIcon({
-                                                                className: 'ageb-label',
-                                                                html: feature.properties.POB1.toString(),
-                                                                iconSize: [100, 20],
-                                                                iconAnchor: [50, 0]
-                                                            }));
-                                                        }
-                                                        
-                                                        L.Marker.prototype.addTo.call(this, map);
-                                                    }
+                                                    })
                                                 }).addTo(map);
                                             }
                                         });
