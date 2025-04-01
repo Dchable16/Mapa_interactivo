@@ -765,20 +765,15 @@
             if (radius800m) {
                 const center = radius800m.getLatLng();
                 const radius = 800; // en metros
-            
+        
                 // Crear un objeto para almacenar marcadores por tipo de competencia
                 const marcadoresPorCompetencia = {};
-            
+        
                 for (const competencia in geoJsonLayersCompetencias) {
                     const layer = geoJsonLayersCompetencias[competencia];
                     if (layer) {
-                        // Obtener el nombre base de la competencia
-                        let nombreBase = competencia;
-                        
-                        // Si el nombre tiene el sufijo _Vallejo, usar solo la parte anterior
-                        if (competencia.endsWith('_Vallejo')) {
-                            nombreBase = competencia.split('_')[0];
-                        }
+                        // Usar el nombre completo de la competencia
+                        const nombreBase = competencia;
                         
                         layer.eachLayer(marker => {
                             // Calcular la distancia usando la fórmula de Haversine
@@ -786,13 +781,13 @@
                             const markerLng = marker.getLatLng().lng;
                             const centerLat = center.lat;
                             const centerLng = center.lng;
-            
+        
                             // Convertir grados a radianes
                             const radLat1 = markerLat * Math.PI / 180;
                             const radLat2 = centerLat * Math.PI / 180;
                             const radLng1 = markerLng * Math.PI / 180;
                             const radLng2 = centerLng * Math.PI / 180;
-            
+        
                             // Calcular la distancia usando la fórmula de Haversine
                             const dLat = radLat2 - radLat1;
                             const dLng = radLng2 - radLng1;
@@ -801,7 +796,7 @@
                                       Math.sin(dLng/2) * Math.sin(dLng/2);
                             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
                             const distance = 6371000 * c; // 6371000 es el radio de la Tierra en metros
-            
+        
                             // Si el marcador está dentro del radio de 800m
                             if (distance <= radius) {
                                 // Obtener el nombre del marcador desde las propiedades del GeoJSON
@@ -828,7 +823,7 @@
                         });
                     }
                 }
-            
+        
                 // Agregar todos los marcadores organizados por carpeta
                 for (const competencia in marcadoresPorCompetencia) {
                     features.push({
@@ -878,33 +873,28 @@
         
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
-                // Obtener el nombre base de la competencia
-                let nombreBase = competencia;
-                
-                // Si el nombre tiene el sufijo _Vallejo, usar solo la parte anterior
-                if (competencia.endsWith('_Vallejo')) {
-                    nombreBase = competencia.split('_')[0];
-                }
-                
-                // Obtener el icono para esta competencia
-                const icon = iconosPersonalizados[nombreBase];
-                const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                
-                return `
-                    <Style id="${nombreBase}Style">
-                        <IconStyle>
-                            <Icon>
-                                <href>${iconUrl}</href>
+                    // Usar el nombre completo de la competencia
+                    const nombreBase = competencia;
+                    
+                    // Obtener el icono para esta competencia
+                    const icon = iconosPersonalizados[competencia];
+                    const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                    
+                    return `
+                        <Style id="${nombreBase}Style">
+                            <IconStyle>
+                                <Icon>
+                                    <href>${iconUrl}</href>
+                                    <scale>1.0</scale>
+                                </Icon>
+                                <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
+                            </IconStyle>
+                            <LabelStyle>
                                 <scale>1.0</scale>
-                            </Icon>
-                            <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
-                        </IconStyle>
-                        <LabelStyle>
-                            <scale>1.0</scale>
-                        </LabelStyle>
-                    </Style>
-                `;
-            }).join('')}
+                            </LabelStyle>
+                        </Style>
+                    `;
+                }).join('')}
                 
                 ${geojsonData.features.map(feature => {
                     if (feature.geometry.type === 'Circle') {
@@ -994,7 +984,7 @@
                         const styleId = matches[1];
                         const iconUrl = matches[2];
                         
-                        // Extraer el nombre base de la competencia del styleId
+                        // Extraer el nombre de la competencia del styleId
                         const nombreBase = styleId.replace('Style', '');
                         
                         // Verificar si el icono existe en iconosPersonalizados
