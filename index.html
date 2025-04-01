@@ -772,6 +772,9 @@
                 for (const competencia in geoJsonLayersCompetencias) {
                     const layer = geoJsonLayersCompetencias[competencia];
                     if (layer) {
+                        // Obtener el nombre base de la competencia (sin el sufijo _Vallejo)
+                        const nombreBase = competencia.split('_')[0];
+                        
                         layer.eachLayer(marker => {
                             // Calcular la distancia usando la fórmula de Haversine
                             const markerLat = marker.getLatLng().lat;
@@ -800,12 +803,12 @@
                                 const nombre = marker.feature.properties.Nombre || "Sin Nombre";
                                 
                                 // Crear la carpeta si no existe
-                                if (!marcadoresPorCompetencia[competencia]) {
-                                    marcadoresPorCompetencia[competencia] = [];
+                                if (!marcadoresPorCompetencia[nombreBase]) {
+                                    marcadoresPorCompetencia[nombreBase] = [];
                                 }
                                 
                                 // Agregar el marcador a la carpeta correspondiente
-                                marcadoresPorCompetencia[competencia].push({
+                                marcadoresPorCompetencia[nombreBase].push({
                                     "type": "Feature",
                                     "geometry": {
                                         "type": "Point",
@@ -813,7 +816,7 @@
                                     },
                                     "properties": {
                                         "name": nombre,
-                                        "styleUrl": `#${competencia}Style`
+                                        "styleUrl": `#${nombreBase}Style`
                                     }
                                 });
                             }
@@ -870,12 +873,15 @@
         
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
+                    // Obtener el nombre base de la competencia
+                    const nombreBase = competencia.split('_')[0];
+                    
                     // Obtener el icono para esta competencia
-                    const icon = iconosPersonalizados[competencia];
+                    const icon = iconosPersonalizados[nombreBase];
                     const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
                     
                     return `
-                        <Style id="${competencia}Style">
+                        <Style id="${nombreBase}Style">
                             <IconStyle>
                                 <Icon>
                                     <href>${iconUrl}</href>
@@ -913,7 +919,7 @@
                                 <Point>
                                     <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                                 </Point>
-                            </Placemark>
+                                                </Placemark>
                         `;
                     } else if (feature.geometry.type === 'Folder') {
                         return `
@@ -978,12 +984,12 @@
                         const styleId = matches[1];
                         const iconUrl = matches[2];
                         
-                        // Extraer el nombre de la competencia del styleId
-                        const competencia = styleId.replace('Style', '');
+                        // Extraer el nombre base de la competencia del styleId
+                        const nombreBase = styleId.replace('Style', '');
                         
                         // Verificar si el icono existe en iconosPersonalizados
-                        if (iconosPersonalizados[competencia]) {
-                            styleToIcon[styleId] = iconosPersonalizados[competencia];
+                        if (iconosPersonalizados[nombreBase]) {
+                            styleToIcon[styleId] = iconosPersonalizados[nombreBase];
                         }
                     }
                 });
@@ -1026,7 +1032,7 @@
                     console.error('Error al generar el archivo KMZ:', error);
                     alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
                 });
-        }
+            }
         }
                 
      // Crear un icono personalizado usando el logotipo
