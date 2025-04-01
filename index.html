@@ -873,15 +873,15 @@
         
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
-                    // Obtener el nombre base de la competencia (sin espacios)
-                    const nombreBase = competencia.replace(/ /g, '_');
+                    // Obtener el nombre exacto de la capa como aparece en el GeoJSON
+                    const nombreGeoJSON = competencia;
                     
                     // Obtener el icono para esta competencia
-                    const icon = iconosPersonalizados[nombreBase];
+                    const icon = iconosPersonalizados[nombreGeoJSON];
                     const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
                     
                     return `
-                        <Style id="${nombreBase}Style">
+                        <Style id="${nombreGeoJSON}Style">
                             <IconStyle>
                                 <Icon>
                                     <href>${iconUrl}</href>
@@ -897,48 +897,54 @@
                 }).join('')}
                 
                 ${geojsonData.features.map(feature => {
-                    if (feature.geometry.type === 'Circle') {
-                        return `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <styleUrl>#radioStyle</styleUrl>
-                                <visibility>1</visibility>
-                                <LineString>
-                                    <coordinates>
-                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                    </coordinates>
-                                </LineString>
-                            </Placemark>
-                        `;
-                    } else if (feature.geometry.type === 'Point') {
-                        return `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
-                                <visibility>1</visibility>
-                                <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
-                                </Point>
-                                                </Placemark>
-                        `;
-                    } else if (feature.geometry.type === 'Folder') {
-                        return `
-                            <Folder>
-                                <name>${feature.properties.name}</name>
-                                ${feature.properties.features.map(subFeature => `
+                if (feature.geometry.type === 'Circle') {
+                    return `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <styleUrl>#radioStyle</styleUrl>
+                            <visibility>1</visibility>
+                            <LineString>
+                                <coordinates>
+                                    ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                                </coordinates>
+                            </LineString>
+                        </Placemark>
+                    `;
+                } else if (feature.geometry.type === 'Point') {
+                    // Usar el nombre exacto de la capa como aparece en el GeoJSON
+                    const styleId = feature.properties.name;
+                    return `
+                        <Placemark>
+                            <name>${feature.properties.name}</name>
+                            <styleUrl>#${styleId}Style</styleUrl>
+                            <visibility>1</visibility>
+                            <Point>
+                                <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                            </Point>
+                        </Placemark>
+                    `;
+                } else if (feature.geometry.type === 'Folder') {
+                    return `
+                        <Folder>
+                            <name>${feature.properties.name}</name>
+                            ${feature.properties.features.map(subFeature => {
+                                // Usar el nombre exacto de la capa como aparece en el GeoJSON
+                                const styleId = feature.properties.name;
+                                return `
                                     <Placemark>
                                         <name>${subFeature.properties.name}</name>
-                                        <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
+                                        <styleUrl>#${styleId}Style</styleUrl>
                                         <visibility>1</visibility>
                                         <Point>
                                             <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
                                         </Point>
                                     </Placemark>
-                                `).join('')}
-                            </Folder>
-                        `;
-                    }
-                }).join('')}
+                                `;
+                            }).join('')}
+                        </Folder>
+                    `;
+                }
+            }).join('')}
             </Document>
         </kml>`;
         
