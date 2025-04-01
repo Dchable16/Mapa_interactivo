@@ -873,11 +873,11 @@
         
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
-                    // Usar el nombre completo de la competencia
-                    const nombreBase = competencia;
+                    // Obtener el nombre base de la competencia (sin espacios)
+                    const nombreBase = competencia.replace(/ /g, '_');
                     
                     // Obtener el icono para esta competencia
-                    const icon = iconosPersonalizados[competencia];
+                    const icon = iconosPersonalizados[nombreBase];
                     const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
                     
                     return `
