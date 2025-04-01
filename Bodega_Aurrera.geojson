@@ -3,13 +3,13 @@
 "name": "Bodega_Aurrera",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "ID": 1, "Nombre": "BA", "Longitud": -99.144829, "Latitud": 19.406732 }, "geometry": { "type": "Point", "coordinates": [ 19.406732, -99.144829 ] } },
-{ "type": "Feature", "properties": { "ID": 2, "Nombre": "BA", "Longitud": -99.143477, "Latitud": 19.466422 }, "geometry": { "type": "Point", "coordinates": [ 19.466422, -99.143477 ] } },
-{ "type": "Feature", "properties": { "ID": 3, "Nombre": "BA", "Longitud": -99.179093, "Latitud": 19.489678 }, "geometry": { "type": "Point", "coordinates": [ 19.489678, -99.179093 ] } },
-{ "type": "Feature", "properties": { "ID": 4, "Nombre": "BA", "Longitud": -99.139962, "Latitud": 19.422146 }, "geometry": { "type": "Point", "coordinates": [ 19.422146, -99.139962 ] } },
-{ "type": "Feature", "properties": { "ID": 5, "Nombre": "BA", "Longitud": -99.183767, "Latitud": 19.44589 }, "geometry": { "type": "Point", "coordinates": [ 19.44589, -99.183767 ] } },
-{ "type": "Feature", "properties": { "ID": 6, "Nombre": "BA", "Longitud": -99.160785, "Latitud": 19.433757 }, "geometry": { "type": "Point", "coordinates": [ 19.433757, -99.160785 ] } },
-{ "type": "Feature", "properties": { "ID": 7, "Nombre": "BA", "Longitud": -99.187371, "Latitud": 19.404135 }, "geometry": { "type": "Point", "coordinates": [ 19.404135, -99.187371 ] } },
-{ "type": "Feature", "properties": { "ID": 8, "Nombre": "BA, Flores Magon", "Longitud": -99.140668, "Latitud": 19.450539 }, "geometry": { "type": "Point", "coordinates": [ 19.450539, -99.140668 ] } }
+{ "type": "Feature", "properties": { "ID": 1, "Nombre": "BA", "Latitud": 19.406732, "Longitud": -99.144829 }, "geometry": { "type": "Point", "coordinates": [ -99.144829, 19.406732 ] } },
+{ "type": "Feature", "properties": { "ID": 2, "Nombre": "BA", "Latitud": 19.466422, "Longitud": -99.143477 }, "geometry": { "type": "Point", "coordinates": [ -99.143477, 19.466422 ] } },
+{ "type": "Feature", "properties": { "ID": 3, "Nombre": "BA", "Latitud": 19.489678, "Longitud": -99.179093 }, "geometry": { "type": "Point", "coordinates": [ -99.179093, 19.489678 ] } },
+{ "type": "Feature", "properties": { "ID": 4, "Nombre": "BA", "Latitud": 19.422146, "Longitud": -99.139962 }, "geometry": { "type": "Point", "coordinates": [ -99.139962, 19.422146 ] } },
+{ "type": "Feature", "properties": { "ID": 5, "Nombre": "BA", "Latitud": 19.44589, "Longitud": -99.183767 }, "geometry": { "type": "Point", "coordinates": [ -99.183767, 19.44589 ] } },
+{ "type": "Feature", "properties": { "ID": 6, "Nombre": "BA", "Latitud": 19.433757, "Longitud": -99.160785 }, "geometry": { "type": "Point", "coordinates": [ -99.160785, 19.433757 ] } },
+{ "type": "Feature", "properties": { "ID": 7, "Nombre": "BA", "Latitud": 19.404135, "Longitud": -99.187371 }, "geometry": { "type": "Point", "coordinates": [ -99.187371, 19.404135 ] } },
+{ "type": "Feature", "properties": { "ID": 8, "Nombre": "BA", "Latitud": 19.450539, "Longitud": -99.140668 }, "geometry": { "type": "Point", "coordinates": [ -99.140668, 19.450539 ] } }
 ]
 }
