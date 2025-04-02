@@ -869,8 +869,7 @@
                 </Style>
         
                 <!-- Estilos para cada competencia -->
-                ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
-                    // Obtener el icono para esta competencia
+                ${Object.keys(iconosPersonalizados).map(competencia => {
                     const icon = iconosPersonalizados[competencia];
                     const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
                     
@@ -915,51 +914,50 @@
                                 </Point>
                             </Placemark>
                         `;
-                                } else if (feature.geometry.type === 'Folder') {
-                                    return `
-                                        <Folder>
-                                            <name>${feature.properties.name}</name>
-                                            ${feature.properties.features.map(subFeature => `
-                                                <Placemark>
-                                                    <name>${subFeature.properties.name}</name>
-                                                    <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
-                                                    <visibility>1</visibility>
-                                                    <Point>
-                                                        <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
-                                                    </Point>
-                                                </Placemark>
-                                            `).join('')}
-                                        </Folder>
-                                    `;
-                                }
-                            }).join('')}
-                            
-                        </Document>
-                    </kml>`;
-                    
-                    // Función para generar coordenadas de círculo
-                    function generateCircleCoordinates(center, radius) {
-                        const coordinates = [];
-                        for (let i = 0; i < 360; i += 1) {
-                            const angle = i * Math.PI / 180;
-                            const lat = center[1] + (radius * Math.cos(angle) / 111320);
-                            const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
-                            coordinates.push(`${lng},${lat}`);
-                        }
-                        return coordinates.join(' ');
+                    } else if (feature.geometry.type === 'Folder') {
+                        return `
+                            <Folder>
+                                <name>${feature.properties.name}</name>
+                                ${feature.properties.features.map(subFeature => `
+                                                                <Placemark>
+                                        <name>${subFeature.properties.name}</name>
+                                        <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
+                                        <visibility>1</visibility>
+                                        <Point>
+                                            <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
+                                        </Point>
+                                    </Placemark>
+                                `).join('')}
+                            </Folder>
+                        `;
                     }
-                    
-                    if (formato === 'kml') {
-                        const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
-                    } else if (formato === 'kmz') {
-                        const zip = new JSZip();
-            
+                }).join('')}
+            </Document>
+        </kml>`;
+        
+        // Función para generar coordenadas de círculo
+        function generateCircleCoordinates(center, radius) {
+            const coordinates = [];
+            for (let i = 0; i < 360; i += 1) {
+                const angle = i * Math.PI / 180;
+                const lat = center[1] + (radius * Math.cos(angle) / 111320);
+                const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
+                coordinates.push(`${lng},${lat}`);
+            }
+            return coordinates.join(' ');
+        }
+        
+        if (formato === 'kml') {
+            const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        } else if (formato === 'kmz') {
+            const zip = new JSZip();
+        
             // Agregar el archivo KML
             zip.file("capas_resultantes.kml", kml);
             
