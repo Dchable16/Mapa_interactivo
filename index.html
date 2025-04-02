@@ -710,323 +710,328 @@
 
         // Crea los KML y KMZ
         function descargarCapasResultantes(formato) {
-            let features = [];
-            
-            // Mantener el marcador principal sin cambios
-            if (currentMarker) {
-                features.push({
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
-                    },
-                    "properties": {
-                        "name": document.getElementById('markerName').value || "Marcador Principal"
-                    }
-                });
+    let features = [];
+    
+    // Mantener el marcador principal sin cambios
+    if (currentMarker) {
+        features.push({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [currentMarker.getLatLng().lng, currentMarker.getLatLng().lat]
+            },
+            "properties": {
+                "name": document.getElementById('markerName').value || "Marcador Principal"
             }
-        
-            // Mantener la creación de radios sin cambios
-            let radius400GeoJSON = null;
-            if (radius400m) {
-                const latLng = radius400m.getLatLng();
-                radius400GeoJSON = {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat],
-                        "radius": 400
-                    },
-                    "properties": {
-                        "name": "Radio 400m",
-                        "styleUrl": "#radioStyle"
-                    }
-                };
+        });
+    }
+
+    // Mantener la creación de radios sin cambios
+    let radius400GeoJSON = null;
+    if (radius400m) {
+        const latLng = radius400m.getLatLng();
+        radius400GeoJSON = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Circle",
+                "coordinates": [latLng.lng, latLng.lat],
+                "radius": 400
+            },
+            "properties": {
+                "name": "Radio 400m",
+                "styleUrl": "#radioStyle"
             }
-        
-            let radius800GeoJSON = null;
-            if (radius800m) {
-                const latLng = radius800m.getLatLng();
-                radius800GeoJSON = {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Circle",
-                        "coordinates": [latLng.lng, latLng.lat],
-                        "radius": 800
-                    },
-                    "properties": {
-                        "name": "Radio 800m",
-                        "styleUrl": "#radioStyle"
-                    }
-                };
+        };
+    }
+
+    let radius800GeoJSON = null;
+    if (radius800m) {
+        const latLng = radius800m.getLatLng();
+        radius800GeoJSON = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Circle",
+                "coordinates": [latLng.lng, latLng.lat],
+                "radius": 800
+            },
+            "properties": {
+                "name": "Radio 800m",
+                "styleUrl": "#radioStyle"
             }
-        
-            // Agregar marcadores de competencias dentro del radio de 800m
-            if (radius800m) {
-                const center = radius800m.getLatLng();
-                const radius = 800; // en metros
-        
-                // Crear un objeto para almacenar marcadores por tipo de competencia
-                const marcadoresPorCompetencia = {};
-        
-                for (const competencia in geoJsonLayersCompetencias) {
-                    const layer = geoJsonLayersCompetencias[competencia];
-                    if (layer) {
-                        layer.eachLayer(marker => {
-                            // Calcular la distancia usando la fórmula de Haversine
-                            const markerLat = marker.getLatLng().lat;
-                            const markerLng = marker.getLatLng().lng;
-                            const centerLat = center.lat;
-                            const centerLng = center.lng;
-        
-                            // Convertir grados a radianes
-                            const radLat1 = markerLat * Math.PI / 180;
-                            const radLat2 = centerLat * Math.PI / 180;
-                            const radLng1 = markerLng * Math.PI / 180;
-                            const radLng2 = centerLng * Math.PI / 180;
-        
-                            // Calcular la distancia usando la fórmula de Haversine
-                            const dLat = radLat2 - radLat1;
-                            const dLng = radLng2 - radLng1;
-                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                                      Math.cos(radLat1) * Math.cos(radLat2) *
-                                      Math.sin(dLng/2) * Math.sin(dLng/2);
-                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                            const distance = 6371000 * c; // 6371000 es el radio de la Tierra en metros
-        
-                            // Si el marcador está dentro del radio de 800m
-                            if (distance <= radius) {
-                                // Obtener el nombre del marcador desde las propiedades del GeoJSON
-                                const nombre = marker.feature.properties.Nombre || "Sin Nombre";
-                                
-                                // Crear la carpeta si no existe
-                                if (!marcadoresPorCompetencia[competencia]) {
-                                    marcadoresPorCompetencia[competencia] = [];
-                                }
-                                
-                                // Agregar el marcador a la carpeta correspondiente
-                                marcadoresPorCompetencia[competencia].push({
-                                    "type": "Feature",
-                                    "geometry": {
-                                        "type": "Point",
-                                        "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
-                                    },
-                                    "properties": {
-                                        "name": nombre,
-                                        "styleUrl": `#${competencia}Style`
-                                    }
-                                });
+        };
+    }
+
+    // Agregar marcadores de competencias dentro del radio de 800m
+    if (radius800m) {
+        const center = radius800m.getLatLng();
+        const radius = 800; // en metros
+
+        // Crear un objeto para almacenar marcadores por tipo de competencia
+        const marcadoresPorCompetencia = {};
+
+        for (const competencia in geoJsonLayersCompetencias) {
+            const layer = geoJsonLayersCompetencias[competencia];
+            if (layer) {
+                layer.eachLayer(marker => {
+                    // Calcular la distancia usando la fórmula de Haversine
+                    const markerLat = marker.getLatLng().lat;
+                    const markerLng = marker.getLatLng().lng;
+                    const centerLat = center.lat;
+                    const centerLng = center.lng;
+
+                    // Convertir grados a radianes
+                    const radLat1 = markerLat * Math.PI / 180;
+                    const radLat2 = centerLat * Math.PI / 180;
+                    const radLng1 = markerLng * Math.PI / 180;
+                    const radLng2 = centerLng * Math.PI / 180;
+
+                    // Calcular la distancia usando la fórmula de Haversine
+                    const dLat = radLat2 - radLat1;
+                    const dLng = radLng2 - radLng1;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                              Math.cos(radLat1) * Math.cos(radLat2) *
+                              Math.sin(dLng/2) * Math.sin(dLng/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    const distance = 6371000 * c; // 6371000 es el radio de la Tierra en metros
+
+                    // Si el marcador está dentro del radio de 800m
+                    if (distance <= radius) {
+                        // Obtener el nombre del marcador desde las propiedades del GeoJSON
+                        const nombre = marker.feature.properties.Nombre || "Sin Nombre";
+                        
+                        // Crear la carpeta si no existe
+                        if (!marcadoresPorCompetencia[competencia]) {
+                            marcadoresPorCompetencia[competencia] = [];
+                        }
+                        
+                        // Agregar el marcador a la carpeta correspondiente
+                        marcadoresPorCompetencia[competencia].push({
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [marker.getLatLng().lng, marker.getLatLng().lat]
+                            },
+                            "properties": {
+                                "name": nombre,
+                                "styleUrl": `#${competencia}Style`
                             }
                         });
                     }
+                });
+            }
+        }
+
+        // Agregar todos los marcadores organizados por carpeta
+        for (const competencia in marcadoresPorCompetencia) {
+            features.push({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Folder"
+                },
+                "properties": {
+                    "name": competencia,
+                    "features": marcadoresPorCompetencia[competencia]
                 }
+            });
+        }
+    }
+
+    if (radius400GeoJSON) {
+        features.push(radius400GeoJSON);
+    }
+    if (radius800GeoJSON) {
+        features.push(radius800GeoJSON);
+    }
+
+    const geojsonData = {
+        "type": "FeatureCollection",
+        "features": features
+    };
+
+    // Crear el KML con la estructura de carpetas
+    const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
+        <description>Capas resultantes del análisis espacial</description>
         
-                // Agregar todos los marcadores organizados por carpeta
-                for (const competencia in marcadoresPorCompetencia) {
-                    features.push({
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Folder"
-                        },
-                        "properties": {
-                            "name": competencia,
-                            "features": marcadoresPorCompetencia[competencia]
-                        }
-                    });
-                }
-            }
-        
-            if (radius400GeoJSON) {
-                features.push(radius400GeoJSON);
-            }
-            if (radius800GeoJSON) {
-                features.push(radius800GeoJSON);
-            }
-        
-            const geojsonData = {
-                "type": "FeatureCollection",
-                "features": features
-            };
-        
-            // Crear el KML con la estructura de carpetas
-            const kml = `<?xml version="1.0" encoding="UTF-8"?>
-        <kml xmlns="http://www.opengis.net/kml/2.2">
-            <Document>
-                <name>${document.getElementById('markerName').value || "Capas Resultantes"}</name>
-                <description>Capas resultantes del análisis espacial</description>
-                
-                <!-- Estilo para los radios -->
-                <Style id="radioStyle">
-                    <LineStyle>
-                        <color>ff0000ff</color>
-                        <width>5</width>
-                    </LineStyle>
-                    <PolyStyle>
-                        <color>00ffffff</color>
-                        <fill>0</fill>
-                        <outline>1</outline>
-                    </PolyStyle>
+        <!-- Estilo para los radios -->
+        <Style id="radioStyle">
+            <LineStyle>
+                <color>ff0000ff</color>
+                <width>5</width>
+            </LineStyle>
+            <PolyStyle>
+                <color>00ffffff</color>
+                <fill>0</fill>
+                <outline>1</outline>
+            </PolyStyle>
+        </Style>
+
+        <!-- Estilos para cada competencia -->
+        ${Object.keys(iconosPersonalizados).map(competencia => {
+            const icon = iconosPersonalizados[competencia];
+            const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+            
+            // Extraer solo el nombre del archivo del icono
+            const iconName = iconUrl.split('/').pop();
+            
+            return `
+                <Style id="${competencia}Style">
+                    <IconStyle>
+                        <Icon>
+                            <href>icons/${iconName}</href> <!-- URL relativa a la carpeta icons -->
+                            <scale>1.0</scale>
+                        </Icon>
+                        <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
+                    </IconStyle>
+                    <LabelStyle>
+                        <scale>1.0</scale>
+                    </LabelStyle>
                 </Style>
+            `;
+        }).join('')}
         
-                <!-- Estilos para cada competencia -->
-                ${Object.keys(iconosPersonalizados).map(competencia => {
-                    const icon = iconosPersonalizados[competencia];
-                    const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                    
-                    return `
-                        <Style id="${competencia}Style">
-                            <IconStyle>
-                                <Icon>
-                                    <href>${iconUrl}</href>
-                                    <scale>1.0</scale>
-                                </Icon>
-                                <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
-                            </IconStyle>
-                            <LabelStyle>
-                                <scale>1.0</scale>
-                            </LabelStyle>
-                        </Style>
-                    `;
-                }).join('')}
-                
-                ${geojsonData.features.map(feature => {
-                    if (feature.geometry.type === 'Circle') {
-                        return `
+        ${geojsonData.features.map(feature => {
+            if (feature.geometry.type === 'Circle') {
+                return `
+                    <Placemark>
+                        <name>${feature.properties.name}</name>
+                        <styleUrl>#radioStyle</styleUrl>
+                        <visibility>1</visibility>
+                        <LineString>
+                            <coordinates>
+                                ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
+                            </coordinates>
+                        </LineString>
+                    </Placemark>
+                `;
+            } else if (feature.geometry.type === 'Point') {
+                return `
+                    <Placemark>
+                        <name>${feature.properties.name}</name>
+                        <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                        <visibility>1</visibility>
+                        <Point>
+                            <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                        </Point>
+                    </Placemark>
+                `;
+            } else if (feature.geometry.type === 'Folder') {
+                return `
+                                        <Folder>
+                        <name>${feature.properties.name}</name>
+                        ${feature.properties.features.map(subFeature => `
                             <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <styleUrl>#radioStyle</styleUrl>
-                                <visibility>1</visibility>
-                                <LineString>
-                                    <coordinates>
-                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                    </coordinates>
-                                </LineString>
-                            </Placemark>
-                        `;
-                    } else if (feature.geometry.type === 'Point') {
-                        return `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                <name>${subFeature.properties.name}</name>
+                                <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <Point>
-                                    <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
+                                    <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
                                 </Point>
                             </Placemark>
-                        `;
-                    } else if (feature.geometry.type === 'Folder') {
-                        return `
-                            <Folder>
-                                <name>${feature.properties.name}</name>
-                                ${feature.properties.features.map(subFeature => `
-                                                                <Placemark>
-                                        <name>${subFeature.properties.name}</name>
-                                        <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
-                                        <visibility>1</visibility>
-                                        <Point>
-                                            <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
-                                        </Point>
-                                    </Placemark>
-                                `).join('')}
-                            </Folder>
-                        `;
-                    }
-                }).join('')}
-            </Document>
-        </kml>`;
-        
-        // Función para generar coordenadas de círculo
-        function generateCircleCoordinates(center, radius) {
-            const coordinates = [];
-            for (let i = 0; i < 360; i += 1) {
-                const angle = i * Math.PI / 180;
-                const lat = center[1] + (radius * Math.cos(angle) / 111320);
-                const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
-                coordinates.push(`${lng},${lat}`);
+                        `).join('')}
+                    </Folder>
+                `;
             }
-            return coordinates.join(' ');
-        }
+        }).join('')}
+    </Document>
+</kml>`;
+
+// Función para generar coordenadas de círculo
+function generateCircleCoordinates(center, radius) {
+    const coordinates = [];
+    for (let i = 0; i < 360; i += 1) {
+        const angle = i * Math.PI / 180;
+        const lat = center[1] + (radius * Math.cos(angle) / 111320);
+        const lng = center[0] + (radius * Math.sin(angle) / (111320 * Math.cos(center[1] * Math.PI / 180)));
+        coordinates.push(`${lng},${lat}`);
+    }
+    return coordinates.join(' ');
+}
+
+if (formato === 'kml') {
+    // Para KML, mantener las URLs absolutas
+    const kmlConUrlsAbsolutas = kml.replace(/<href>icons\//g, '<href>');
+    const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kmlConUrlsAbsolutas);
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+} else if (formato === 'kmz') {
+    const zip = new JSZip();
+
+    // Agregar el archivo KML
+    zip.file("capas_resultantes.kml", kml);
+    
+    // Crear una carpeta para los iconos
+    const iconFolder = zip.folder("icons");
+    
+    // Crear un objeto para mapear los estilos a sus iconos
+    const styleToIcon = {};
+    
+    // Extraer los estilos del KML y mapearlos a sus iconos
+    const kmlStyles = kml.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/g);
+    
+    if (kmlStyles) {
+        kmlStyles.forEach(style => {
+            const matches = style.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/);
+            if (matches) {
+                const styleId = matches[1];
+                const iconUrl = matches[2];
+                
+                // Extraer el nombre de la competencia del styleId
+                const competencia = styleId.replace('Style', '');
+                
+                // Verificar si el icono existe en iconosPersonalizados
+                if (iconosPersonalizados[competencia]) {
+                    styleToIcon[styleId] = iconosPersonalizados[competencia];
+                }
+            }
+        });
+    }
+    
+    // Agregar los iconos necesarios al KMZ
+    Object.values(styleToIcon).forEach(icon => {
+        const iconUrl = icon.options.iconUrl;
+        const filename = iconUrl.split('/').pop();
         
-        if (formato === 'kml') {
-            const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
+        // Agregar el icono al archivo KMZ
+        fetch(iconUrl)
+            .then(response => response.blob())
+            .then(blob => {
+                // Guardar el icono en la carpeta de iconos
+                iconFolder.file(filename, blob);
+            })
+            .catch(error => {
+                console.error(`Error al cargar el icono:`, error);
+                // Usar un icono por defecto si hay error
+                const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                fetch(defaultIconUrl)
+                    .then(response => response.blob())
+                    .then(blob => iconFolder.file('default-marker.png', blob));
+            });
+    });
+    
+    // Generar el archivo KMZ
+    zip.generateAsync({ type: "blob" })
+        .then(content => {
+            const dataStr = window.URL.createObjectURL(content);
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kml`);
+            downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kmz`);
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
-        } else if (formato === 'kmz') {
-            const zip = new JSZip();
-        
-            // Agregar el archivo KML
-            zip.file("capas_resultantes.kml", kml);
-            
-            // Crear una carpeta para los iconos
-            const iconFolder = zip.folder("icons");
-            
-            // Crear un objeto para mapear los estilos a sus iconos
-            const styleToIcon = {};
-            
-            // Extraer los estilos del KML y mapearlos a sus iconos
-            const kmlStyles = kml.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/g);
-            
-            if (kmlStyles) {
-                kmlStyles.forEach(style => {
-                    const matches = style.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/);
-                    if (matches) {
-                        const styleId = matches[1];
-                        const iconUrl = matches[2];
-                        
-                        // Extraer el nombre de la competencia del styleId
-                        const competencia = styleId.replace('Style', '');
-                        
-                        // Verificar si el icono existe en iconosPersonalizados
-                        if (iconosPersonalizados[competencia]) {
-                            styleToIcon[styleId] = iconosPersonalizados[competencia];
-                        }
-                    }
-                });
-            }
-            
-            // Agregar los iconos necesarios al KMZ
-            Object.values(styleToIcon).forEach(icon => {
-                const iconUrl = icon.options.iconUrl;
-                const filename = iconUrl.split('/').pop();
-                
-                // Agregar el icono al archivo KMZ
-                fetch(iconUrl)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        // Guardar el icono en la carpeta de iconos
-                        iconFolder.file(filename, blob);
-                    })
-                    .catch(error => {
-                        console.error(`Error al cargar el icono:`, error);
-                        // Usar un icono por defecto si hay error
-                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                        fetch(defaultIconUrl)
-                            .then(response => response.blob())
-                            .then(blob => iconFolder.file('default-marker.png', blob));
-                    });
-            });
-            
-            // Generar el archivo KMZ
-            zip.generateAsync({ type: "blob" })
-                .then(content => {
-                    const dataStr = window.URL.createObjectURL(content);
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kmz`);
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
-                })
-                .catch(error => {
-                    console.error('Error al generar el archivo KMZ:', error);
-                    alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
-                });
-            }
-        }
+        })
+        .catch(error => {
+            console.error('Error al generar el archivo KMZ:', error);
+            alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
+        });
+    }
+}
                 
      // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
