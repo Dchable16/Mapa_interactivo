@@ -1168,13 +1168,13 @@
                             let icono = null;
                 
                             if (type === 'Competencias') {
-                                // Usar 'name' del GeoJSON para capas de competencias
+                                // Usar 'layerName' para capas de competencias
                                 icono = iconosPersonalizados[layerName];
-                                console.log("Competencia name:", data.name); //Para depurar
+                                console.log("Competencia layerName:", layerName); // Para depurar
                             } else {
                                 // Usar 'layerName' de feature.properties para otras capas
                                 icono = iconosPersonalizados[feature.properties.layerName];
-                                console.log("layerName:", feature.properties.layerName); //Para depurar
+                                console.log("layerName:", feature.properties.layerName); // Para depurar
                             }
                 
                             if (!icono) {
