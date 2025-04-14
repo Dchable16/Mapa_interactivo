@@ -109,6 +109,40 @@
             border: none; /* Sin borde */
             font-size: 12px; /* Aumenta el tamaño de la fuente aquí */
         }
+        .measurement-tools {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+        }
+        
+        .measurement-btn {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .measurement-info {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            padding: 8px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            white-space: pre;
+        }
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -176,6 +210,19 @@
                 <circle cx="12" cy="12" r="3" fill="#3c4043" />
             </svg>
         </button>
+        <div class="measurement-tools">
+                <button class="measurement-btn" title="Medir distancia">
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10-10-10zm0 5.67l-4.25 4.25 1.42 1.42L12 9.14l2.83 2.83 1.42-1.42L12 5.67z"/></svg>
+                </button>
+                <button class="measurement-btn" title="Crear polígono">
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10-10-10zm0 5.67l-4.25 4.25 1.42 1.42L12 9.14l2.83 2.83 1.42-1.42L12 5.67z"/></svg>
+                </button>
+                <button class="measurement-btn" title="Crear círculo">
+                    <svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                </button>
+            </div>
+            <div class="measurement-info"></div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
@@ -190,7 +237,135 @@
         let isRendering = false;
         let timeoutId;
         let lastZoomLevel = 14; // Mantener el último nivel de zoom
+        // Variables globales para las herramientas de medición
+        let measurementLayer = L.layerGroup().addTo(map);
+        let measurementActive = false;
+        let measurementPoints = [];
+        let measurementDistance = 0;
+        let currentTool = 'distance'; // 'distance', 'polygon', 'circle'
+        let circleCenter = null;
         
+        // Estilos para las herramientas de medición
+        const measurementStyle = {
+            color: '#0000FF',
+            weight: 2,
+            opacity: 0.7,
+            dashArray: '5,5'
+        };
+        
+        const polygonStyle = {
+            color: '#FF0000',
+            weight: 2,
+            fillOpacity: 0.1
+        };
+        
+        const circleStyle = {
+            color: '#00FF00',
+            weight: 2,
+            fillOpacity: 0.1
+        };
+        // Función para activar/desactivar la herramienta de medición
+        function toggleMeasurement(tool) {
+            currentTool = tool;
+            measurementActive = !measurementActive;
+            
+            if (measurementActive) {
+                map.on('click', handleMeasurementClick);
+                document.getElementById('measurement-btn').style.backgroundColor = '#4CAF50';
+            } else {
+                map.off('click', handleMeasurementClick);
+                measurementLayer.clearLayers();
+                measurementPoints = [];
+                measurementDistance = 0;
+                circleCenter = null;
+                document.getElementById('measurement-btn').style.backgroundColor = '';
+                document.getElementById('measurement-info').textContent = '';
+            }
+        }
+        
+        // Función para manejar los clicks de medición
+        function handleMeasurementClick(e) {
+            const latLng = e.latlng;
+            
+            switch (currentTool) {
+                case 'distance':
+                    handleDistanceMeasurement(latLng);
+                    break;
+                case 'polygon':
+                    handlePolygonMeasurement(latLng);
+                    break;
+                case 'circle':
+                    handleCircleMeasurement(latLng);
+                    break;
+            }
+        }
+        
+        // Función para manejar la medición de distancias
+        function handleDistanceMeasurement(latLng) {
+            measurementPoints.push(latLng);
+            
+            if (measurementPoints.length > 1) {
+                // Crear polilínea
+                const polyline = L.polyline(measurementPoints, measurementStyle).addTo(measurementLayer);
+                
+                // Calcular distancia
+                measurementDistance += turf.distance(
+                    measurementPoints[measurementPoints.length - 2],
+                    measurementPoints[measurementPoints.length - 1],
+                    { units: 'meters' }
+                );
+                
+                // Actualizar información
+                document.getElementById('measurement-info').textContent = 
+                    `Distancia total: ${Math.round(measurementDistance)} metros`;
+            }
+        }
+        
+        // Función para manejar la creación de polígonos
+        function handlePolygonMeasurement(latLng) {
+            measurementPoints.push(latLng);
+            
+            if (measurementPoints.length > 2) {
+                // Crear polígono
+                const polygon = L.polygon(measurementPoints, polygonStyle).addTo(measurementLayer);
+                
+                // Calcular área y perímetro
+                const turfPolygon = turf.polygon([measurementPoints.map(p => [p.lng, p.lat])]);
+                const area = Math.round(turf.area(turfPolygon));
+                const perimeter = Math.round(turf.length(turfPolygon, { units: 'meters' }));
+                
+                // Actualizar información
+                document.getElementById('measurement-info').textContent = 
+                    `Área: ${area} m²\nPerímetro: ${perimeter} metros`;
+            }
+        }
+        
+        // Función para manejar la creación de círculos
+        function handleCircleMeasurement(latLng) {
+            if (!circleCenter) {
+                circleCenter = latLng;
+                return;
+            }
+            
+            const radius = turf.distance(circleCenter, latLng, { units: 'meters' });
+            
+            // Crear círculo
+            const circle = L.circle(latLng, {
+                radius: radius,
+                ...circleStyle
+            }).addTo(measurementLayer);
+            
+            // Calcular área y perímetro
+            const area = Math.round(Math.PI * radius * radius);
+            const perimeter = Math.round(2 * Math.PI * radius);
+            
+            // Actualizar información
+            document.getElementById('measurement-info').textContent = 
+                `Radio: ${Math.round(radius)} metros\nÁrea: ${area} m²\nCircunferencia: ${perimeter} metros`;
+            
+            // Limpiar para nueva medición
+            circleCenter = null;
+        }
         map.on('zoomend', function() {
             if (timeoutId) {
                 clearTimeout(timeoutId);
