@@ -861,69 +861,71 @@ function extractDifferenceData() {
 }
 
 // Modificar la función generateReport para usar las coordenadas del formulario
-function generateReport() {
-    if (ageb400Data.length === 0 && ageb800Data.length === 0) {
-        alert("No hay datos para generar el reporte.");
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-    // Obtener las coordenadas del formulario
-    const lat = parseFloat(document.getElementById('lat').value);
-    const lon = parseFloat(document.getElementById('lon').value);
-    
-    // Verificar que las coordenadas sean válidas
-    if (isNaN(lat) || isNaN(lon)) {
-        alert("Por favor ingrese coordenadas válidas en el formulario.");
-        return;
-    }
-
-    // Encabezados para AGEB 400m
-    if (ageb400Data.length > 0) {
-        csvContent += "AGEB 400m\n";
-        csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
-
-        // Ordenar y generar el CSV usando las coordenadas del formulario
-        ageb400Coords.sort((a, b) => {
-            const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
-            const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
+        function generateReport() {
+            if (ageb400Data.length === 0 && ageb800Data.length === 0) {
+                alert("No hay datos para generar el reporte.");
+                return;
+            }
+        
+            let csvContent = "data:text/csv;charset=utf-8,";
+        
+            // Obtener las coordenadas del formulario
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lon = parseFloat(document.getElementById('lon').value);
             
-            // Ordenar en sentido de las manecillas del reloj
-            return anguloA - anguloB;
-        }).forEach(item => {
-            const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
-                    });
-        csvContent += "\n";
-    }
-
-    // Encabezados para AGEB 800m
-    if (ageb800Data.length > 0) {
-        csvContent += "AGEB 800m\n";
-        csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
-
-        // Ordenar y generar el CSV usando las coordenadas del formulario
-        ageb800Coords.sort((a, b) => {
-            const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
-            const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
-            
-            // Ordenar en sentido de las manecillas del reloj
-            return anguloA - anguloB;
-        }).forEach(item => {
-            const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
-            
-            csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
-        });
-    }
-
-    // Crear un enlace de descarga
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "reporte_ageb_ordenado.csv");
-    document.body.appendChild(link);
-    link.click();
-}
+            // Verificar que las coordenadas sean válidas
+            if (isNaN(lat) || isNaN(lon)) {
+                alert("Por favor ingrese coordenadas válidas en el formulario.");
+                return;
+            }
+        
+            // Encabezados para AGEB 400m
+            if (ageb400Data.length > 0) {
+                csvContent += "AGEB 400m\n";
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
+        
+                // Ordenar y generar el CSV usando las coordenadas del formulario
+                ageb400Coords.sort((a, b) => {
+                    const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
+                    const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
+                    
+                    // Ordenar en sentido de las manecillas del reloj
+                    return anguloA - anguloB;
+                }).forEach(item => {
+                    const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
+                    
+                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
+                });
+                csvContent += "\n";
+            }
+        
+            // Encabezados para AGEB 800m
+            if (ageb800Data.length > 0) {
+                csvContent += "AGEB 800m\n";
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
+        
+                // Ordenar y generar el CSV usando las coordenadas del formulario
+                ageb800Coords.sort((a, b) => {
+                    const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
+                    const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
+                    
+                    // Ordenar en sentido de las manecillas del reloj
+                    return anguloA - anguloB;
+                }).forEach(item => {
+                    const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
+                    
+                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
+                });
+            }
+        
+            // Crear un enlace de descarga
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "reporte_ageb_ordenado.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
         
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
