@@ -677,6 +677,22 @@
         
             let csvContent = "data:text/csv;charset=utf-8,";
         
+            // Función para obtener las coordenadas de un AGEB
+            function getCoordinates(ageb) {
+                // Intentar obtener las coordenadas de diferentes formas
+                if (ageb.geometry && ageb.geometry.coordinates) {
+                    return ageb.geometry.coordinates;
+                }
+                if (ageb.coordinates) {
+                    return ageb.coordinates;
+                }
+                if (ageb.properties && ageb.properties.coordinates) {
+                    return ageb.properties.coordinates;
+                }
+                // Si no se encuentran coordenadas, usar [0,0] como valor por defecto
+                return [0, 0];
+            }
+        
             // Función para calcular el ángulo en grados
             function calcularAngulo(x, y) {
                 return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
@@ -692,15 +708,19 @@
                 
                 // Ordenar y generar el CSV
                 ageb400Data.sort((a, b) => {
-                    const dxA = a.geometry.coordinates[0] - latLng.lng;
-                    const dyA = a.geometry.coordinates[1] - latLng.lat;
-                    const dxB = b.geometry.coordinates[0] - latLng.lng;
-                    const dyB = b.geometry.coordinates[1] - latLng.lat;
+                    const [xA, yA] = getCoordinates(a);
+                    const [xB, yB] = getCoordinates(b);
+                    
+                    const dxA = xA - latLng.lng;
+                    const dyA = yA - latLng.lat;
+                    const dxB = xB - latLng.lng;
+                    const dyB = yB - latLng.lat;
                     
                     return calcularAngulo(dxA, dyA) - calcularAngulo(dxB, dyB);
                 }).forEach(item => {
-                    const dx = item.geometry.coordinates[0] - latLng.lng;
-                    const dy = item.geometry.coordinates[1] - latLng.lat;
+                    const [x, y] = getCoordinates(item);
+                    const dx = x - latLng.lng;
+                    const dy = y - latLng.lat;
                     const angulo = calcularAngulo(dx, dy);
                     
                     csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${angulo}\n`;
@@ -718,15 +738,19 @@
                 
                 // Ordenar y generar el CSV
                 ageb800Data.sort((a, b) => {
-                    const dxA = a.geometry.coordinates[0] - latLng.lng;
-                    const dyA = a.geometry.coordinates[1] - latLng.lat;
-                    const dxB = b.geometry.coordinates[0] - latLng.lng;
-                    const dyB = b.geometry.coordinates[1] - latLng.lat;
+                    const [xA, yA] = getCoordinates(a);
+                    const [xB, yB] = getCoordinates(b);
+                    
+                    const dxA = xA - latLng.lng;
+                    const dyA = yA - latLng.lat;
+                    const dxB = xB - latLng.lng;
+                    const dyB = yB - latLng.lat;
                     
                     return calcularAngulo(dxA, dyA) - calcularAngulo(dxB, dyB);
                 }).forEach(item => {
-                    const dx = item.geometry.coordinates[0] - latLng.lng;
-                    const dy = item.geometry.coordinates[1] - latLng.lat;
+                    const [x, y] = getCoordinates(item);
+                    const dx = x - latLng.lng;
+                    const dy = y - latLng.lat;
                     const angulo = calcularAngulo(dx, dy);
                     
                     csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${angulo}\n`;
