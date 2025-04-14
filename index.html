@@ -673,8 +673,22 @@
         function calcularAngulo(punto, centro) {
             const dx = punto[0] - centro[0];
             const dy = punto[1] - centro[1];
-            // Convertir el ángulo de radianes a grados y ajustarlo para que sea de 0 a 360
             return ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
+        }
+        
+        function getCentroidCoordinates(feature) {
+            // Primero intentamos usar las coordenadas directamente si están disponibles
+            if (feature.geometry && feature.geometry.coordinates) {
+                return feature.geometry.coordinates;
+            }
+            // Si no, intentamos crear un punto usando Turf.js
+            try {
+                const centroid = turf.centroid(feature);
+                return centroid.geometry.coordinates;
+            } catch (error) {
+                console.error('Error al obtener centroid:', error);
+                return [0, 0]; // Valor por defecto si falla
+            }
         }
         
         function generateReport() {
@@ -696,10 +710,8 @@
         
                 // Calcular ángulos y ordenar
                 ageb400Data = ageb400Data.map(item => {
-                    // Usar el centroide del polígono para calcular el ángulo
-                    const centroid = turf.centroid(turf.polygon(item.geometry.coordinates));
-                    const punto = [centroid.geometry.coordinates[0], centroid.geometry.coordinates[1]];
-                    const angulo = calcularAngulo(punto, centro);
+                    const coordinates = getCentroidCoordinates(item);
+                    const angulo = calcularAngulo(coordinates, centro);
                     return { ...item, angulo };
                 }).sort((a, b) => a.angulo - b.angulo);
         
@@ -720,10 +732,9 @@
                 const centro = [latLng.lng, latLng.lat];
         
                 // Calcular ángulos y ordenar
-                ageb800Data = ageb800Data.map(item => {
-                    const centroid = turf.centroid(turf.polygon(item.geometry.coordinates));
-                    const punto = [centroid.geometry.coordinates[0], centroid.geometry.coordinates[1]];
-                    const angulo = calcularAngulo(punto, centro);
+                ageb800Data = ageb808Data.map(item => {
+                    const coordinates = getCentroidCoordinates(item);
+                    const angulo = calcularAngulo(coordinates, centro);
                     return { ...item, angulo };
                 }).sort((a, b) => a.angulo - b.angulo);
         
