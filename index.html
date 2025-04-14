@@ -672,6 +672,174 @@
         let ageb400Coords = [];
         let ageb800Coords = [];
         
+        // Modificar la función extractBufferData para almacenar las coordenadas
+        function extractBufferData() {
+            if (bufferDataExtracted) {
+                alert("La extracción de datos Ageb con el radio de 400m ya ha sido realizada.");
+                return;
+            }
+        
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                const point = turf.point([latLng.lng, latLng.lat]);
+                let selectedLayer = null;
+        
+                if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebCDMXLayer.toGeoJSON();
+                } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebEdoMexLayer.toGeoJSON();
+                }
+        
+                if (selectedLayer) {
+                    const buffer = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                    const featuresWithinBuffer = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, buffer);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea);
+                            const populationTotal = (extractionPercentage * feature.properties.POB1);
+        
+                            // Mantener el atributo POB1 original
+                            intersection.properties.POB1 = feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            // Guardar las coordenadas del centroide
+                            const centroid = turf.centroid(intersection);
+                            ageb400Coords.push({
+                                coordinates: centroid.geometry.coordinates,
+                                properties: intersection.properties
+                            });
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    bufferLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinBuffer, {
+                        style: { color: 'red', weight: 3, fillOpacity: 1.0, fillColor: '#8beaa1' },
+                        onEachFeature: function (feature, layer) {
+                            // Crear etiqueta con el valor de populationTotal
+                            layer.bindTooltip(feature.properties.populationTotal.toString(), {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'ageb-label'
+                            }).openTooltip();
+                            ageb400Data.push(feature.properties); // Almacenar atributos
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(bufferLayerGroup);
+                    bufferDataExtracted = true;
+                } else {
+                    alert("El marcador no está dentro de ninguna capa AGEB.");
+                }
+            } else {
+                alert("Primero debe agregar un marcador.");
+            }
+        }
+        
+        // Modificar la función extractDifferenceData para almacenar las coordenadas
+        function extractDifferenceData() {
+            if (differenceDataExtracted) {
+                alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
+                return;
+            }
+        
+            if (currentMarker) {
+                const latLng = currentMarker.getLatLng();
+                const point = turf.point([latLng.lng, latLng.lat]);
+                let selectedLayer = null;
+        
+                if (agebCDMXLayer && agebCDMXLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebCDMXLayer.toGeoJSON();
+                } else if (agebEdoMexLayer && agebEdoMexLayer.toGeoJSON().features.some(feature => turf.booleanPointInPolygon(point, feature))) {
+                    selectedLayer = agebEdoMexLayer.toGeoJSON();
+                }
+        
+                if (selectedLayer) {
+                    const circle400 = turf.circle([latLng.lng, latLng.lat], 400, { units: 'meters' });
+                    const circle800 = turf.circle([latLng.lng, latLng.lat], 800, { units: 'meters' });
+                    const difference = turf.difference(circle800, circle400);
+        
+                    const featuresWithinDifference = turf.featureCollection(selectedLayer.features.map(feature => {
+                        const intersection = turf.intersect(feature, difference);
+                        if (intersection) {
+                            const originalArea = Math.floor(turf.area(feature));
+                            const extractedArea = Math.floor(turf.area(intersection));
+                            const extractionPercentage = (extractedArea / originalArea);
+                            const populationTotal = (extractionPercentage * feature.properties.POB1);
+        
+                            // Mantener el atributo POB1 original
+                            intersection.properties.POB1 = feature.properties.POB1;
+        
+                            intersection.properties.originalArea = originalArea;
+                            intersection.properties.extractedArea = extractedArea;
+                            intersection.properties.extractionPercentage = extractionPercentage;
+                            intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            // Guardar las coordenadas del centroide
+                            const centroid = turf.centroid(intersection);
+                            ageb800Coords.push({
+                                coordinates: centroid.geometry.coordinates,
+                                properties: intersection.properties
+                            });
+        
+                            return intersection;
+                        }
+                        return null;
+                    }).filter(feature => feature !== null));
+        
+                    differenceExtractionLayerGroup.clearLayers();
+        
+                    L.geoJSON(featuresWithinDifference, {
+                        style: { color: 'red', weight: 3, fillOpacity: 1.0, fillColor: '#6cca83' },
+                        onEachFeature: function (feature, layer) {
+                            // Crear etiqueta con el valor de populationTotal
+                            layer.bindTooltip(feature.properties.populationTotal.toString(), {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'ageb-label'
+                            }).openTooltip();
+                            ageb800Data.push(feature.properties); // Almacenar atributos
+                            layer.on('click', function () {
+                                let popupContent = "<b>Atributos:</b><br>";
+                                for (const key in feature.properties) {
+                                    popupContent += `${key}: ${feature.properties[key]}<br>`;
+                                }
+                                layer.bindPopup(popupContent).openPopup();
+                            });
+                        }
+                    }).addTo(differenceExtractionLayerGroup);
+                    differenceDataExtracted = true;
+                } else {
+                    alert("El marcador no está dentro de ninguna capa AGEB.");
+                }
+            } else {
+                alert("Asegúrese de que el marcador esté creado.");
+            }
+        }
+        
+        // Modificar la función generateReport para usar las coordenadas almacenadas
+        function generateReport() {
+            if (ageb400Data.length === 0 && ageb800Data.length === 0) {
+                alert("No hay datos para generar el reporte.");
+                return;
+            }
+        
+            let csvContent = "data:text/csv;charset=utf-8,";
+        
         // Función para calcular el ángulo en sentido de las manecillas del reloj
         function calcularAngulo(x, y, latCentro, lonCentro) {
             // Convertir las coordenadas del AGEB a un sistema de coordenadas local
