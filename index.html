@@ -672,6 +672,33 @@
         let ageb400Coords = [];
         let ageb800Coords = [];
         
+        // Función para calcular el ángulo en sentido de las manecillas del reloj
+        function calcularAngulo(x, y, latCentro, lonCentro) {
+            // Convertir las coordenadas del AGEB a un sistema de coordenadas local
+            const dx = x - lonCentro;
+            const dy = y - latCentro;
+            
+            // Calcular el ángulo en radianes
+            let angulo = Math.atan2(dy, dx);
+            
+            // Convertir a grados
+            angulo = angulo * 180 / Math.PI;
+            
+            // Si el ángulo es negativo, sumar 360 para convertirlo a positivo
+            if (angulo < 0) {
+                angulo += 360;
+            }
+            
+            // No necesitamos ajustar el ángulo, ya que Math.atan2 devuelve:
+            // 0° = norte (arriba)
+            // 90° = este (derecha)
+            // 180° = sur (abajo)
+            // 270° = oeste (izquierda)
+            // 360° = norte (arriba)
+            
+            return angulo;
+        }
+        
         // Modificar la función extractBufferData para almacenar las coordenadas
         function extractBufferData() {
             if (bufferDataExtracted) {
@@ -831,43 +858,6 @@
             }
         }
         
-        // Modificar la función generateReport para usar las coordenadas almacenadas
-        function generateReport() {
-            if (ageb400Data.length === 0 && ageb800Data.length === 0) {
-                alert("No hay datos para generar el reporte.");
-                return;
-            }
-        
-            let csvContent = "data:text/csv;charset=utf-8,";
-        
-        // Función para calcular el ángulo en sentido de las manecillas del reloj
-        function calcularAngulo(x, y, latCentro, lonCentro) {
-            // Convertir las coordenadas del AGEB a un sistema de coordenadas local
-            const dx = x - lonCentro;
-            const dy = y - latCentro;
-            
-            // Calcular el ángulo en radianes
-            let angulo = Math.atan2(dy, dx);
-            
-            // Convertir a grados
-            angulo = angulo * 180 / Math.PI;
-            
-            // Ajustar el ángulo para que:
-            // 0° = este (derecha)
-            // 90° = norte (arriba)
-            // 180° = oeste (izquierda)
-            // 270° = sur (abajo)
-            // 360° = este (derecha)
-            
-            // Si el ángulo es negativo, sumar 360 para convertirlo a positivo
-            if (angulo < 0) {
-                angulo += 360;
-            }
-            
-            // Ajustar para que el 0° esté en el este
-            return (angulo + 90) % 360;
-        }
-        
         // Modificar la función generateReport para usar las coordenadas del formulario
         function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
@@ -901,8 +891,8 @@
                 }).forEach(item => {
                     const angulo = calcularAngulo(item.coordinates[0], item.coordinates[1], lat, lon);
                     
-                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
-                });
+                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n
+                            });
                 csvContent += "\n";
             }
         
