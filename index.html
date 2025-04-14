@@ -669,39 +669,6 @@
             }
         }
         
-        // Función para calcular el ángulo de un punto en relación al centro
-        function calcularAngulo(punto, centro) {
-            const dx = punto[0] - centro[0];
-            const dy = punto[1] - centro[1];
-            return ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
-        }
-        
-        function getCentroidCoordinates(feature) {
-            try {
-                // Intentar usar las coordenadas directamente
-                if (feature.geometry && feature.geometry.coordinates) {
-                    return feature.geometry.coordinates;
-                }
-                // Si no hay geometría, intentar usar las coordenadas del punto
-                if (feature.coordinates) {
-                    return feature.coordinates;
-                }
-                // Si es un Feature, intentar usar sus propiedades
-                if (feature.properties && feature.properties.coordinates) {
-                    return feature.properties.coordinates;
-                }
-                // Si es un FeatureCollection, usar el primer feature
-                if (feature.features && feature.features.length > 0) {
-                    return getCentroidCoordinates(feature.features[0]);
-                }
-                // Si nada funciona, devolver coordenadas por defecto
-                return [0, 0];
-            } catch (error) {
-                console.error('Error al obtener coordenadas:', error);
-                return [0, 0];
-            }
-        }
-        
         function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
                 alert("No hay datos para generar el reporte.");
@@ -710,6 +677,11 @@
         
             let csvContent = "data:text/csv;charset=utf-8,";
         
+            // Función para calcular el ángulo en grados
+            function calcularAngulo(x, y) {
+                return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+            }
+        
             // Encabezados para AGEB 400m
             if (ageb400Data.length > 0) {
                 csvContent += "AGEB 400m\n";
@@ -717,18 +689,21 @@
         
                 // Obtener el centro del marcador
                 const latLng = currentMarker.getLatLng();
-                const centro = [latLng.lng, latLng.lat];
-        
-                // Calcular ángulos y ordenar
-                const ageb400Sorted = ageb400Data.map(item => {
-                    const coordinates = getCentroidCoordinates(item);
-                    const angulo = calcularAngulo(coordinates, centro);
-                    return { ...item, angulo };
-                }).sort((a, b) => a.angulo - b.angulo);
-        
-                // Generar el CSV ordenado
-                ageb400Sorted.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${item.angulo}\n`;
+                
+                // Ordenar y generar el CSV
+                ageb400Data.sort((a, b) => {
+                    const dxA = a.geometry.coordinates[0] - latLng.lng;
+                    const dyA = a.geometry.coordinates[1] - latLng.lat;
+                    const dxB = b.geometry.coordinates[0] - latLng.lng;
+                    const dyB = b.geometry.coordinates[1] - latLng.lat;
+                    
+                    return calcularAngulo(dxA, dyA) - calcularAngulo(dxB, dyB);
+                }).forEach(item => {
+                    const dx = item.geometry.coordinates[0] - latLng.lng;
+                    const dy = item.geometry.coordinates[1] - latLng.lat;
+                    const angulo = calcularAngulo(dx, dy);
+                    
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${angulo}\n`;
                 });
                 csvContent += "\n";
             }
@@ -740,18 +715,21 @@
         
                 // Obtener el centro del marcador
                 const latLng = currentMarker.getLatLng();
-                const centro = [latLng.lng, latLng.lat];
-        
-                // Calcular ángulos y ordenar
-                const ageb800Sorted = ageb800Data.map(item => {
-                    const coordinates = getCentroidCoordinates(item);
-                    const angulo = calcularAngulo(coordinates, centro);
-                    return { ...item, angulo };
-                }).sort((a, b) => a.angulo - b.angulo);
-        
-                // Generar el CSV ordenado
-                ageb800Sorted.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${item.angulo}\n`;
+                
+                // Ordenar y generar el CSV
+                ageb800Data.sort((a, b) => {
+                    const dxA = a.geometry.coordinates[0] - latLng.lng;
+                    const dyA = a.geometry.coordinates[1] - latLng.lat;
+                    const dxB = b.geometry.coordinates[0] - latLng.lng;
+                    const dyB = b.geometry.coordinates[1] - latLng.lat;
+                    
+                    return calcularAngulo(dxA, dyA) - calcularAngulo(dxB, dyB);
+                }).forEach(item => {
+                    const dx = item.geometry.coordinates[0] - latLng.lng;
+                    const dy = item.geometry.coordinates[1] - latLng.lat;
+                    const angulo = calcularAngulo(dx, dy);
+                    
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${angulo}\n`;
                 });
             }
         
