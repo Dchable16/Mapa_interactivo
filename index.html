@@ -678,30 +678,20 @@ function calcularAngulo(latCentro, lonCentro, latAGEB, lonAGEB) {
     const dLon = lonAGEB - lonCentro;
     const dLat = latAGEB - latCentro;
 
-    // En el contexto de la pantalla, podríamos considerar:
-    // - El eje Y positivo hacia abajo (Sur).
-    // - El eje X positivo hacia la derecha (Este).
-
-    // Vamos a invertir la diferencia de latitud para que un valor positivo
-    // corresponda a ir hacia "abajo" en la pantalla (Sur).
-    const pantalla_dY = -dLat;
+    // Adaptación para el sistema de coordenadas de la pantalla:
     const pantalla_dX = dLon;
+    const pantalla_dY = -dLat;
 
-    // Calcular el ángulo en radianes usando atan2(deltaX, deltaY)
+    // Calcular el ángulo en radianes
     let anguloRad = Math.atan2(pantalla_dX, pantalla_dY);
 
     // Convertir a grados
     let anguloGrados = anguloRad * 180 / Math.PI;
 
     // Ajustar para que 0° sea el Norte (arriba) y aumente en sentido horario:
-    // 1. Sumar 90 para que la dirección "arriba" sea el inicio.
-    // 2. Invertir el signo para que aumente en sentido horario.
-    anguloGrados = -anguloGrados + 45;
-
-    // Normalizar el ángulo al rango de 0-360 grados
-    if (anguloGrados < 0) {
-        anguloGrados += 360;
-    }
+    // 1. Sumar 270 grados (o -90) para rotar el inicio al Norte desde el Este (en sentido horario).
+    // 2. Asegurar que el ángulo sea positivo.
+    anguloGrados = (anguloGrados - 90 + 360) % 360;
 
     return anguloGrados;
 }
