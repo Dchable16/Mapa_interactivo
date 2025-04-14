@@ -669,6 +669,14 @@
             }
         }
         
+        // Función para calcular el ángulo de un punto en relación al centro
+        function calcularAngulo(punto, centro) {
+            const dx = punto[0] - centro[0];
+            const dy = punto[1] - centro[1];
+            // Convertir el ángulo de radianes a grados y ajustarlo para que sea de 0 a 360
+            return ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
+        }
+        
         function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
                 alert("No hay datos para generar el reporte.");
@@ -680,9 +688,24 @@
             // Encabezados para AGEB 400m
             if (ageb400Data.length > 0) {
                 csvContent += "AGEB 400m\n";
-                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
+        
+                // Obtener el centro del marcador
+                const latLng = currentMarker.getLatLng();
+                const centro = [latLng.lng, latLng.lat];
+        
+                // Calcular ángulos y ordenar
+                ageb400Data = ageb400Data.map(item => {
+                    // Usar el centroide del polígono para calcular el ángulo
+                    const centroid = turf.centroid(turf.polygon(item.geometry.coordinates));
+                    const punto = [centroid.geometry.coordinates[0], centroid.geometry.coordinates[1]];
+                    const angulo = calcularAngulo(punto, centro);
+                    return { ...item, angulo };
+                }).sort((a, b) => a.angulo - b.angulo);
+        
+                // Generar el CSV ordenado
                 ageb400Data.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${item.angulo}\n`;
                 });
                 csvContent += "\n";
             }
@@ -690,9 +713,23 @@
             // Encabezados para AGEB 800m
             if (ageb800Data.length > 0) {
                 csvContent += "AGEB 800m\n";
-                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
+        
+                // Obtener el centro del marcador
+                const latLng = currentMarker.getLatLng();
+                const centro = [latLng.lng, latLng.lat];
+        
+                // Calcular ángulos y ordenar
+                ageb800Data = ageb800Data.map(item => {
+                    const centroid = turf.centroid(turf.polygon(item.geometry.coordinates));
+                    const punto = [centroid.geometry.coordinates[0], centroid.geometry.coordinates[1]];
+                    const angulo = calcularAngulo(punto, centro);
+                    return { ...item, angulo };
+                }).sort((a, b) => a.angulo - b.angulo);
+        
+                // Generar el CSV ordenado
                 ageb800Data.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal},${item.angulo}\n`;
                 });
             }
         
@@ -700,7 +737,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "reporte_ageb.csv");
+            link.setAttribute("download", "reporte_ageb_ordenado.csv");
             document.body.appendChild(link);
             link.click();
         }
