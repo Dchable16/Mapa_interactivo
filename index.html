@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net); script-src 'self' 'unsafe-inline' [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://unpkg.com](https://unpkg.com) [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://cdnjs.cloudflare.com](https://cdnjs.cloudflare.com) 'unsafe-eval'; style-src 'self' 'unsafe-inline' [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://unpkg.com](https://unpkg.com); img-src 'self' data: [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://raw.githubusercontent.com](https://raw.githubusercontent.com) [https://tile.openstreetmap.org](https://tile.openstreetmap.org) *.google.com [https://github.com](https://github.com) maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net); connect-src 'self' [https://nominatim.openstreetmap.org](https://nominatim.openstreetmap.org) [https://unpkg.com](https://unpkg.com) [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://cdnjs.cloudflare.com](https://cdnjs.cloudflare.com);">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/tokml/tokml.js"></script>
+    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"](https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css") />
+    <link rel="stylesheet" href="[https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"](https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css") />
+    <link rel="stylesheet" href="[https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"](https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css") />
+    <script src="[https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>](https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>)
+    <script src="[https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>](https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>)
+    <script src="[https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>](https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>)
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>)
+    <script src="[https://unpkg.com/tokml/tokml.js"></script>](https://unpkg.com/tokml/tokml.js"></script>)
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -98,16 +98,16 @@
             height: 15.5px;
         }
         .ageb-label {
-            color: black; /* Color del texto */
+            color: black; 
             text-shadow: 
                 1px 1px 0 white, 
                 -1px -1px 0 white, 
                 1px -1px 0 white, 
-                -1px 1px 0 white; /* Efecto de buffer */
-            background-color: transparent; /* Sin fondo */
-            padding: 0; /* Sin relleno */
-            border: none; /* Sin borde */
-            font-size: 12px; /* Aumenta el tamaño de la fuente aquí */
+                -1px 1px 0 white; 
+            background-color: transparent; 
+            padding: 0; 
+            border: none; 
+            font-size: 12px; 
         }
         .measurement-tools {
             position: absolute;
@@ -156,14 +156,14 @@
 </head>
 <body>
     <button id="form-toggle-btn" title="Abrir/Cerrar formulario" aria-label="Abrir/Cerrar formulario">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12h18h18M3 18h18" />
         </svg>
     </button>
     <div id="side-form">
         <div class="header-container">
             <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
-            <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+            <img src="[https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png"](https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png") alt="Logotipo" class="logo">
         </div>
         <div class="form-container">
             <div class="form-row">
@@ -192,7 +192,7 @@
             <span id="zoom-value">12</span>
         </div>
         <button id="center-button" title="Centrar en el marcador" aria-label="Centrar en el marcador">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3" fill="#3c4043" />
                 <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
             </svg>
@@ -203,14 +203,20 @@
                 <circle cx="12" cy="10" r="3"></circle>
             </svg>
         </button>
-        <div class="loading-indicator" id="loading-indicator">Buscando puntos de interés...</div>
-        <button id="realtime-location-button" title="Localización en tiempo real" aria-label="Localización en tiempo real">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
-                <circle cx="12" cy="12" r="3" fill="#3c4043" />
-            </svg>
-        </button>
-        <div class="measurement-tools">
+        <button id="competencias-button" title="Competencias comerciales" aria-label="Competencias comerciales">
+                <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+            </button>
+            <div class="loading-indicator" id="loading-indicator">Buscando puntos de interés...</div>
+            <button id="realtime-location-button" title="Localización en tiempo real" aria-label="Localización en tiempo real">
+                <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
+                    <circle cx="12" cy="12" r="3" fill="#3c4043" />
+                </svg>
+            </button>
+            <div class="measurement-tools">
                 <button class="measurement-btn" title="Medir distancia">
                     <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10-10-10zm0 5.67l-4.25 4.25 1.42 1.42L12 9.14l2.83 2.83 1.42-1.42L12 5.67z"/></svg>
                 </button>
@@ -223,7 +229,6 @@
             </div>
             <div class="measurement-info"></div>
         </div>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
@@ -231,6 +236,149 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
+        // Variables globales
+            let removedMarkers = []; 
+            let isRendering = false;
+            let timeoutId;
+            let lastZoomLevel = 14;
+            let measurementLayer = L.layerGroup().addTo(map);
+            let measurementActive = false;
+            let measurementPoints = [];
+            let measurementDistance = 0;
+            let currentTool = 'distance';
+            let circleCenter = null;
+            
+            // Estilos para las herramientas de medición
+            const measurementStyle = {
+                color: '#0000FF',
+                weight: 2,
+                opacity: 0.7,
+                dashArray: '5,5'
+            };
+            
+            const polygonStyle = {
+                color: '#FF0000',
+                weight: 2,
+                fillOpacity: 0.1
+            };
+            
+            const circleStyle = {
+                color: '#00FF00',
+                weight: 2,
+                fillOpacity: 0.1
+            };
+            
+            // Función para activar/desactivar la herramienta de medición
+            function toggleMeasurement(tool) {
+                currentTool = tool;
+                measurementActive = !measurementActive;
+                
+                if (measurementActive) {
+                    map.on('click', handleMeasurementClick);
+                    document.querySelector('.measurement-btn[title="Medir distancia"]').style.backgroundColor = '#4CAF50';
+                } else {
+                    map.off('click', handleMeasurementClick);
+                    measurementLayer.clearLayers();
+                    measurementPoints = [];
+                    measurementDistance = 0;
+                    circleCenter = null;
+                    document.querySelector('.measurement-btn[title="Medir distancia"]').style.backgroundColor = '';
+                    document.querySelector('.measurement-info').textContent = '';
+                }
+            }
+            
+            // Función para manejar los clicks de medición
+            function handleMeasurementClick(e) {
+                const latLng = e.latlng;
+                
+                switch (currentTool) {
+                    case 'distance':
+                        handleDistanceMeasurement(latLng);
+                        break;
+                    case 'polygon':
+                        handlePolygonMeasurement(latLng);
+                        break;
+                    case 'circle':
+                        handleCircleMeasurement(latLng);
+                        break;
+                }
+            }
+            
+            // Función para manejar la medición de distancias
+            function handleDistanceMeasurement(latLng) {
+                measurementPoints.push(latLng);
+                
+                if (measurementPoints.length > 1) {
+                    // Crear polilínea
+                    const polyline = L.polyline(measurementPoints, measurementStyle).addTo(measurementLayer);
+                    
+                    // Calcular distancia
+                    measurementDistance += turf.distance(
+                        measurementPoints[measurementPoints.length - 2],
+                        measurementPoints[measurementPoints.length - 1],
+                        { units: 'meters' }
+                    );
+                    
+                    // Actualizar información
+                    document.querySelector('.measurement-info').textContent = 
+                        `Distancia total: ${Math.round(measurementDistance)} metros`;
+                }
+            }
+            
+            // Función para manejar la creación de polígonos
+            function handlePolygonMeasurement(latLng) {
+                measurementPoints.push(latLng);
+                
+                if (measurementPoints.length > 2) {
+                    // Crear polígono
+                    const polygon = L.polygon(measurementPoints, polygonStyle).addTo(measurementLayer);
+                    
+                    // Calcular área y perímetro
+                    const turfPolygon = turf.polygon([measurementPoints.map(p => [p.lng, p.lat])]);
+                    const area = Math.round(turf.area(turfPolygon));
+                    const perimeter = Math.round(turf.length(turfPolygon, { units: 'meters' }));
+                    
+                    // Actualizar información
+                    document.querySelector('.measurement-info').textContent = 
+                        `Área: ${area} m²\nPerímetro: ${perimeter} metros`;
+                }
+            }
+            
+            // Función para manejar la creación de círculos
+            function handleCircleMeasurement(latLng) {
+                if (!circleCenter) {
+                    circleCenter = latLng;
+                    return;
+                }
+                
+                const radius = turf.distance(circleCenter, latLng, { units: 'meters' });
+                
+                // Crear círculo
+                const circle = L.circle(latLng, {
+                    radius: radius,
+                    ...circleStyle
+                }).addTo(measurementLayer);
+                
+                // Calcular área y perímetro
+                const area = Math.round(Math.PI * radius * radius);
+                const perimeter = Math.round(2 * Math.PI * radius);
+                
+                // Actualizar información
+                document.querySelector('.measurement-info').textContent = 
+                    `Radio: ${Math.round(radius)} metros\nÁrea: ${area} m²\nCircunferencia: ${perimeter} metros`;
+                
+                // Limpiar para nueva medición
+                circleCenter = null;
+            }
+            
+            // Agregar listeners a los botones de medición
+            document.querySelectorAll('.measurement-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tool = this.title === "Medir distancia" ? "distance" :
+                                this.title === "Crear polígono" ? "polygon" : "circle";
+                    toggleMeasurement(tool);
+                });
+            });
               
         //Activa y desactiva las etiquetas de los Ageb
         let removedMarkers = []; // Almacenar marcadores eliminados
