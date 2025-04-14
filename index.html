@@ -891,8 +891,8 @@
                 }).forEach(item => {
                     const angulo = calcularAngulo(item.coordinates[0], item.coordinates[1], lat, lon);
                     
-                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n
-                            });
+                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
+                });
                 csvContent += "\n";
             }
         
