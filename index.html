@@ -689,14 +689,9 @@ function calcularAngulo(latCentro, lonCentro, latAGEB, lonAGEB) {
     let anguloGrados = anguloRad * 180 / Math.PI;
 
     // Ajustar para que 0° sea el Norte (arriba) y aumente en sentido horario:
-    // 1. Sumar 90 para rotar el inicio al Norte (desde el Este).
-    // 2. Invertir el signo para el sentido horario.
-    anguloGrados = - (anguloGrados + 90);
-
-    // Normalizar el ángulo al rango de 0-360 grados
-    if (anguloGrados < 0) {
-        anguloGrados += 360;
-    }
+    // 1. Sumar 270 grados (o -90) para rotar el inicio al Norte desde el Este (en sentido horario).
+    // 2. Asegurar que el ángulo sea positivo.
+    anguloGrados = (anguloGrados - 90 + 360) % 360;
 
     return anguloGrados;
 }
