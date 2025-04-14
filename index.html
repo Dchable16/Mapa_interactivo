@@ -673,20 +673,21 @@
 let ageb400Coords = [];
 let ageb800Coords = [];
 
-// Función para calcular el ángulo en sentido de las manecillas del reloj
 function calcularAngulo(latCentro, lonCentro, latAGEB, lonAGEB) {
-    // Calcular las diferencias en longitud y latitud (orden tradicional para atan2)
+    // Calcular las diferencias en longitud y latitud
     const dLon = lonAGEB - lonCentro;
     const dLat = latAGEB - latCentro;
 
-    // Calcular el ángulo en radianes usando atan2(deltaLon, deltaLat)
+    // Calcular el ángulo en radianes
     let anguloRad = Math.atan2(dLon, dLat);
 
     // Convertir a grados
     let anguloGrados = anguloRad * 180 / Math.PI;
 
-    // Ajustar el ángulo para que 0° sea el Norte y aumente en sentido horario
-    anguloGrados = 90 - anguloGrados;
+    // Ajustar el ángulo:
+    // 1. Sumar 90 para que el Norte (0, +dLat) sea 90°.
+    // 2. Invertir el signo para que aumente en sentido horario.
+    anguloGrados = -anguloGrados + 90;
 
     // Normalizar el ángulo al rango de 0-360 grados
     if (anguloGrados < 0) {
