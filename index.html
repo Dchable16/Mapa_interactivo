@@ -668,33 +668,34 @@
                 alert("Asegúrese de que el marcador esté creado.");
             }
         }
+        
         // Variables globales para almacenar las coordenadas de los AGEB
         let ageb400Coords = [];
         let ageb800Coords = [];
         
         // Función para calcular el ángulo en sentido de las manecillas del reloj
-        function calcularAngulo(x, y, latCentro, lonCentro) {
-            // Convertir las coordenadas del AGEB a un sistema de coordenadas local
-            const dx = x - lonCentro;
-            const dy = y - latCentro;
+        function calcularAngulo(latCentro, lonCentro, latAGEB, lonAGEB) {
+            // Calcular las diferencias en latitud y longitud
+            const dLat = latAGEB - latCentro;
+            const dLon = lonAGEB - lonCentro;
             
             // Calcular el ángulo en radianes
-            let angulo = Math.atan2(dy, dx);
+            let angulo = Math.atan2(dLat, dLon);
             
             // Convertir a grados
             angulo = angulo * 180 / Math.PI;
             
-            // Si el ángulo es negativo, sumar 360 para convertirlo a positivo
-            if (angulo < 0) {
-                angulo += 360;
-            }
-            
-            // No necesitamos ajustar el ángulo, ya que Math.atan2 devuelve:
+            // Ajustar el ángulo para que:
             // 0° = norte (arriba)
             // 90° = este (derecha)
             // 180° = sur (abajo)
             // 270° = oeste (izquierda)
             // 360° = norte (arriba)
+            
+            // Si el ángulo es negativo, sumar 360 para convertirlo a positivo
+            if (angulo < 0) {
+                angulo += 360;
+            }
             
             return angulo;
         }
@@ -884,15 +885,15 @@
         
                 // Ordenar y generar el CSV usando las coordenadas del formulario
                 ageb400Coords.sort((a, b) => {
-                    const anguloA = calcularAngulo(a.coordinates[0], a.coordinates[1], lat, lon);
-                    const anguloB = calcularAngulo(b.coordinates[0], b.coordinates[1], lat, lon);
+                    const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
+                    const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
                     
                     return anguloA - anguloB;
                 }).forEach(item => {
-                    const angulo = calcularAngulo(item.coordinates[0], item.coordinates[1], lat, lon);
+                    const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
                     
                     csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
-                });
+                            });
                 csvContent += "\n";
             }
         
@@ -903,12 +904,12 @@
         
                 // Ordenar y generar el CSV usando las coordenadas del formulario
                 ageb800Coords.sort((a, b) => {
-                    const anguloA = calcularAngulo(a.coordinates[0], a.coordinates[1], lat, lon);
-                    const anguloB = calcularAngulo(b.coordinates[0], b.coordinates[1], lat, lon);
+                    const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
+                    const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
                     
                     return anguloA - anguloB;
                 }).forEach(item => {
-                    const angulo = calcularAngulo(item.coordinates[0], item.coordinates[1], lat, lon);
+                    const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
                     
                     csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo}\n`;
                 });
@@ -922,7 +923,6 @@
             document.body.appendChild(link);
             link.click();
         }
-        
         // Agregar un botón de descarga
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
 
