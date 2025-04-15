@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://tile.openstreetmap.org *.google.com https://github.com maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://nominatim.openstreetmap.org https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net); script-src 'self' 'unsafe-inline' [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://unpkg.com](https://unpkg.com) [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://cdnjs.cloudflare.com](https://cdnjs.cloudflare.com) 'unsafe-eval'; style-src 'self' 'unsafe-inline' [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://unpkg.com](https://unpkg.com); img-src 'self' data: [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://raw.githubusercontent.com](https://raw.githubusercontent.com) [https://tile.openstreetmap.org](https://tile.openstreetmap.org) *.google.com [https://github.com](https://github.com) maps.googleapis.com *.gstatic.com mapstreet.com mt1.google.com mt0.google.com *.khms.googleapis.com; font-src 'self' data: [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net); connect-src 'self' [https://nominatim.openstreetmap.org](https://nominatim.openstreetmap.org) [https://unpkg.com](https://unpkg.com) [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net) [https://cdnjs.cloudflare.com](https://cdnjs.cloudflare.com);">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa interactivo Tiendas 3B</title>
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/tokml/tokml.js"></script>
+    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"](https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css") />
+    <link rel="stylesheet" href="[https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"](https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css") />
+    <link rel="stylesheet" href="[https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"](https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css") />
+    <script src="[https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>](https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>)
+    <script src="[https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>](https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>)
+    <script src="[https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>](https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>)
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>)
+    <script src="[https://unpkg.com/tokml/tokml.js"></script>](https://unpkg.com/tokml/tokml.js"></script>)
     <style>
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
@@ -98,94 +98,85 @@
             height: 15.5px;
         }
         .ageb-label {
-            color: black; /* Color del texto */
+            color: black; 
             text-shadow: 
                 1px 1px 0 white, 
                 -1px -1px 0 white, 
                 1px -1px 0 white, 
-                -1px 1px 0 white; /* Efecto de buffer */
-            background-color: transparent; /* Sin fondo */
-            padding: 0; /* Sin relleno */
-            border: none; /* Sin borde */
-            font-size: 12px; /* Aumenta el tamaño de la fuente aquí */
+                -1px 1px 0 white;
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            font-size: 12px;
         }
         .calculation-container {
-        position: fixed;
-        top: 50px;
-        left: 50px;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        width: 300px;
-        z-index: 1000;
-        cursor: move;
-        padding: 10px;
-    }
-
-    .calculation-container-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .calculation-container-title {
-        font-weight: bold;
-        color: #333;
-    }
-
-    .calculation-container-close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #666;
-        font-size: 1.2em;
-    }
-
-    .calculation-buttons {
-        margin-top: 10px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
-
-    .calculation-buttons h3 {
-        margin: 0 0 10px 0;
-        color: #333;
-        font-size: 1.1em;
-    }
-
-    .calc-btn {
-        padding: 10px 20px;
-        margin: 5px;
-        border: none;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #4CAF50, #45a049);
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .calc-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        background: linear-gradient(135deg, #45a049, #4CAF50);
-    }
-
-    .calc-btn:active {
-        transform: translateY(0);
-    }
-
-    .calc-result {
-        margin-top: 10px;
-        padding: 10px;
-        background: white;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        text-align: center;
-        font-weight: bold;
-    }
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 300px;
+            z-index: 1000;
+            cursor: move;
+            padding: 10px;
+        }
+        .calculation-container-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .calculation-container-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .calculation-container-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 1.2em;
+        }
+        .calculation-buttons {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .calculation-buttons h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .calc-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+        }
+        .calc-btn:active {
+            transform: translateY(0);
+        }
+        .calc-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            font-weight: bold;
+        }
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -199,14 +190,14 @@
 </head>
 <body>
     <button id="form-toggle-btn" title="Abrir/Cerrar formulario" aria-label="Abrir/Cerrar formulario">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12h18h18M3 18h18" />
         </svg>
     </button>
-    <div id="side-form">
+        <div id="side-form">
         <div class="header-container">
             <h1 class="centered-title">Mapa interactivo Tiendas 3B</h1>
-            <img src="https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png" alt="Logotipo" class="logo">
+            <img src="[https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png"](https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png") alt="Logotipo" class="logo">
         </div>
         <div class="form-container">
             <div class="form-row">
@@ -226,55 +217,52 @@
                 <button id="download-report-btn">Descarga Reporte</button>
                 <button onclick="descargarCapasResultantes('kml')">Descargar KML</button>
                 <button onclick="descargarCapasResultantes('kmz')">Descargar KMZ</button>
-                <button onclick="toggleCalculationContainer()">Calculadoras</button>
-            </div>
-        </div>
-        <div class="calculation-container" id="calculationContainer">
-            <div class="calculation-container-header">
-                <span class="calculation-container-title">Calculadoras</span>
-                <button class="calculation-container-close" onclick="closeCalculationContainer()">×</button>
-            </div>
-            <div class="calculation-buttons">
-                <button onclick="startDistanceCalculation()" class="calc-btn">Distancia</button>
-                <button onclick="startAreaCalculation()" class="calc-btn">Área</button>
-                <button onclick="startPerimeterCalculation()" class="calc-btn">Perímetro</button>
-                <button onclick="startRadiusCalculation()" class="calc-btn">Radio</button>
+                <button onclick="toggleCalculationContainer()" style="background-color: #4CAF50;">Calculadoras</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
     </div>
+
+    <div class="calculation-container" id="calculationContainer" style="display: none;">
+        <div class="calculation-container-header">
+            <span class="calculation-container-title">Calculadoras</span>
+            <button class="calculation-container-close" onclick="toggleCalculationContainer()">×</button>
+        </div>
+        <div class="calculation-buttons">
+            <button onclick="startDistanceCalculation()" class="calc-btn">Distancia</button>
+            <button onclick="startAreaCalculation()" class="calc-btn">Área</button>
+            <button onclick="startPerimeterCalculation()" class="calc-btn">Perímetro</button>
+            <button onclick="startRadiusCalculation()" class="calc-btn">Radio</button>
+        </div>
+    </div>
+
     <div id="map" style="position: relative;">
         <div id="zoom-level" title="Nivel del Zoom">
             <span id="zoom-value">12</span>
         </div>
         <button id="center-button" title="Centrar en el marcador" aria-label="Centrar en el marcador">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3" fill="#3c4043" />
                 <path d="M12 2v2M2 12h2M12 22v-2M22 12h-2M12 6v-2M6 12h-2M12 18v2M18 12h2" />
             </svg>
         </button>
         <button id="competencias-button" title="Competencias comerciales" aria-label="Competencias comerciales">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
             </svg>
         </button>
         <div class="loading-indicator" id="loading-indicator">Buscando puntos de interés...</div>
         <button id="realtime-location-button" title="Localización en tiempo real" aria-label="Localización en tiempo real">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="[http://www.w3.org/2000/svg"](http://www.w3.org/2000/svg") width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3c4043" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10" fill="none" stroke="#3c4043" stroke-width="2" />
                 <circle cx="12" cy="12" r="3" fill="#3c4043" />
             </svg>
         </button>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
     <script>
-        // Inicializar el mapa centrado en las coordenadas especificadas
-        const map = L.map("map").setView([19.4326, -99.1332], 12);
-         // Variables para almacenar puntos de cálculo
+        // Variables para almacenar puntos de cálculo
         let calculationPoints = [];
         let calculationMode = null;
         let calculationLayer = L.layerGroup().addTo(map);
@@ -425,7 +413,7 @@
             }, 5000);
         }
 
-        // Función para mostrar resultados
+         // Función para mostrar resultados
         function showCalculationResult(result) {
             const resultDiv = document.createElement('div');
             resultDiv.className = 'calc-result';
@@ -470,6 +458,63 @@
             }
             return total;
         };
+
+        // Función para abrir/cerrar el contenedor de calculadoras
+        function toggleCalculationContainer() {
+            const container = document.getElementById('calculationContainer');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+                clearCalculation();
+            }
+        }
+
+        // Variables para el arrastre del contenedor
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        // Obtener el contenedor
+        const container = document.getElementById('calculationContainer');
+
+        // Agregar eventos para el arrastre
+        container.addEventListener('mousedown', dragStart);
+        container.addEventListener('mouseup', dragEnd);
+        container.addEventListener('mousemove', drag);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            if (e.target === container) {
+                isDragging = true;
+            }
+        }
+
+        function dragEnd() {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, container);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+        }
                           
         //Activa y desactiva las etiquetas de los Ageb
         let removedMarkers = []; // Almacenar marcadores eliminados
@@ -1936,56 +1981,7 @@
         }
         
         document.getElementById('download-report-btn').addEventListener('click', generateReport);
-        // Variables para el arrastre del contenedor
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-    
-        // Obtener el contenedor
-        const container = document.getElementById('calculationContainer');
-    
-        // Agregar eventos para el arrastre
-        container.addEventListener('mousedown', dragStart);
-        container.addEventListener('mouseup', dragEnd);
-        container.addEventListener('mousemove', drag);
-    
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-            if (e.target === container) {
-                isDragging = true;
-            }
-        }
-    
-        function dragEnd() {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-    
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-                setTranslate(currentX, currentY, container);
-            }
-        }
-    
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
-        }
-    
-        function closeCalculationContainer() {
-            container.style.display = 'none';
-            clearCalculation();
-        }
+        
     </script>
 </body>
 </html>
