@@ -275,39 +275,32 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
+        
         // Variables para almacenar puntos de cálculo
         let calculationPoints = [];
         let calculationMode = null;
         let calculationLayer = L.layerGroup().addTo(map);
 
-        // Función para iniciar el cálculo de distancia
-        function startDistanceCalculation() {
+        // Función para iniciar el cálculo de línea
+        function startLineCalculation() {
             clearCalculation();
-            calculationMode = 'distance';
+            calculationMode = 'line';
             map.on('click', handleCalculationClick);
             showCalculationInstructions('Haz clic en dos puntos para calcular la distancia.');
         }
 
-        // Función para iniciar el cálculo de área
-        function startAreaCalculation() {
+        // Función para iniciar el cálculo de polígono
+        function startPolygonCalculation() {
             clearCalculation();
-            calculationMode = 'area';
+            calculationMode = 'polygon';
             map.on('click', handleCalculationClick);
             showCalculationInstructions('Haz clic en los vértices del polígono. Doble clic para finalizar.');
         }
 
-        // Función para iniciar el cálculo de perímetro
-        function startPerimeterCalculation() {
+        // Función para iniciar el cálculo de círculo
+        function startCircleCalculation() {
             clearCalculation();
-            calculationMode = 'perimeter';
-            map.on('click', handleCalculationClick);
-            showCalculationInstructions('Haz clic en los vértices del polígono. Doble clic para finalizar.');
-        }
-
-        // Función para iniciar el cálculo de radio
-        function startRadiusCalculation() {
-            clearCalculation();
-            calculationMode = 'radius';
+            calculationMode = 'circle';
             map.on('click', handleCalculationClick);
             showCalculationInstructions('Haz clic en el centro y luego en el punto del radio.');
         }
@@ -323,36 +316,31 @@
                     className: 'calculation-marker',
                     html: '<div style="background: #4CAF50; border-radius: 50%; width: 12px; height: 12px;"></div>',
                     iconSize: [12, 12]
-                })
+                     })
             }).addTo(calculationLayer);
 
             // Realizar el cálculo según el modo
             switch(calculationMode) {
-                case 'distance':
+                case 'line':
                     if (calculationPoints.length === 2) {
-                        calculateDistance();
+                        calculateLine();
                     }
                     break;
-                case 'area':
+                case 'polygon':
                     if (e.originalEvent.detail === 2) { // Doble clic
-                        calculateArea();
+                        calculatePolygon();
                     }
                     break;
-                case 'perimeter':
-                    if (e.originalEvent.detail === 2) { // Doble clic
-                        calculatePerimeter();
-                    }
-                    break;
-                case 'radius':
+                case 'circle':
                     if (calculationPoints.length === 2) {
-                        calculateRadius();
+                        calculateCircle();
                     }
                     break;
             }
         }
 
-        // Función para calcular distancia
-        function calculateDistance() {
+        // Función para calcular línea (distancia)
+        function calculateLine() {
             const point1 = calculationPoints[0];
             const point2 = calculationPoints[1];
             const distance = point1.distanceTo(point2);
@@ -367,8 +355,8 @@
             showCalculationResult(`Distancia: ${distance.toFixed(2)} metros`);
         }
 
-        // Función para calcular área
-        function calculateArea() {
+        // Función para calcular polígono (área y perímetro)
+        function calculatePolygon() {
             const polygon = L.polygon(calculationPoints, {
                 color: '#4CAF50',
                 weight: 2,
@@ -376,22 +364,14 @@
             }).addTo(calculationLayer);
 
             const area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
-            showCalculationResult(`Área: ${area.toFixed(2)} metros²`);
-        }
-
-        // Función para calcular perímetro
-        function calculatePerimeter() {
-            const polygon = L.polygon(calculationPoints, {
-                color: '#4CAF50',
-                weight: 2
-            }).addTo(calculationLayer);
-
             const perimeter = L.GeometryUtil.geodesicLength(polygon.getLatLngs()[0]);
+
+            showCalculationResult(`Área: ${area.toFixed(2)} metros²`);
             showCalculationResult(`Perímetro: ${perimeter.toFixed(2)} metros`);
         }
 
-        // Función para calcular radio
-        function calculateRadius() {
+        // Función para calcular círculo (radio, área y circunferencia)
+        function calculateCircle() {
             const center = calculationPoints[0];
             const point = calculationPoints[1];
             const radius = center.distanceTo(point);
@@ -403,21 +383,18 @@
                 fillOpacity: 0.1
             }).addTo(calculationLayer);
 
+            const area = Math.PI * Math.pow(radius, 2);
+            const circumference = 2 * Math.PI * radius;
+
             showCalculationResult(`Radio: ${radius.toFixed(2)} metros`);
+            showCalculationResult(`Área: ${area.toFixed(2)} metros²`);
+            showCalculationResult(`Circunferencia: ${circumference.toFixed(2)} metros`);
         }
 
         // Función para mostrar instrucciones
         function showCalculationInstructions(message) {
             const instructions = document.createElement('div');
             instructions.className = 'calc-instructions';
-            instructions.style.position = 'fixed';
-            instructions.style.top = '10px';
-            instructions.style.right = '10px';
-            instructions.style.backgroundColor = '#4CAF50';
-            instructions.style.color = 'white';
-            instructions.style.padding = '10px';
-            instructions.style.borderRadius = '5px';
-            instructions.style.zIndex = '1000';
             instructions.textContent = message;
             document.body.appendChild(instructions);
 
@@ -425,7 +402,8 @@
                 instructions.remove();
             }, 5000);
         }
-         // Función para mostrar resultados
+
+        // Función para mostrar resultados
         function showCalculationResult(result) {
             const resultDiv = document.createElement('div');
             resultDiv.className = 'calc-result';
@@ -437,7 +415,7 @@
                 resultDiv.remove();
             }, 5000);
         }
-        
+
         // Función para limpiar el cálculo
         function clearCalculation() {
             calculationPoints = [];
@@ -445,7 +423,20 @@
             calculationMode = null;
             map.off('click', handleCalculationClick);
         }
-        
+
+        // Función para abrir/cerrar el contenedor de calculadoras
+        function toggleCalculationContainer() {
+            const container = document.getElementById('calculationContainer');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%)';
+            } else {
+                container.style.display = 'none';
+                clearCalculation();
+            }
+        }
+
         // Agregar control de geometría para cálculos
         L.GeometryUtil = L.GeometryUtil || {};
         L.GeometryUtil.geodesicArea = function(latlngs) {
@@ -462,81 +453,14 @@
             }
             return Math.abs(total * 6378137 * 6378137 / 2);
         };
-        
+
         L.GeometryUtil.geodesicLength = function(latlngs) {
             let total = 0;
             for (let i = 0, len = latlngs.length - 1; i < len; i++) {
                 total += latlngs[i].distanceTo(latlngs[i + 1]);
             }
             return total;
-        };
-
-        // Función para abrir/cerrar el contenedor de calculadoras
-        function toggleCalculationContainer() {
-            const container = document.getElementById('calculationContainer');
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-                clearCalculation();
-            }
-        }
-
-        // Variables para el arrastre del contenedor
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-
-        // Obtener el contenedor
-        const container = document.getElementById('calculationContainer');
-
-        // Agregar eventos para el arrastre
-        container.addEventListener('mousedown', dragStart);
-        container.addEventListener('mouseup', dragEnd);
-        container.addEventListener('mousemove', drag);
-
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-            if (e.target === container) {
-                isDragging = true;
-            }
-        }
-
-        function dragEnd() {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-                setTranslate(currentX, currentY, container);
-            }
-        }
-
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
-        }
-        function toggleCalculationContainer() {
-            const container = document.getElementById('calculationContainer');
-            
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-                clearCalculation();
-            }
-        }
+        };    
               
         //Activa y desactiva las etiquetas de los Ageb
         let removedMarkers = []; // Almacenar marcadores eliminados
