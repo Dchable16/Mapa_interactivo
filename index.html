@@ -109,6 +109,84 @@
             border: none; /* Sin borde */
             font-size: 12px; /* Aumenta el tamaño de la fuente aquí */
         }
+         .calculation-container {
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 300px;
+            z-index: 1000;
+            cursor: move;
+            padding: 10px;
+        }
+    
+        .calculation-container-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+    
+        .calculation-container-title {
+            font-weight: bold;
+            color: #333;
+        }
+    
+        .calculation-container-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 1.2em;
+        }
+    
+        .calculation-buttons {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    
+        .calculation-buttons h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+    
+        .calc-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+    
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+        }
+    
+        .calc-btn:active {
+            transform: translateY(0);
+        }
+    
+        .calc-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            font-weight: bold;
+        }
+        
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -149,6 +227,19 @@
                 <button id="download-report-btn">Descarga Reporte</button>
                 <button onclick="descargarCapasResultantes('kml')">Descargar KML</button>
                 <button onclick="descargarCapasResultantes('kmz')">Descargar KMZ</button>
+                <button onclick="toggleCalculationContainer()">Calculadoras</button>
+            </div>
+        </div>
+        <div class="calculation-container" id="calculationContainer" style="display: none;">
+            <div class="calculation-container-header">
+                <span class="calculation-container-title">Calculadoras</span>
+                <button class="calculation-container-close" onclick="toggleCalculationContainer()">×</button>
+            </div>
+            <div class="calculation-buttons">
+                <button onclick="startDistanceCalculation()" class="calc-btn">Distancia</button>
+                <button onclick="startAreaCalculation()" class="calc-btn">Área</button>
+                <button onclick="startPerimeterCalculation()" class="calc-btn">Perímetro</button>
+                <button onclick="startRadiusCalculation()" class="calc-btn">Radio</button>
             </div>
         </div>
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
