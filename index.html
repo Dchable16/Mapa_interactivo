@@ -109,84 +109,6 @@
             border: none; /* Sin borde */
             font-size: 12px; /* Aumenta el tamaño de la fuente aquí */
         }
-         .calculation-container {
-            position: fixed;
-            top: 50px;
-            left: 50px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 300px;
-            z-index: 1000;
-            cursor: move;
-            padding: 10px;
-        }
-    
-        .calculation-container-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-    
-        .calculation-container-title {
-            font-weight: bold;
-            color: #333;
-        }
-    
-        .calculation-container-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #666;
-            font-size: 1.2em;
-        }
-    
-        .calculation-buttons {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-    
-        .calculation-buttons h3 {
-            margin: 0 0 10px 0;
-            color: #333;
-            font-size: 1.1em;
-        }
-    
-        .calc-btn {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-    
-        .calc-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            background: linear-gradient(135deg, #45a049, #4CAF50);
-        }
-    
-        .calc-btn:active {
-            transform: translateY(0);
-        }
-    
-        .calc-result {
-            margin-top: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            font-weight: bold;
-        }
-        
         .form-container { padding: 8px; }
         .form-row { display: flex; flex-direction: column; }
         .form-row label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; }
@@ -227,22 +149,8 @@
                 <button id="download-report-btn">Descarga Reporte</button>
                 <button onclick="descargarCapasResultantes('kml')">Descargar KML</button>
                 <button onclick="descargarCapasResultantes('kmz')">Descargar KMZ</button>
-                <button onclick="toggleCalculationContainer()">Calculadoras</button>
             </div>
         </div>
-        <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
-    </div>
-        <div class="calculation-container" id="calculationContainer" style="display: none;">
-            <div class="calculation-container-header">
-                <span class="calculation-container-title">Calculadoras</span>
-                <button class="calculation-container-close" onclick="toggleCalculationContainer()">×</button>
-            </div>
-            <div class="calculation-buttons">
-                <button onclick="startLineCalculation()" class="calc-btn">Linea</button>
-                <button onclick="startPolygonCalculation()" class="calc-btn">Polígono</button>
-                <button onclick="startCircleCalculation()" class="calc-btn">Círculo</button>
-            </div>
-        </div
         <button id="close-form-btn" aria-label="Cerrar formulario">Cerrar</button>
     </div>
     <div id="map" style="position: relative;">
@@ -276,192 +184,6 @@
     <script>
         // Inicializar el mapa centrado en las coordenadas especificadas
         const map = L.map("map").setView([19.4326, -99.1332], 12);
-        
-        // Variables para almacenar puntos de cálculo
-        let calculationPoints = [];
-        let calculationMode = null;
-        let calculationLayer = L.layerGroup().addTo(map);
-
-        // Función para iniciar el cálculo de línea
-        function startLineCalculation() {
-            clearCalculation();
-            calculationMode = 'line';
-            map.on('click', handleCalculationClick);
-            showCalculationInstructions('Haz clic en dos puntos para calcular la distancia.');
-        }
-
-        // Función para iniciar el cálculo de polígono
-        function startPolygonCalculation() {
-            clearCalculation();
-            calculationMode = 'polygon';
-            map.on('click', handleCalculationClick);
-            showCalculationInstructions('Haz clic en los vértices del polígono. Doble clic para finalizar.');
-        }
-
-        // Función para iniciar el cálculo de círculo
-        function startCircleCalculation() {
-            clearCalculation();
-            calculationMode = 'circle';
-            map.on('click', handleCalculationClick);
-            showCalculationInstructions('Haz clic en el centro y luego en el punto del radio.');
-        }
-
-        // Función para manejar los clics durante los cálculos
-        function handleCalculationClick(e) {
-            const latLng = e.latlng;
-            calculationPoints.push(latLng);
-
-            // Crear marcador temporal
-            const marker = L.marker(latLng, {
-                icon: L.divIcon({
-                    className: 'calculation-marker',
-                    html: '<div style="background: #4CAF50; border-radius: 50%; width: 12px; height: 12px;"></div>',
-                    iconSize: [12, 12]
-                     })
-            }).addTo(calculationLayer);
-
-            // Realizar el cálculo según el modo
-            switch(calculationMode) {
-                case 'line':
-                    if (calculationPoints.length === 2) {
-                        calculateLine();
-                    }
-                    break;
-                case 'polygon':
-                    if (e.originalEvent.detail === 2) { // Doble clic
-                        calculatePolygon();
-                    }
-                    break;
-                case 'circle':
-                    if (calculationPoints.length === 2) {
-                        calculateCircle();
-                    }
-                    break;
-            }
-        }
-
-        // Función para calcular línea (distancia)
-        function calculateLine() {
-            const point1 = calculationPoints[0];
-            const point2 = calculationPoints[1];
-            const distance = point1.distanceTo(point2);
-            
-            // Mostrar línea
-            const line = L.polyline([point1, point2], {
-                color: '#4CAF50',
-                weight: 2
-            }).addTo(calculationLayer);
-
-            // Mostrar resultado
-            showCalculationResult(`Distancia: ${distance.toFixed(2)} metros`);
-        }
-
-        // Función para calcular polígono (área y perímetro)
-        function calculatePolygon() {
-            const polygon = L.polygon(calculationPoints, {
-                color: '#4CAF50',
-                weight: 2,
-                fillOpacity: 0.1
-            }).addTo(calculationLayer);
-
-            const area = L.GeometryUtil.geodesicArea(polygon.getLatLngs()[0]);
-            const perimeter = L.GeometryUtil.geodesicLength(polygon.getLatLngs()[0]);
-
-            showCalculationResult(`Área: ${area.toFixed(2)} metros²`);
-            showCalculationResult(`Perímetro: ${perimeter.toFixed(2)} metros`);
-        }
-
-        // Función para calcular círculo (radio, área y circunferencia)
-        function calculateCircle() {
-            const center = calculationPoints[0];
-            const point = calculationPoints[1];
-            const radius = center.distanceTo(point);
-
-            const circle = L.circle(center, {
-                radius: radius,
-                color: '#4CAF50',
-                weight: 2,
-                fillOpacity: 0.1
-            }).addTo(calculationLayer);
-
-            const area = Math.PI * Math.pow(radius, 2);
-            const circumference = 2 * Math.PI * radius;
-
-            showCalculationResult(`Radio: ${radius.toFixed(2)} metros`);
-            showCalculationResult(`Área: ${area.toFixed(2)} metros²`);
-            showCalculationResult(`Circunferencia: ${circumference.toFixed(2)} metros`);
-        }
-
-        // Función para mostrar instrucciones
-        function showCalculationInstructions(message) {
-            const instructions = document.createElement('div');
-            instructions.className = 'calc-instructions';
-            instructions.textContent = message;
-            document.body.appendChild(instructions);
-
-            setTimeout(() => {
-                instructions.remove();
-            }, 5000);
-        }
-
-        // Función para mostrar resultados
-        function showCalculationResult(result) {
-            const resultDiv = document.createElement('div');
-            resultDiv.className = 'calc-result';
-            resultDiv.textContent = result;
-            const container = document.getElementById('calculationContainer');
-            container.querySelector('.calculation-buttons').appendChild(resultDiv);
-        
-            setTimeout(() => {
-                resultDiv.remove();
-            }, 5000);
-        }
-
-        // Función para limpiar el cálculo
-        function clearCalculation() {
-            calculationPoints = [];
-            calculationLayer.clearLayers();
-            calculationMode = null;
-            map.off('click', handleCalculationClick);
-        }
-
-        // Función para abrir/cerrar el contenedor de calculadoras
-        function toggleCalculationContainer() {
-            const container = document.getElementById('calculationContainer');
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-                container.style.left = '50%';
-                container.style.transform = 'translateX(-50%)';
-            } else {
-                container.style.display = 'none';
-                clearCalculation();
-            }
-        }
-
-        // Agregar control de geometría para cálculos
-        L.GeometryUtil = L.GeometryUtil || {};
-        L.GeometryUtil.geodesicArea = function(latlngs) {
-            if (latlngs.length < 3) return 0;
-            
-            let total = 0;
-            for (let i = 0, len = latlngs.length; i < len; i++) {
-                const add = (i === 0) ? latlngs[len - 1] : latlngs[i - 1];
-                const pA = L.LatLng.DEG_TO_RAD * add.lng;
-                const pB = L.LatLng.DEG_TO_RAD * latlngs[i].lng;
-                const t = Math.sin(pA) * Math.sin(pB) * Math.cos(L.LatLng.DEG_TO_RAD * (add.lat - latlngs[i].lat)) +
-                        Math.cos(pA) * Math.cos(pB);
-                total += Math.atan2(t, Math.sin(L.LatLng.DEG_TO_RAD * (add.lat - latlngs[i].lat)) * Math.sin(pA - pB));
-            }
-            return Math.abs(total * 6378137 * 6378137 / 2);
-        };
-
-        L.GeometryUtil.geodesicLength = function(latlngs) {
-            let total = 0;
-            for (let i = 0, len = latlngs.length - 1; i < len; i++) {
-                total += latlngs[i].distanceTo(latlngs[i + 1]);
-            }
-            return total;
-        };    
               
         //Activa y desactiva las etiquetas de los Ageb
         let removedMarkers = []; // Almacenar marcadores eliminados
@@ -709,6 +431,10 @@
                 bufferDataExtracted = false; // Reiniciar la bandera de extracción de buffer
                 differenceDataExtracted = false; // Reiniciar la bandera de extracción de diferencia
                 differenceCreated = false; // Reiniciar la bandera de diferencia
+                
+                // Limpiar coordenadas de AGEB
+                ageb400Coords = [];
+                ageb800Coords = [];
         
                 // Limpiar los campos de entrada
                 document.getElementById('lat').value = ''; // Limpiar el campo de latitud
@@ -829,7 +555,7 @@
                             const extractedArea = Math.floor(turf.area(intersection));
                             const extractionPercentage = (extractedArea / originalArea);
                             const populationTotal = (extractionPercentage * feature.properties.POB1);
-
+        
                             // Mantener el atributo POB1 original
                             intersection.properties.POB1 = feature.properties.POB1;
         
@@ -837,6 +563,13 @@
                             intersection.properties.extractedArea = extractedArea;
                             intersection.properties.extractionPercentage = extractionPercentage;
                             intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            // Guardar las coordenadas del centroide
+                            const centroid = turf.centroid(intersection);
+                            ageb400Coords.push({
+                                coordinates: centroid.geometry.coordinates,
+                                properties: intersection.properties
+                            });
         
                             return intersection;
                         }
@@ -846,7 +579,7 @@
                     bufferLayerGroup.clearLayers();
         
                     L.geoJSON(featuresWithinBuffer, {
-                        style: { color: 'red', weight: 3, fillOpacity: 1.0, fillColor: '#8beaa1' },//cambia color y opacidad del Ageb 400m
+                        style: { color: 'red', weight: 3, fillOpacity: 1.0, fillColor: '#8beaa1' },
                         onEachFeature: function (feature, layer) {
                             // Crear etiqueta con el valor de populationTotal
                             layer.bindTooltip(feature.properties.populationTotal.toString(), {
@@ -874,7 +607,7 @@
         }
         
         // Función para extraer información de las capas Ageb - Diferencia
-        function extractDifferenceData() {
+         function extractDifferenceData() {
             if (differenceDataExtracted) {
                 alert("La extracción de datos Ageb con el radio de 800m ya ha sido realizada.");
                 return;
@@ -903,7 +636,7 @@
                             const extractedArea = Math.floor(turf.area(intersection));
                             const extractionPercentage = (extractedArea / originalArea);
                             const populationTotal = (extractionPercentage * feature.properties.POB1);
-
+        
                             // Mantener el atributo POB1 original
                             intersection.properties.POB1 = feature.properties.POB1;
         
@@ -911,6 +644,13 @@
                             intersection.properties.extractedArea = extractedArea;
                             intersection.properties.extractionPercentage = extractionPercentage;
                             intersection.properties.populationTotal = Math.floor(populationTotal);
+        
+                            // Guardar las coordenadas del centroide
+                            const centroid = turf.centroid(intersection);
+                            ageb800Coords.push({
+                                coordinates: centroid.geometry.coordinates,
+                                properties: intersection.properties
+                            });
         
                             return intersection;
                         }
@@ -920,7 +660,7 @@
                     differenceExtractionLayerGroup.clearLayers();
         
                     L.geoJSON(featuresWithinDifference, {
-                        style: { color: 'red', weight: 3, fillOpacity: 1.0, fillColor: '#6cca83' },//cambia color y opacidad del Ageb 800m
+                        style: { color: 'red', weight: 3, fillOpacity: 1.0, fillColor: '#6cca83' },
                         onEachFeature: function (feature, layer) {
                             // Crear etiqueta con el valor de populationTotal
                             layer.bindTooltip(feature.properties.populationTotal.toString(), {
@@ -947,6 +687,45 @@
             }
         }
         
+        // Variables globales para almacenar las coordenadas de los AGEB
+        let ageb400Coords = [];
+        let ageb800Coords = [];
+        
+        // Función para calcular el ángulo en sentido de las manecillas del reloj
+        function calcularAngulo(latCentro, lonCentro, latAGEB, lonAGEB) {
+            // Calcular las diferencias en longitud y latitud
+            const dLon = lonAGEB - lonCentro;
+            const dLat = latAGEB - latCentro;
+        
+            // En el contexto de la pantalla, podríamos considerar:
+            // - El eje Y positivo hacia abajo (Sur).
+            // - El eje X positivo hacia la derecha (Este).
+        
+            // Vamos a invertir la diferencia de latitud para que un valor positivo
+            // corresponda a ir hacia "abajo" en la pantalla (Sur).
+            const pantalla_dY = -dLat;
+            const pantalla_dX = dLon;
+        
+            // Calcular el ángulo en radianes usando atan2(deltaX, deltaY)
+            let anguloRad = Math.atan2(pantalla_dX, pantalla_dY);
+        
+            // Convertir a grados
+            let anguloGrados = anguloRad * 180 / Math.PI;
+        
+            // Ajustar para que 0° sea el Norte (arriba) y aumente en sentido horario:
+            // 1. Sumar 90 para que la dirección "arriba" sea el inicio.
+            // 2. Invertir el signo para que aumente en sentido horario.
+            anguloGrados =- anguloGrados -180;
+        
+            // Normalizar el ángulo al rango de 0-360 grados
+            if (anguloGrados < 0) {
+                anguloGrados += 360;
+            }
+        
+            return anguloGrados;
+        }
+                
+        
         function generateReport() {
             if (ageb400Data.length === 0 && ageb800Data.length === 0) {
                 alert("No hay datos para generar el reporte.");
@@ -955,12 +734,32 @@
         
             let csvContent = "data:text/csv;charset=utf-8,";
         
+            // Obtener las coordenadas del formulario
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lon = parseFloat(document.getElementById('lon').value);
+            
+            // Verificar que las coordenadas sean válidas
+            if (isNaN(lat) || isNaN(lon)) {
+                alert("Por favor ingrese coordenadas válidas en el formulario.");
+                return;
+            }
+        
             // Encabezados para AGEB 400m
             if (ageb400Data.length > 0) {
                 csvContent += "AGEB 400m\n";
-                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
-                ageb400Data.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
+        
+                // Ordenar y generar el CSV usando las coordenadas del formulario
+                ageb400Coords.sort((a, b) => {
+                    const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
+                    const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
+        
+                    // Ordenar en sentido de las manecillas del reloj (ya lo hace la función calcularAngulo)
+                    return anguloA - anguloB;
+                }).forEach(item => {
+                    const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
+        
+                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo.toFixed(2)}\n`;
                 });
                 csvContent += "\n";
             }
@@ -968,9 +767,19 @@
             // Encabezados para AGEB 800m
             if (ageb800Data.length > 0) {
                 csvContent += "AGEB 800m\n";
-                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total\n";
-                ageb800Data.forEach(item => {
-                    csvContent += `${item.POB1},${item.originalArea},${item.extractedArea},${item.extractionPercentage},${item.populationTotal}\n`;
+                csvContent += "POB1,Area_original,Area_Extraida,Porcentaje_Area,Poblacion_Total,Angulo\n";
+        
+                // Ordenar y generar el CSV usando las coordenadas del formulario
+                ageb800Coords.sort((a, b) => {
+                    const anguloA = calcularAngulo(lat, lon, a.coordinates[1], a.coordinates[0]);
+                    const anguloB = calcularAngulo(lat, lon, b.coordinates[1], b.coordinates[0]);
+        
+                    // Ordenar en sentido de las manecillas del reloj (ya lo hace la función calcularAngulo)
+                    return anguloA - anguloB;
+                }).forEach(item => {
+                    const angulo = calcularAngulo(lat, lon, item.coordinates[1], item.coordinates[0]);
+        
+                    csvContent += `${item.properties.POB1},${item.properties.originalArea},${item.properties.extractedArea},${item.properties.extractionPercentage},${item.properties.populationTotal},${angulo.toFixed(2)}\n`;
                 });
             }
         
@@ -978,7 +787,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "reporte_ageb.csv");
+            link.setAttribute("download", "reporte_ageb_ordenado.csv");
             document.body.appendChild(link);
             link.click();
         }
