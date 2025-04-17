@@ -1087,13 +1087,13 @@
                 // Verificar si el icono es una URL remota
                 if (iconUrl.startsWith('http')) {
                     fetch(iconUrl)
-                        .then(response => response.blob())
-                        .then(blob => {
-                            // Guardar el icono en la carpeta de iconos
-                            iconFolder.file(filename, blob);
-                        })
-                        .catch(error => {
-                            console.error(`Error al cargar el icono:`, error);
+                            .then(response => response.blob())
+                            .then(blob => {
+                                iconFolder.file(filename, blob);
+                            })
+                            .catch(error => {
+                                console.error(`Error al cargar el icono:`, error);
+                            });
                             // Usar un icono por defecto si hay error
                             const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
                             fetch(defaultIconUrl)
@@ -1116,8 +1116,11 @@
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error al generar el KMZ:', error);
                 });
-            }          
+        }         
      // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png',
