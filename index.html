@@ -1037,7 +1037,7 @@
                         }
                         return coordinates.join(' ');
                     }
-                    
+                
                     if (formato === 'kml') {
                         const dataStr = 'data:text/kml;charset=utf-8,' + encodeURIComponent(kml);
                         const downloadAnchorNode = document.createElement('a');
@@ -1048,79 +1048,80 @@
                         downloadAnchorNode.remove();
                     } else if (formato === 'kmz') {
                         const zip = new JSZip();
-            
-            // Agregar el archivo KML
-            zip.file("capas_resultantes.kml", kml);
-            
-            // Crear una carpeta para los iconos
-            const iconFolder = zip.folder("icons");
-            
-            // Crear un objeto para mapear los estilos a sus iconos
-            const styleToIcon = {};
-            
-            // Extraer los estilos del KML y mapearlos a sus iconos
-            const kmlStyles = kml.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/g);
-            
-            if (kmlStyles) {
-                kmlStyles.forEach(style => {
-                    const matches = style.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/);
-                    if (matches) {
-                        const styleId = matches[1];
-                        const iconUrl = matches[2];
-                        
-                        // Extraer el nombre de la competencia del styleId
-                        const competencia = styleId.replace('Style', '');
-                        
-                        // Verificar si el icono existe en iconosPersonalizados
-                        if (iconosPersonalizados[competencia]) {
-                            styleToIcon[styleId] = iconosPersonalizados[competencia];
+                
+                        // Agregar el archivo KML
+                        zip.file("capas_resultantes.kml", kml);
+                
+                        // Crear una carpeta para los iconos
+                        const iconFolder = zip.folder("icons");
+                
+                        // Crear un objeto para mapear los estilos a sus iconos
+                        const styleToIcon = {};
+                
+                        // Extraer los estilos del KML y mapearlos a sus iconos
+                        const kmlStyles = kml.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/g);
+                
+                        if (kmlStyles) {
+                            kmlStyles.forEach(style => {
+                                const matches = style.match(/<Style id="([^"]+)">.*?<Icon><href>([^<]+)<\/href>.*?<\/Style>/);
+                                if (matches) {
+                                    const styleId = matches[1];
+                                    const iconUrl = matches[2];
+                                    
+                                    // Extraer el nombre de la competencia del styleId
+                                    const competencia = styleId.replace('Style', '');
+                                    
+                                    // Verificar si el icono existe en iconosPersonalizados
+                                    if (iconosPersonalizados[competencia]) {
+                                        styleToIcon[styleId] = iconosPersonalizados[competencia];
+                                    }
+                                }
+                            });
                         }
-                    }
-                });
-            }
             
             // Agregar los iconos necesarios al KMZ
             Object.values(styleToIcon).forEach(icon => {
-                const iconUrl = icon.options.iconUrl;
-                const filename = iconUrl.split('/').pop();
-                
-                // Verificar si el icono es una URL remota
-                if (iconUrl.startsWith('http')) {
-                    fetch(iconUrl)
+            const iconUrl = icon.options.iconUrl;
+            const filename = iconUrl.split('/').pop();
+            
+            // Verificar si el icono es una URL remota
+            if (iconUrl.startsWith('http')) {
+                fetch(iconUrl)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        // Guardar el icono en la carpeta de iconos
+                        iconFolder.file(filename, blob);
+                    })
+                    .catch(error => {
+                        console.error(`Error al cargar el icono:`, error);
+                        // Usar un icono por defecto si hay error
+                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                        fetch(defaultIconUrl)
                             .then(response => response.blob())
-                            .then(blob => {
-                                iconFolder.file(filename, blob);
-                            })
-                            .catch(error => {
-                                console.error(`Error al cargar el icono:`, error);
-                            });
-                            // Usar un icono por defecto si hay error
-                            const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                            fetch(defaultIconUrl)
-                                .then(response => response.blob())
-                                .then(blob => iconFolder.file('default-marker.png', blob));
-                        });
-                }
-            });
+                            .then(blob => iconFolder.file('default-marker.png', blob));
+                    });
+            }
+        });
             
             // Generar el archivo KMZ
             zip.generateAsync({ type: "blob" })
-                .then(content => {
-                    const blob = new Blob([content], { type: "application/vnd.google-earth.kmz" });
-                    const url = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `${document.getElementById('markerName').value || "Capas_Resultantes"}.kmz`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                })
-                .catch(error => {
-                    console.error('Error al generar el KMZ:', error);
-                });
-        }         
+            .then(content => {
+                const blob = new Blob([content], { type: "application/vnd.google-earth.kmz" });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${document.getElementById('markerName').value || "Capas_Resultantes"}.kmz`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error al generar el KMZ:', error);
+            });
+    }
+}    
      // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/Dchable16/Mapa_interactivo/main/Captura-removebg-preview.png',
