@@ -981,30 +981,24 @@
                 }).join('')}
                 
                 ${geojsonData.features.map(feature => {
-                    if (feature.geometry.type === 'Circle') {
+                    if (feature.geometry.type === 'Point') {
+                        // Obtener la competencia del marcador
+                        const competencia = feature.properties.competencia || feature.properties.Competencia;
+                        
+                        // Usar el estilo correspondiente a la competencia
+                        const styleUrl = `#${competencia}Style`;
+                        
                         return `
                             <Placemark>
                                 <name>${feature.properties.name}</name>
-                                <styleUrl>#radioStyle</styleUrl>
-                                <visibility>1</visibility>
-                                <LineString>
-                                    <coordinates>
-                                        ${generateCircleCoordinates(feature.geometry.coordinates, feature.geometry.radius)}
-                                    </coordinates>
-                                </LineString>
-                            </Placemark>
-                        `;
-                    } else if (feature.geometry.type === 'Point') {
-                        return `
-                            <Placemark>
-                                <name>${feature.properties.name}</name>
-                                <styleUrl>${feature.properties.styleUrl}</styleUrl>
+                                <styleUrl>${styleUrl}</styleUrl>
                                 <visibility>1</visibility>
                                 <Point>
                                     <coordinates>${feature.geometry.coordinates.join(',')}</coordinates>
                                 </Point>
                             </Placemark>
                         `;
+                    }
                                 } else if (feature.geometry.type === 'Folder') {
                                     return `
                                         <Folder>
