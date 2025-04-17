@@ -954,18 +954,20 @@
                         <outline>1</outline>
                     </PolyStyle>
                 </Style>
-        
+                
                 <!-- Estilos para cada competencia -->
                 ${Object.keys(geoJsonLayersCompetencias).map(competencia => {
-                    // Obtener el icono para esta competencia
                     const icon = iconosPersonalizados[competencia];
                     const iconUrl = icon ? icon.options.iconUrl : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                    
+                    // Extraer el nombre del archivo del icono
+                    const iconName = iconUrl.split('/').pop();
                     
                     return `
                         <Style id="${competencia}Style">
                             <IconStyle>
                                 <Icon>
-                                    <href>${iconUrl}</href>
+                                    <href>icons/${iconName}</href>
                                     <scale>1.0</scale>
                                 </Icon>
                                 <hotSpot x="10" y="20" xunits="pixels" yunits="pixels"/>
@@ -1002,27 +1004,27 @@
                                 </Point>
                             </Placemark>
                         `;
-                                } else if (feature.geometry.type === 'Folder') {
-                                    return `
-                                        <Folder>
-                                            <name>${feature.properties.name}</name>
-                                            ${feature.properties.features.map(subFeature => `
-                                                <Placemark>
-                                                    <name>${subFeature.properties.name}</name>
-                                                    <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
-                                                    <visibility>1</visibility>
-                                                    <Point>
-                                                        <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
-                                                    </Point>
-                                                </Placemark>
-                                            `).join('')}
-                                        </Folder>
-                                    `;
-                                }
-                            }).join('')}
-                            
-                        </Document>
-                    </kml>`;
+                    } else if (feature.geometry.type === 'Folder') {
+                        return `
+                            <Folder>
+                                <name>${feature.properties.name}</name>
+                                ${feature.properties.features.map(subFeature => `
+                                    <Placemark>
+                                        <name>${subFeature.properties.name}</name>
+                                        <styleUrl>${subFeature.properties.styleUrl}</styleUrl>
+                                        <visibility>1</visibility>
+                                        <Point>
+                                            <coordinates>${subFeature.geometry.coordinates.join(',')}</coordinates>
+                                        </Point>
+                                    </Placemark>
+                                `).join('')}
+                            </Folder>
+                        `;
+                    }
+                }).join('')}
+                
+            </Document>
+        </kml>`;
                     
                     // Función para generar coordenadas de círculo
                     function generateCircleCoordinates(center, radius) {
@@ -1082,40 +1084,39 @@
                 const iconUrl = icon.options.iconUrl;
                 const filename = iconUrl.split('/').pop();
                 
-                // Agregar el icono al archivo KMZ
-                fetch(iconUrl)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        // Guardar el icono en la carpeta de iconos
-                        iconFolder.file(filename, blob);
-                    })
-                    .catch(error => {
-                        console.error(`Error al cargar el icono:`, error);
-                        // Usar un icono por defecto si hay error
-                        const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
-                        fetch(defaultIconUrl)
-                            .then(response => response.blob())
-                            .then(blob => iconFolder.file('default-marker.png', blob));
-                    });
+                // Verificar si el icono es una URL remota
+                if (iconUrl.startsWith('http')) {
+                    fetch(iconUrl)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            // Guardar el icono en la carpeta de iconos
+                            iconFolder.file(filename, blob);
+                        })
+                        .catch(error => {
+                            console.error(`Error al cargar el icono:`, error);
+                            // Usar un icono por defecto si hay error
+                            const defaultIconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                            fetch(defaultIconUrl)
+                                .then(response => response.blob())
+                                .then(blob => iconFolder.file('default-marker.png', blob));
+                        });
+                }
             });
             
             // Generar el archivo KMZ
             zip.generateAsync({ type: "blob" })
                 .then(content => {
-                    const dataStr = window.URL.createObjectURL(content);
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    downloadAnchorNode.setAttribute("download", `${document.getElementById('markerName').value}.kmz`);
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
-                })
-                .catch(error => {
-                    console.error('Error al generar el archivo KMZ:', error);
-                    alert('Hubo un error al generar el archivo KMZ. Por favor, intenta nuevamente.');
+                    const blob = new Blob([content], { type: "application/vnd.google-earth.kmz" });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${document.getElementById('markerName').value || "Capas_Resultantes"}.kmz`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
                 });
-            }
-        }
                 
      // Crear un icono personalizado usando el logotipo
         const customIcon = L.icon({
