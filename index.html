@@ -1245,7 +1245,8 @@
                         'Municipios': 'rgb(255, 255, 0)',
                         'Alcaldias': 'rgb(0, 255, 127)',
                         'Competencias': 'rgb(204, 85, 0)',
-                        'Ageb': url.includes('Ageb_urb_CDMX.geojson') ? 'rgb(135, 206, 235)' : 'rgb(128, 128, 0)',
+                        'Ageb_CDMX': '#abfbbb', // Color para la capa AGEB CDMX
+                        'Ageb_EdoMex': '#abfbbb', // Color para la capa AGEB Edo Mex
                     };
         
                     const geoJsonLayer = L.geoJSON(data, {
@@ -1274,14 +1275,22 @@
                             return L.marker(latlng, { icon: icono });
                         },
                         style: (feature) => {
-                            if (type === 'UsoSuelo') {
+                           if (type === 'Ageb') {
+                                const fillColor = url.includes('Ageb_urb_CDMX.geojson') ? colorMap['Ageb_CDMX'] : colorMap['Ageb_EdoMex'];
+                                return {
+                                    color: 'black', // Color del contorno
+                                    weight: 1.5, // Grosor del contorno
+                                    fillOpacity: 1.0, // Opacidad del relleno
+                                    fillColor: fillColor // Color del relleno basado en la capa
+                                };
+                            } else if (type === 'UsoSuelo') {
                                 return {
                                     color: 'rgb(128, 0, 128)', // Color del borde
                                     weight: 0.3, // Grosor del borde más delgado
                                     fillOpacity: 0 // Sin fondo
                                 };
                             } else {
-                                return { color: colorMap[type], weight: 2, fillOpacity: 0.35 }; // Estilo para otras capas
+                                return { color: colorMap[type], weight: 2, fillOpacity: 0.25 }; // Estilo para otras capas
                             }
                         },
                         onEachFeature: (feature, layer) => {
